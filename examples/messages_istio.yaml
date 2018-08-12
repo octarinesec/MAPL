@@ -1,0 +1,11 @@
+messages:
+  
+- message_id: 0
+  sender_service: default.reviews-v3
+  receiver_service: default.ratings-v1
+  request_protocol: http
+  request_path: /ratings/0
+  request_method: GET
+  request_size: 1024
+  request_time: 2018-07-29T14:30:00-07:00
+  request_user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36

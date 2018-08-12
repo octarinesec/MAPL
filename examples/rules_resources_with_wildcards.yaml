@@ -1,0 +1,23 @@
+rules:
+
+  - rule_id: 0
+    sender: "A.my_namespace"
+    receiver: "B.my_namespace"
+    resource:
+      resourceProtocol: http
+      resourceType: httpPath
+      resourceName: "/book/1*"
+    operation: GET
+    decision: alert
+
+  - rule_id: 1
+    sender: "A.my_namespace"
+    receiver: "B.my_namespace"
+    resource:
+      resourceProtocol: http
+      resourceType: httpPath
+      resourceName: "/book/3?1"
+    operation: GET
+    decision: block
+
+

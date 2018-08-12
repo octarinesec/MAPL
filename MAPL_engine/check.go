@@ -1,0 +1,233 @@
+package MAPL_engine
+
+import (
+	"strings"
+	"regexp"
+)
+
+// general action codes
+const (
+	RULE_DOES_NOT_APPLY int = iota
+	ALLOW
+	ALERT
+	BLOCK
+)
+
+var ActionTypeNames = [...]string{
+	RULE_DOES_NOT_APPLY: "rules do not apply to message - block by default",
+	ALLOW: "allow",
+	ALERT: "alert",
+	BLOCK: "block",
+}
+
+func Check(message *MessageAttributes, rules *Rules) (int, string, int, []int, []int) {
+	//
+	// for each message we check its attributes against all of the rules and return a decision
+	//
+
+	N := len(rules.Rules)
+
+	results := make([]int, N)
+	sem := make(chan int, N) // semaphore pattern
+	if false{
+	for i, rule := range (rules.Rules) { // check all the rules in parallel
+		go func(in_i int, in_rule Rule) {
+			results[in_i] = CheckOneRule(message, &in_rule)
+			sem <- 1 // mark that the one rule check is finished
+		}(i, rule)
+	}
+
+	// wait for all goroutines to finish
+	for i := 0; i < N; i++ {
+		<-sem
+	}
+
+	}else{
+		for in_i,in_rule := range(rules.Rules) {
+			results[in_i] = CheckOneRule(message, &in_rule)
+		}
+	}
+
+
+	// go over the results and test by order of precedence
+	appliedRulesIndices := make([]int, 0)
+	relevantRuleIndex := -1
+
+	max_decision := RULE_DOES_NOT_APPLY
+	for i := 0; i < N; i++ {
+		if results[i]>RULE_DOES_NOT_APPLY {
+			appliedRulesIndices = append(appliedRulesIndices,i)
+		}
+		if results[i]> max_decision {
+			max_decision = results[i]
+			relevantRuleIndex = i
+		}
+	}
+	decision := max_decision
+
+	return decision,ActionTypeNames[decision],relevantRuleIndex, results, appliedRulesIndices
+}
+
+
+func CheckOneRule(message *MessageAttributes, rule *Rule) int {
+	// ----------------------
+	// compare basic message attributes:
+	match := rule.SenderRegex.Match([]byte(message.SourceService)) // supports wildcards
+	if !match{
+		return RULE_DOES_NOT_APPLY
+	}
+
+	match = rule.ReceiverRegex.Match([]byte(message.DestinationService)) // supports wildcards
+	if !match{
+		return RULE_DOES_NOT_APPLY
+	}
+
+	match = rule.OperationRegex.Match([]byte(message.RequestMethod)) // supports wildcards
+	if !match{
+		return RULE_DOES_NOT_APPLY
+	}
+
+	// ----------------------
+	// compare resource:
+	if rule.Resource.ResourceProtocol != "*"{
+		if !strings.EqualFold(message.ContextProtocol, rule.Resource.ResourceProtocol) { // regardless of case // need to support wildcards!
+			return RULE_DOES_NOT_APPLY
+		}
+
+		if message.ContextType != rule.Resource.ResourceType { // need to support wildcards?
+			return RULE_DOES_NOT_APPLY
+		}
+
+		match = rule.Resource.ResourceNameRegex.Match([]byte(message.RequestPath)) // supports wildcards
+		if !match {
+			return RULE_DOES_NOT_APPLY
+		}
+	}
+
+	// ----------------------
+	// test conditions:
+	conditionsResult := true // if there are no conditions then we skip the test and return the rule.Decision
+	if len(rule.DNFConditions)>0{
+		conditionsResult = testConditions(rule, message)
+	}
+	if conditionsResult == false {
+		return RULE_DOES_NOT_APPLY
+	}
+
+	// ----------------------
+	// if we got here then the rule applies and we use the rule's decision
+	switch rule.Decision{
+		case(ActionTypeNames[ALLOW]):
+			return ALLOW
+		case(ActionTypeNames[ALERT]):
+			return ALERT
+		case(ActionTypeNames[BLOCK]):
+			return BLOCK
+	}
+	return RULE_DOES_NOT_APPLY
+}
+
+
+func testConditions(rule *Rule, message *MessageAttributes) bool{
+	//
+	dnfConditions:=rule.DNFConditions
+	res:=make([]bool, len(dnfConditions))
+	for i_andCondtions, andConditions:=range(dnfConditions){
+		temp_res:=true
+		for _, condition:=range(andConditions.ANDConditions){ // calculate AND clauses
+			oneConditionResult:=testOneCondition(&condition,message) // test one condition
+			temp_res = temp_res && oneConditionResult // logic AND
+		}
+		res[i_andCondtions] = temp_res
+	}
+
+	output := false  // calculate OR of all the AND clauses
+	for _, r := range(res){
+		output = output || r // logic OR
+	}
+	return output
+}
+
+
+func testOneCondition(c *Condition,message *MessageAttributes) bool {
+	// ---------------
+	// currently we support the following attributes:
+	// payloadSize
+	// requestUseragent
+	// utcHoursFromMidnight
+	// ---------------
+	var valueToCompareInt int64
+	var valueToCompareFloat float64
+	var valueToCompareString string
+
+	result:=false
+	// select type of test by types of attribute and methods
+	switch (c.Attribute){
+	case("payloadSize"):
+		valueToCompareInt = message.RequestSize
+		result = compareIntFunc(valueToCompareInt, c.Method, c.ValueInt)
+	case("requestUseragent"):
+		valueToCompareString = message.RequestUseragent
+		if c.Method == "RE" || c.Method == "re" {
+			result = compareRegexFunc(valueToCompareString, c.Method, c.ValueRegex)
+		}else{
+			result = compareStringFunc(valueToCompareString, c.Method, c.Value)
+		}
+	case("utcHoursFromMidnight"):
+		valueToCompareFloat = message.RequestTimeHoursFromMidnightUTC
+		result = compareFloatFunc(valueToCompareFloat, c.Method, c.ValueFloat)
+
+	}
+	return result
+}
+
+func compareIntFunc(value1 int64, method string ,value2 int64) bool{ //value2 is the reference value from the rule
+	switch(method){
+	case "EQ","eq":
+		return(value1==value2)
+	case "LE","le":
+		return(value1<=value2)
+	case "LT","lt":
+		return(value1<value2)
+	case "GE","ge":
+		return(value1>=value2)
+	case "GT","gt":
+		return(value1>value2)
+
+	}
+	return false
+}
+
+func compareFloatFunc(value1 float64, method string ,value2 float64) bool{ //value2 is the reference value from the rule
+	switch(method){
+	case "EQ","eq":
+		return(value1==value2)
+	case "LE","le":
+		return(value1<=value2)
+	case "LT","lt":
+		return(value1<value2)
+	case "GE","ge":
+		return(value1>=value2)
+	case "GT","gt":
+		return(value1>value2)
+
+	}
+	return false
+}
+
+func compareStringFunc(value1 string, method string ,value2 string) bool{
+	switch(method){
+	case "EQ","eq":
+		return(value1==value2)
+	}
+	return false
+}
+
+func compareRegexFunc(value1 string, method string ,value2 *regexp.Regexp) bool{ //value2 is the reference value from the rule
+	switch(method){
+	case "RE","re":
+		return(value2.MatchString(value1))
+	}
+	return false
+}
+
