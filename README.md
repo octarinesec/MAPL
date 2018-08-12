@@ -5,6 +5,8 @@ MAPL makes it easier to declare and maintain access control rules. The language 
 
 # Manageable Access-control Policy Language
 
+The language is described in [MAPL](docs/MAPL.md)
+
 # MAPL engine
 
 # Demo
@@ -12,7 +14,7 @@ The MAPL engine can be used in service meshes, API gateways and IAM solutions.
 A demonstration of the use of the MAPL engine for service-to-service authorization in Istio using a gRPC adapter for Istio’s mixer service can be found in [insert link]
 
 # Status of the MAPL Project
-This project is still under active development, so you might run into issues. If you do, please don't be shy about letting us know, or better yet, contribute a fix or feature.
+This project is still under active development, so you might run into issues.
 If you have any questions about MAPL or how to use the MAPL engine, please contact...
 
 # Engine Roadmap
@@ -20,3 +22,5 @@ If you have any questions about MAPL or how to use the MAPL engine, please conta
 - Support Istio's source.labels and destination.labels
 - Suppert HTTP request headers
 - Add patterns to the wildcard use (*,?) similar to fnmatch [https://www.gnu.org/software/libc/manual/html_node/Wildcard-Matching.html]? Or allow input of regex in rules?
+- Add message attributes to be used in the conditions
+- Allow for definitions of service groups for reducing the number of rules (for example, use source.labels and destination.labels in the conditions)
