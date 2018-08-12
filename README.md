@@ -1,9 +1,15 @@
-
-MAPL (Manageable Access-control Policy Language) is a
+# MAPL (Manageable Access-control Policy Language)
+MAPL is a new language for access control rules, designed for a microservices environment.
+It is designed to be intuitive, rich and expressive, as well as simple and straightforward.
+MAPL makes it easier to declare and maintain access control rules. The language enables fine-grained control of traffic, with a resource based control model that takes into account the principals, action, resources on the principals, and conditions on traffic attributes, similar to AWS’s IAM policy model.
 
 # Manageable Access-control Policy Language
 
 # MAPL engine
+
+# Demo
+The MAPL engine can be used in service meshes, API gateways and IAM solutions.
+A demonstration of the use of the MAPL engine for service-to-service authorization in Istio using a gRPC adapter for Istio’s mixer service can be found in [insert link]
 
 # Status of the MAPL Project
 This project is still under active development, so you might run into issues. If you do, please don't be shy about letting us know, or better yet, contribute a fix or feature.
