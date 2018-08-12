@@ -117,11 +117,11 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 	// ----------------------
 	// if we got here then the rule applies and we use the rule's decision
 	switch rule.Decision{
-		case(ActionTypeNames[ALLOW]):
-			return ALLOW
-		case(ActionTypeNames[ALERT]):
-			return ALERT
-		case(ActionTypeNames[BLOCK]):
+	case "allow","ALLOW","Allow":
+		return ALLOW
+	case "alert", "ALERT","Alert":
+		return ALERT
+	case "block","BLOCK","Block":
 			return BLOCK
 	}
 	return RULE_DOES_NOT_APPLY

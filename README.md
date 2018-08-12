@@ -9,6 +9,8 @@ The language is described in [MAPL](docs/MAPL.md)
 
 # MAPL engine
 
+The engine is documented in [MAPL Engine](docs/MAPL_ENGINE.md)
+
 # Demo
 The MAPL engine can be used in service meshes, API gateways and IAM solutions.
 A demonstration of the use of the MAPL engine for service-to-service authorization in Istio using a gRPC adapter for Istio’s mixer service can be found in [insert link]
