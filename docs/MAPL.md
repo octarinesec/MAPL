@@ -1,10 +1,16 @@
 # MAPL
 
+MAPL is a new language for access control rules, designed for a microservices environment.
+It is designed to be intuitive, rich and expressive, as well as simple and straightforward.
+MAPL makes it easier to declare and maintain access control rules. The language enables fine-grained control of traffic, with a resource based control model that takes into account the principals, action, resources on the principals, and conditions on traffic attributes, similar to AWS’s IAM policy model.
+
 ## Rule Syntax
 
 Policy Rules have the following syntax:
 
 `<sender, receiver, resource, operation> : <conditions> : <rule type>`
+
+where, basically, a rule gives a decision of wheteher the sender (client) may do the operaion on the resource of the receiver (server) when the conditions apply.
 
 ### Sender and Receiver
 Sender (client service) and Receiver (server service) names.
@@ -12,7 +18,7 @@ The names are case sensitive
 The language allows wildcards (* and ?)
 
 ### Resources
-A resource is defined as <protocol>:<resource-type>:<resource-name>
+A resource is defined as `<protocol>:<resource-type>:<resource-name>`
 For example:
 - `<HTTP>:<http_path>:<http_path_name>`
 - `<KAFKA>:<kafka_topic>:<kafka_topic_name>`
