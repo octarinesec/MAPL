@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
-	mapl "github.com/octarinesec/MAPL/MAPL_engine"
 	"os"
 	"log"
 	"io/ioutil"
+
+	"github.com/octarinesec/MAPL/MAPL_engine"
+
 )
 
 func main() {
@@ -85,13 +87,12 @@ func main() {
 
 func Test_CheckMessages(rulesFilename string,messagesFilename string) {
 
-	var rules= mapl.YamlReadRulesFromFile(rulesFilename)
-	var messages = mapl.YamlReadMessagesFromFile(messagesFilename)
+	var rules= MAPL_engine.YamlReadRulesFromFile(rulesFilename)
+	var messages = MAPL_engine.YamlReadMessagesFromFile(messagesFilename)
 
 	for i_message, message := range(messages.Messages) {
 
-		result, msg, relevantRuleIndex, _ , appliedRulesIndices := mapl.Check(&message, &rules)
-
+		result, msg, relevantRuleIndex, _ , appliedRulesIndices := MAPL_engine.Check(&message, &rules)
 		if relevantRuleIndex>=0 {
 			fmt.Printf("message #%v: decision=%v [%v] by rule #%v ; applicable rules =%v \n", i_message, result, msg, rules.Rules[relevantRuleIndex].RuleID,appliedRulesIndices)
 		} else {
@@ -99,6 +100,5 @@ func Test_CheckMessages(rulesFilename string,messagesFilename string) {
 		}
 
 	}
-
 }
 

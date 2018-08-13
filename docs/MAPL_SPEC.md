@@ -14,9 +14,9 @@ Essentially, a rule gives a decision wheteher the sender (client) may do the ope
 
 ### Sender and Receiver
 Sender services (clients) and Receiver services (servers) names.  
-- The names are case sensitive strings, comprised of alphanumeric characters, '-', and '.' and must not contain spaces or tabs.
+- The names are case sensitive strings, comprised of alphanumeric characters, '-', '/' and '.' and must not contain spaces or tabs.
 - The language allows wildcards (* and ?).
-- The language allows lists of names for multiple sender of receiver services, separated by ';'.  
+- The language allows lists of names for multiple sender of receiver services, separated by ';'
 
 Examples:
 ```
@@ -27,8 +27,8 @@ Examples:
     sender: "A.my_namespace;A.my_other_namespace"
     receiver: "B.my_namespace"
 (3)
-    sender: "A;B;C"
-    receiver: "x;y;z"
+    sender: "A;B;C.*"
+    receiver: "x;y.1?3;z"
 ```
 
 ### Resources
@@ -40,21 +40,23 @@ For example:
 - `<KAFKA, consumerGroup, consumer_group_name>`
 - `<TCP, port, port number>`  
 
-Protocol: a string comprised of alphanumeric characters, '-', and '.'  
-Resource-Type: a string which is related to the protocol.  
-For example:  
-- for HTTP the resource type should always be "httpPath".
-- for KAFKA the resource type is one of "kafkaTopic" or "consumerGroup".
-- for TCP the resource type should always be "port".  
-Resource name: a case sensitive string, comprised of alphanumeric characters, '-', and '.' and must not contain spaces or tabs. The language allows lists of resource names separated by ';'.
+* Protocol: a string comprised of alphanumeric characters, '-', '/' and '.'  
+* Resource-Type: a string which is related to the protocol.  
+ For example:  
+    * for HTTP the resource type should always be "httpPath".
+    * for KAFKA the resource type is one of "kafkaTopic" or "consumerGroup".
+    * for TCP the resource type should always be "port".  
+* Resource name: a case sensitive string, comprised of alphanumeric characters, '-', '/' and '.' and must not contain spaces or tabs. The language allows lists of resource names separated by ';'
 
 ### Operation
 A verb that defines an operation (resource access method).  
 For example:  
 - for HTTP: GET, POST etc…  
 - for KAFKA: PRODUCE, CONSUME  
-- for TCP: always "*" (as TCP is a trasport layer protocol)  
-The language allows for the following two words  
+- for TCP: always "*" (as TCP is a trasport layer protocol) 
+ 
+The language allows lists of resource names separated by ';'
+The language allows for the following two words:  
 The verb "read" corresponds to any of GET ,HEAD, OPTIONS, TRACE, CONSUME  
 The verb "write" corresponds to any of POST, PUT, DELETE, PRODUCE  
 
@@ -95,12 +97,13 @@ which may be traslated to:
 #### one-attribute-condition
 A condition is defined as `<attribute, method, value>`  
 
-Attribute : a string from the [list of supported message attributes](SUPPORTED_ATTRIBUTES.md)  
-Method:  
-- for string attributes: one of "EQ" (equal), "NE" (not equal), "RE" (regular expression match), "NRE" (regular expression does not match).  
-- for int or float attributes: one of "EQ" (equal), "NE" (not equal), "LT" (lower than), "LE" (lower or equal than), "GT" (greater than), "GE" (greater or equal than).  
-- "EX", "NEX": existence or non-existence of an attribute regardless of value  
-Value: the value to test the extracted data against.  
+* Attribute : a string from the [Supported Attributes](https://github.com/octarinesec/MAPL/tree/master/docs/SUPPORTED_ATTRIBUTES.md).
+  
+* Method:  
+    - for string attributes: one of "EQ" (equal), "NE" (not equal), "RE" (regular expression match), "NRE" (regular expression mismatch).  
+    - for int or float attributes: one of "EQ" (equal), "NE" (not equal), "LT" (lower than), "LE" (lower or equal than), "GT" (greater than), "GE" (greater or equal than).  
+    - "EX", "NEX": existence or non-existence of an attribute regardless of value  
+* Value: the value to test the extracted data against.  
 
 Examples:  
 

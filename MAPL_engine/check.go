@@ -168,7 +168,7 @@ func testOneCondition(c *Condition,message *MessageAttributes) bool {
 		result = compareIntFunc(valueToCompareInt, c.Method, c.ValueInt)
 	case("requestUseragent"):
 		valueToCompareString = message.RequestUseragent
-		if c.Method == "RE" || c.Method == "re" {
+		if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
 			result = compareRegexFunc(valueToCompareString, c.Method, c.ValueRegex)
 		}else{
 			result = compareStringFunc(valueToCompareString, c.Method, c.Value)
@@ -185,6 +185,8 @@ func compareIntFunc(value1 int64, method string ,value2 int64) bool{ //value2 is
 	switch(method){
 	case "EQ","eq":
 		return(value1==value2)
+	case "NEQ","neq":
+		return(value1!=value2)
 	case "LE","le":
 		return(value1<=value2)
 	case "LT","lt":
@@ -202,6 +204,8 @@ func compareFloatFunc(value1 float64, method string ,value2 float64) bool{ //val
 	switch(method){
 	case "EQ","eq":
 		return(value1==value2)
+	case "NEQ","neq":
+		return(value1!=value2)
 	case "LE","le":
 		return(value1<=value2)
 	case "LT","lt":
@@ -219,6 +223,8 @@ func compareStringFunc(value1 string, method string ,value2 string) bool{
 	switch(method){
 	case "EQ","eq":
 		return(value1==value2)
+	case "NEQ","neq":
+		return(value1!=value2)
 	}
 	return false
 }
@@ -226,7 +232,9 @@ func compareStringFunc(value1 string, method string ,value2 string) bool{
 func compareRegexFunc(value1 string, method string ,value2 *regexp.Regexp) bool{ //value2 is the reference value from the rule
 	switch(method){
 	case "RE","re":
-		return(value2.MatchString(value1))
+		return (value2.MatchString(value1))
+	case "NRE","nre":
+		return !(value2.MatchString(value1))
 	}
 	return false
 }
