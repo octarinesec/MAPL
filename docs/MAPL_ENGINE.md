@@ -48,5 +48,5 @@ The list of supported message attributes to be used in the conditions is given i
 The rules and message attributes data structures are defined in [definitions.go](https://github.com/octarinesec/MAPL/tree/master/MAPL_engine/definitions.go)
 
 ## Examples
-See examples of use in [test_check.go](https://github.com/octarinesec/MAPL/tree/master/tests/test_check.go)  
-Examples of rules and messages yaml files are in the [examples folder](https://github.com/octarinesec/MAPL/tree/master/examples)
+* See demonstration of use in [test_check.go](https://github.com/octarinesec/MAPL/tree/master/tests/test_check.go)  
+* Examples of rules and messages yaml files are in the [examples folder](https://github.com/octarinesec/MAPL/tree/master/examples)
