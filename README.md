@@ -1,13 +1,13 @@
 # MAPL (Manageable Access-control Policy Language)
-MAPL is a new language for access control rules, designed for a microservices environment.
+MAPL is a language for access control rules, designed for a microservices environment.
 It is designed to be intuitive, rich and expressive, as well as simple and straightforward.
-MAPL makes it easier to declare and maintain access control rules. The language enables fine-grained control of traffic, with a resource based control model that takes into account the principals, action, resources on the principals, and conditions on traffic attributes, similar to AWS’s IAM policy model.
+MAPL makes it easier to declare and maintain access control rules. The language enables fine-grained control of traffic, with a resource based control model that takes into account the principals, action, resources on the principals, and conditions on message and traffic attributes, similar to AWS’s IAM policy model.
 
 The MAPL rules have the following syntax:
 
 `<sender, receiver, resource, operation> : <conditions> : <decision>`
 
-where, essentially, a rule gives a decision wheteher the sender (client) may do the operaion on the resource of the receiver (server) when the conditions apply.
+Essentially, a rule gives a decision wheteher the sender (client) may do the operaion on the resource of the receiver (server) when the conditions apply.
 The language is described thoroughly in [MAPL Specification](docs/MAPL_SPEC.md).
 
 # MAPL Engine
@@ -19,7 +19,7 @@ A demonstration of the use of the MAPL engine for service-to-service authorizati
 
 # Status of the MAPL Project
 This project is still under active development.
-If you have any questions about MAPL or how to use the MAPL engine, please contact MAPL@octarinesec.com
+If you have any questions about MAPL, or about how to use the MAPL engine, please contact MAPL@octarinesec.com
 
 # Engine Roadmap
 - Currently the engine supports service to service communication. We need to support ingress and egress by IP or CIDR
@@ -28,3 +28,12 @@ If you have any questions about MAPL or how to use the MAPL engine, please conta
 - Add patterns to the wildcard use (*,?) similar to fnmatch [https://www.gnu.org/software/libc/manual/html_node/Wildcard-Matching.html]? Or allow input of regex in rules?
 - Add more message attributes support in the conditions
 - Allow for definitions of service groups for reducing the number of rules (for example, use source.labels and destination.labels in the conditions?)
+
+
+# TO-DO:
+- handle & and ^ in strings
+- handle ;
+- handle EX
+- add license
+- add auto-test with full message to see if they follow the syntax
+
