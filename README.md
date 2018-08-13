@@ -7,15 +7,15 @@ The MAPL rules have the following syntax:
 
 `<sender, receiver, resource, operation> : <conditions> : <decision>`
 
-where, basically, a rule gives a decision of wheteher the sender (client) may do the operaion on the resource of the receiver (server) when the conditions apply.
-The language is described thoroughly in [MAPL](docs/MAPL.md)
+where, essentially, a rule gives a decision wheteher the sender (client) may do the operaion on the resource of the receiver (server) when the conditions apply.
+The language is described thoroughly in [MAPL Specification](docs/MAPL_SPEC.md).
 
-# MAPL engine
+# MAPL Engine
 
 Given a list of rules and message attributes, the MAPL engine gives a decision whether to allow, allow and alert or block the communication.
-The engine is documented in [MAPL Engine](docs/MAPL_ENGINE.md)
+The engine is documented in [MAPL Engine](docs/MAPL_ENGINE.md).
 The MAPL engine can be used in service meshes, API gateways and IAM solutions.
-A demonstration of the use of the MAPL engine for service-to-service authorization in Istio using a gRPC adapter for Istio’s mixer service can be found in [insert link]
+A demonstration of the use of the MAPL engine for service-to-service authorization in [Istio](https://istio.io/) using a gRPC adapter for [Istio’s mixer service](https://istio.io/docs/concepts/policies-and-telemetry/) can be found in [insert link].
 
 # Status of the MAPL Project
 This project is still under active development.
@@ -26,5 +26,5 @@ If you have any questions about MAPL or how to use the MAPL engine, please conta
 - Support Istio's source.labels and destination.labels
 - Suppert HTTP request headers
 - Add patterns to the wildcard use (*,?) similar to fnmatch [https://www.gnu.org/software/libc/manual/html_node/Wildcard-Matching.html]? Or allow input of regex in rules?
-- Add message attributes to be used in the conditions
-- Allow for definitions of service groups for reducing the number of rules (for example, use source.labels and destination.labels in the conditions)
+- Add more message attributes support in the conditions
+- Allow for definitions of service groups for reducing the number of rules (for example, use source.labels and destination.labels in the conditions?)
