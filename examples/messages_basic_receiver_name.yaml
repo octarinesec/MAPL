@@ -2,10 +2,10 @@ messages:
   
 - message_id: 0
   sender_service: A.my_namespace
-  sender_name: A
+  sender_name: A-xxads-asdad
   sender_namespace: my_namespace
   receiver_service: B.my_namespace
-  receiver_name: B
+  receiver_name: B-uasdx-asdgs
   receiver_namespace: my_namespace
   request_protocol: HTTP
   request_path: /book/123
@@ -16,10 +16,10 @@ messages:
   
 - message_id: 1
   sender_service: A.my_namespace
-  sender_name: A
+  sender_name: A-xxads-asdad
   sender_namespace: my_namespace
   receiver_service: C.my_namespace
-  receiver_name: C
+  receiver_name: C-nmxsa-asdrx
   receiver_namespace: my_namespace
   request_protocol: http
   request_path: /book/123

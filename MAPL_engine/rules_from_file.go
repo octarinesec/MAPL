@@ -72,26 +72,45 @@ func convertFieldsToRegex(rules *Rules) {
 
 }
 
-func convertStringToRegex(str string) string{
-	str = strings.Replace(str,".","[.]",-1)
-	str = strings.Replace(str,"*",".*",-1)
-	str = strings.Replace(str,"?",".",-1)
-	str = strings.Replace(str,"/","\\/",-1)
-	str = "^"+str+"$" // force full string
-	return str
+func convertStringToRegex(str_in string) string{
+
+	str_list := strings.Split(str_in, ";")
+
+	str_out:="("
+	L := len(str_list)
+
+	for i_str, str := range(str_list) {
+		str = strings.Replace(str, " ", "", -1) // remove spaces
+		str = strings.Replace(str, ".", "[.]", -1) // handle dot for conversion to regex
+		str = strings.Replace(str, "$", "\\$", -1)
+		str = strings.Replace(str, "^", "\\^", -1)
+		str = strings.Replace(str, "*", ".*", -1)
+		str = strings.Replace(str, "?", ".", -1)
+		str = strings.Replace(str, "/", "\\/", -1)
+		str = "^" + str + "$" // force full string
+		if i_str < L-1 {
+			str += "|"
+		}
+		str_out+=str
+	}
+	str_out += ")"
+	return str_out
 }
 
-func convertOperationStringToRegex(str string) string{
+func convertOperationStringToRegex(str_in string) string{
 
-	switch(str){
+	str_out:=""
+	switch(str_in){
 	case "*":
-		str=".*"
+		str_out=".*"
 	case "write", "WRITE":
-		str="(^POST$|^PUT$|^DELETE$)" // we cannot translate to ".*" because then rules of type "write:block" would apply to all messages.
+		str_out="(^POST$|^PUT$|^DELETE$)" // we cannot translate to ".*" because then rules of type "write:block" would apply to all messages.
 	case "read", "READ":
-		str="(^GET$|^HEAD$|^OPTIONS$|^TRACE$|^read$|^READ$)"
+		str_out="(^GET$|^HEAD$|^OPTIONS$|^TRACE$|^read$|^READ$)"
+	default:
+		str_out=convertStringToRegex(str_in)
 	}
-	return str
+	return str_out
 }
 
 func convertConditionStringToIntFloatRegex(rules_in Rules) Rules {

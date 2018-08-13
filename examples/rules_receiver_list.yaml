@@ -1,0 +1,13 @@
+rules:
+
+  - rule_id: 0
+    sender: "A.my_namespace"
+    receiver: "B.*;C.my_namespace"
+    resource:
+      resourceProtocol: http
+      resourceType: httpPath
+      resourceName: "/*"
+    operation: GET
+    decision: allow
+
+

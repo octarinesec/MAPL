@@ -1,0 +1,12 @@
+rules:
+
+  - rule_id: 0
+    sender: "A.my_namespace"
+    receiver: "B.my_namespace"
+    resource:
+      resourceProtocol: http
+      resourceType: httpPath
+      resourceName: "*"
+    operation: "POST;DELETE"
+    decision: allow
+

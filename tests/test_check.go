@@ -40,16 +40,28 @@ func main() {
 	Test_CheckMessages("examples/rules_receiver_with_wildcards.yaml","examples/messages_receiver_name_test_with_wildcards.yaml")
 	fmt.Println("----------------------")
 
-	// test whitelist: resources with wildcards. Expected results: messages 0: alert, messages 1: block , messages 2: block by default (no relevant whitelist entry)
+	// test whitelist: sender lists. Expected results: messages 0,1: allow, messages 2: block by default (no relevant whitelist entry)
+	Test_CheckMessages("examples/rules_sender_list.yaml","examples/messages_sender_test_with_lists.yaml")
+	fmt.Println("----------------------")
+
+	// test whitelist: resources with wildcards. Expected results: message 0: alert, message 1: block , message 2: block by default (no relevant whitelist entry)
 	Test_CheckMessages("examples/rules_resources.yaml","examples/messages_resources.yaml")
 	fmt.Println("----------------------")
 
-	// test whitelist: resources with wildcards. Expected results: messages 0: alert, messages 1: block , messages 2: alert
-	Test_CheckMessages("examples/rules_resources_with_wildcards.yaml","examples/messages_resources.yaml")
+	// test whitelist: resources with wildcards. Expected results: message 0: alert, message 1: block
+	Test_CheckMessages("examples/rules_resources_with_wildcards.yaml","examples/messages_resources_test_with_wildcards.yaml")
 	fmt.Println("----------------------")
 
-	// test whitelist: operations. Expected results: messages 0: allow, messages 1: block , messages 2: block by default (no relevant whitelist entry), messages 3: allow, messages 4: block , messages 5: block
+	// test whitelist: resources with lists. Expected results: messages 0,1: alert, message 2: block
+	Test_CheckMessages("examples/rules_resource_lists.yaml","examples/messages_resources_test_with_lists.yaml")
+	fmt.Println("----------------------")
+
+	// test whitelist: operations. Expected results: messages 0: allow, messages 1: block , message 2: block by default (no relevant whitelist entry), message 3: allow, message 4: block , message 5: block
 	Test_CheckMessages("examples/rules_operations.yaml","examples/messages_operations.yaml")
+	fmt.Println("----------------------")
+
+	// test whitelist: operations with lists. Expected results: messages 1,2: allow, messages 0,3: block by default (no relevant whitelist entry)
+	Test_CheckMessages("examples/rules_operation_list.yaml","examples/messages_operations_test_with_list.yaml")
 	fmt.Println("----------------------")
 
 	// test whitelist: conditions. Expected results:
