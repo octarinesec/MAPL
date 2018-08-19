@@ -5,13 +5,16 @@ import (
 	"regexp"
 )
 
+
+// IsNumberOfFieldsEqual is used to compare the structures read from files (mostly while debugging).
+// We convert the structure into a string and count the number of non-empty "fields". Then we compare to the number of non empty fields in the original yaml string.
+// It will not work with structure fields with default values (for example ints or floats) so we remove them.
 func IsNumberOfFieldsEqual(generalStruct GeneralStruct, yamlString string) (bool, string) {
-	// we convert the structure into a string and count the number of non-empty "fields". Then we compare to the number of nonEmpty fields in the original yaml string
-	// It will not work with structure fields with default values (for example ints or floats) so we remove them.
 	return compareJsonAndYaml(generalStruct.ToJson(), yamlString)
 }
 
-
+// compareJsonAndYaml counts the number of non-empty, non-integer, non-float fields in the jsonString.
+// We remove fields known to non string values
 func compareJsonAndYaml(jsonString string, yamlString string) (bool, string) {
 
 	jsonString = strings.Replace(jsonString, "\"", "", -1)    // remove "

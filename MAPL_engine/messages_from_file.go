@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-
+// YamlReadMessageAttributes function reads message attributes from a yaml string
 func YamlReadMessageAttributes(yamlString string) MessageAttributes {
 
 	var messageAttributes MessageAttributes
@@ -29,6 +29,7 @@ func YamlReadMessageAttributes(yamlString string) MessageAttributes {
 	return messageAttributes
 }
 
+// YamlReadMessagesFromString function reads messages from a yaml string
 func YamlReadMessagesFromString(yamlString string) Messages {
 
 	var messages Messages
@@ -50,6 +51,7 @@ func YamlReadMessagesFromString(yamlString string) Messages {
 	return messages
 }
 
+// YamlReadMessagesFromFile function reads messages from file
 func YamlReadMessagesFromFile(filename string) Messages {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -59,6 +61,7 @@ func YamlReadMessagesFromFile(filename string) Messages {
 	return messages
 }
 
+// AddResourceType function adds resource type to one message by the resource protocol for HTTP and TCP. For KAFKA the resource_type need to be filled in the message attributes.
 func AddResourceType(message *MessageAttributes){
 	// add resource_type by the resource_protocol
 	// we have resource_type to allow for several types per one protocol.
@@ -72,6 +75,7 @@ func AddResourceType(message *MessageAttributes){
 	}
 }
 
+// addResourceTypeToMessages function adds resource type to all messages
 func addResourceTypeToMessages(messages *Messages) {
 	// add resource_type by the resource_protocol
 	// we have resource_type to allow for several types per one protocol.
@@ -79,9 +83,10 @@ func addResourceTypeToMessages(messages *Messages) {
 	for i, _ := range(messages.Messages) {
 		AddResourceType(&messages.Messages[i])
 	}
-
 }
 
+
+// addTimeInfoToMessage function parses timestamp data in one message and extract the second, minutes and hours since midnight.
 func addTimeInfoToMessage(message *MessageAttributes) {
 	//
 	// extract timestamp info
@@ -100,6 +105,7 @@ func addTimeInfoToMessage(message *MessageAttributes) {
 	message.RequestTimeHoursFromMidnightUTC = nanosecondsFromMidnight/1e9/60/60
 }
 
+// addTimeInfoToMessages function parses timestamp data for all messages
 func addTimeInfoToMessages(messages *Messages) {
 	// add resource_type by the resource_protocol
 	// we have resource_type to allow for several types per one protocol.

@@ -1,3 +1,4 @@
+// Package MAPL_enginge provides an engine to test messages against policy rules written in MAPL.
 package MAPL_engine
 
 import (
@@ -19,7 +20,8 @@ var ActionTypeNames = [...]string{
 	ALERT: "alert",
 	BLOCK: "block",
 }
-
+// Check is the main function to tests if any of the rules is applicable for the message and decide according
+// to the relevant rules decisions.
 func Check(message *MessageAttributes, rules *Rules) (int, string, int, []int, []int) {
 	//
 	// for each message we check its attributes against all of the rules and return a decision
@@ -29,7 +31,7 @@ func Check(message *MessageAttributes, rules *Rules) (int, string, int, []int, [
 
 	results := make([]int, N)
 	sem := make(chan int, N) // semaphore pattern
-	if false{
+	if true{  // check in parallel
 	for i, rule := range (rules.Rules) { // check all the rules in parallel
 		go func(in_i int, in_rule Rule) {
 			results[in_i] = CheckOneRule(message, &in_rule)
@@ -42,7 +44,7 @@ func Check(message *MessageAttributes, rules *Rules) (int, string, int, []int, [
 		<-sem
 	}
 
-	}else{
+	}else{ // used for debugging
 		for in_i,in_rule := range(rules.Rules) {
 			results[in_i] = CheckOneRule(message, &in_rule)
 		}
@@ -68,7 +70,7 @@ func Check(message *MessageAttributes, rules *Rules) (int, string, int, []int, [
 	return decision,ActionTypeNames[decision],relevantRuleIndex, results, appliedRulesIndices
 }
 
-
+// CheckOneRules gives the result of testing the message attributes with of one rule
 func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 	// ----------------------
 	// compare basic message attributes:
@@ -127,7 +129,7 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 	return DEFAULT
 }
 
-
+// testConditions tests the conditions of the rule with the message attributes
 func testConditions(rule *Rule, message *MessageAttributes) bool{
 	//
 	dnfConditions:=rule.DNFConditions
@@ -148,7 +150,7 @@ func testConditions(rule *Rule, message *MessageAttributes) bool{
 	return output
 }
 
-
+// testOneCondition tests one condition of the rule with the message attributes
 func testOneCondition(c *Condition,message *MessageAttributes) bool {
 	// ---------------
 	// currently we support the following attributes:
@@ -181,6 +183,7 @@ func testOneCondition(c *Condition,message *MessageAttributes) bool {
 	return result
 }
 
+// compareIntFunc compares one int value according the method string.
 func compareIntFunc(value1 int64, method string ,value2 int64) bool{ //value2 is the reference value from the rule
 	switch(method){
 	case "EQ","eq":
@@ -195,11 +198,10 @@ func compareIntFunc(value1 int64, method string ,value2 int64) bool{ //value2 is
 		return(value1>=value2)
 	case "GT","gt":
 		return(value1>value2)
-
 	}
 	return false
 }
-
+// compareFloatFunc compares one float value according the method string.
 func compareFloatFunc(value1 float64, method string ,value2 float64) bool{ //value2 is the reference value from the rule
 	switch(method){
 	case "EQ","eq":
@@ -214,11 +216,10 @@ func compareFloatFunc(value1 float64, method string ,value2 float64) bool{ //val
 		return(value1>=value2)
 	case "GT","gt":
 		return(value1>value2)
-
 	}
 	return false
 }
-
+// compareStringFunc compares one string value according the method string.
 func compareStringFunc(value1 string, method string ,value2 string) bool{
 	switch(method){
 	case "EQ","eq":
@@ -228,7 +229,7 @@ func compareStringFunc(value1 string, method string ,value2 string) bool{
 	}
 	return false
 }
-
+// compareRegexFunc compares one string value according the regular expression string.
 func compareRegexFunc(value1 string, method string ,value2 *regexp.Regexp) bool{ //value2 is the reference value from the rule
 	switch(method){
 	case "RE","re":

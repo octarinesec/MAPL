@@ -12,7 +12,7 @@ type GeneralStruct interface { // a general interface to structures.
 
 //-------------------rules-------------------------------------
 
-
+// Resource structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
 type Resource struct {
 	/* Examples:
 	HTTP:httpPath:<http_path_name>,
@@ -25,7 +25,7 @@ type Resource struct {
 	ResourceName     string `yaml:"resourceName,omitempty"`
 	ResourceNameRegex *regexp.Regexp `yaml:"-"`
 }
-
+// Condition structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
 type Condition struct {
 	Attribute string `yaml:"attribute,omitempty"`
 	Method    string `yaml:"method,omitempty"`
@@ -35,10 +35,11 @@ type Condition struct {
 	ValueRegex *regexp.Regexp `yaml:"-"`
 }
 
+// ANDConditions structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
 type ANDConditions struct {
 	ANDConditions []Condition `yaml:"ANDconditions,omitempty"`
 }
-
+// Rule structure - as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
 type Rule struct {
 	// rule syntax:
 	//	<sender, receiver, resource, operation> : <conditions> : <decision>
@@ -55,11 +56,12 @@ type Rule struct {
 	ReceiverRegex *regexp.Regexp `yaml:"-"`
 	OperationRegex *regexp.Regexp `yaml:"-"`
 }
-
+// Rules structure contains a list of rules
 type Rules struct {
 	Rules []Rule `yaml:"rules,omitempty"`
 }
 
+// ToJson converts a structure into a json string
 func (rule Rule) ToJson() string {  // method of GeneralStruct interface
 	jsonBytes, err := json.MarshalIndent(rule, "", "  ")
 	if err != nil {
@@ -67,7 +69,7 @@ func (rule Rule) ToJson() string {  // method of GeneralStruct interface
 	}
 	return (string(jsonBytes))
 }
-
+// ToJson converts a structure into a json string
 func (rules Rules) ToJson() string { // method of GeneralStruct interface
 	jsonBytes, err := json.MarshalIndent(rules, "", "  ")
 	if err != nil {
@@ -77,9 +79,10 @@ func (rules Rules) ToJson() string { // method of GeneralStruct interface
 }
 //-------------------messages-------------------------------------
 
+// MessageAttributes structure contains message attributes checked with the rules.
+// The attributes were taken from Istio's HTTP message attributes [https://istio.io/docs/reference/config/policy-and-telemetry/attribute-vocabulary/]
 type MessageAttributes struct {
 	//--------------------------------------------------
-	// The following are taken from Istio's HTTP message attributes [https://istio.io/docs/reference/config/policy-and-telemetry/attribute-vocabulary/]
 
 	SourceUid string  `yaml:"sender_uid,omitempty"`//  Platform-specific unique identifier for the client instance of the source service. example: kubernetes: //redis-master-2353460263-1ecey.my-namespace
 	SourceIp string  `yaml:"sender_ip,omitempty"` //   Client IP address  example: 10.0.0.117
@@ -92,7 +95,7 @@ type MessageAttributes struct {
 	SourceWorkloadNamespace  string  `yaml:"sender_workload_namespace,omitempty"`//  Source workload namespace.	example: istio-system
 
 	// remark in kuberentes the SourceWorkloadName with the SourceWorkloadNamespace may uniquely identify the service
-	// whereas the SourceName may udentify a specific instance of the workload
+	// whereas the SourceName may identify a specific instance of the workload
 
 	DestinationUid    string  `yaml:"receiver_uid,omitempty"`//  Platform-specific unique identifier for the server instance of the destination service. example: kubernetes://my-svc-234443-5sffe.my-namespace
 	DestinationIp  string  `yaml:"receiver_ip,omitempty"`//  Server IP address. example: 10.0.0.104
@@ -144,11 +147,12 @@ type MessageAttributes struct {
 	RequestTimeHoursFromMidnightUTC float64 `yaml:"-"` // conversion of RequestTime timestamp
 }
 
+// Messages structure contains a list of messages
 type Messages struct {
 	Messages []MessageAttributes `yaml:"messages,omitempty"`
 }
 
-
+// ToJson converts a structure into a json string
 func (messageAttributes MessageAttributes) ToJson() string { // method of GeneralStruct interface
 	jsonBytes, err := json.MarshalIndent(messageAttributes, "", "  ")
 	if err != nil {
@@ -157,6 +161,7 @@ func (messageAttributes MessageAttributes) ToJson() string { // method of Genera
 	return (string(jsonBytes))
 }
 
+// ToJson converts a structure into a json string
 func (messages Messages) ToJson() string { // method of GeneralStruct interface
 	jsonBytes, err := json.MarshalIndent(messages, "", "  ")
 	if err != nil {
