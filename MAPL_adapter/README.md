@@ -93,4 +93,12 @@ rules:
 
 ## Installation
 
-Installing the adapter in a cluster with Kubernetes, Istio and the bookinfo app is described in [Adapter Installation](https://github.com/octarinesec/MAPL/tree/master/MAPL_ADAPTER/docs/ADAPTER_INSTALLATION.md) document. 
+Installing the adapter in a cluster with Kubernetes, Istio and the bookinfo app is described in [Adapter Installation](https://github.com/octarinesec/MAPL/tree/master/MAPL_ADAPTER/docs/ADAPTER_INSTALLATION.md) document.
+
+## Adapter Roadmap
+
+* fix broken logs
+* check use of istio's workload name and namespace
+ 
+
+ 
