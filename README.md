@@ -37,4 +37,5 @@ If you have any questions about MAPL, or about how to use the MAPL engine, pleas
 - handle EX
 - add license
 - add auto-test with full message to see if they follow the syntax
+- fix convertConditionStringToIntFloatRegex. need to avoid putting default values for values that are actually used later
 

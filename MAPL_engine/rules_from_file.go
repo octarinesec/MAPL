@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-
+// YamlReadRulesFromString function reads rules from a yaml string
 func YamlReadRulesFromString(yamlString string) Rules {
 
 	var rules Rules
@@ -28,6 +28,7 @@ func YamlReadRulesFromString(yamlString string) Rules {
 	return rules
 }
 
+// YamlReadRulesFromFile function reads rules from a file
 func YamlReadRulesFromFile(filename string) Rules {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -38,7 +39,7 @@ func YamlReadRulesFromFile(filename string) Rules {
 }
 
 
-
+//YamlReadOneRule function reads one rule from yaml string
 func YamlReadOneRule(yamlString string) Rule {
 
 	var rule Rule
@@ -56,6 +57,8 @@ func YamlReadOneRule(yamlString string) Rule {
 	return rule
 }
 
+// convertFieldsToRegex converts some rule fields into regular expressions to be used later.
+// This enables use of wildcards in the sender, receiver names, etc...
 func convertFieldsToRegex(rules *Rules) {
 	// we replace wildcards with the corresponding regex
 
@@ -72,6 +75,7 @@ func convertFieldsToRegex(rules *Rules) {
 
 }
 
+// convertStringToRegex function converts one string to regex. Remove spaces, handle special characters and wildcards.
 func convertStringToRegex(str_in string) string{
 
 	str_list := strings.Split(str_in, ";")
@@ -97,6 +101,8 @@ func convertStringToRegex(str_in string) string{
 	return str_out
 }
 
+// convertOperationStringToRegex function converts the operations string to regex.
+// this is a special case of convertStringToRegex
 func convertOperationStringToRegex(str_in string) string{
 
 	str_out:=""
@@ -113,6 +119,8 @@ func convertOperationStringToRegex(str_in string) string{
 	return str_out
 }
 
+// convertConditionStringToIntFloatRegex convert values in strings in the conditions to integers, floats and regex
+// (or keep them default in case of failure)
 func convertConditionStringToIntFloatRegex(rules_in Rules) Rules {
 	rules_out := rules_in
 
