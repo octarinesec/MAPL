@@ -11,7 +11,7 @@ The language is described thoroughly in [MAPL Specification](https://github.com/
  
 ## Demo
 
-The adapter changes the behaviour of the bookinfo app by using rules in the [rules.yaml](https://github.com/octarinesec/MAPL/tree/master/MAPL_ADAPTER/rules/rules.yaml) file.
+The adapter changes the behaviour of the bookinfo app by using rules in the [rules.yaml](https://github.com/octarinesec/MAPL/tree/master/MAPL_adapter/rules/rules.yaml) file.
 The default behaviour may be 
 The policy rules block some of the services from communicating via HTTP.
  
@@ -93,7 +93,7 @@ rules:
 
 ## Installation
 
-Installing the adapter in a cluster with Kubernetes, Istio and the bookinfo app is described in [Adapter Installation](https://github.com/octarinesec/MAPL/tree/master/MAPL_ADAPTER/docs/ADAPTER_INSTALLATION.md) document.
+Installing the adapter in a cluster with Kubernetes, Istio and the bookinfo app is described in [Adapter Installation](https://github.com/octarinesec/MAPL/tree/master/MAPL_adapter/docs/ADAPTER_INSTALLATION.md) document.
 
 ## Adapter Roadmap
 

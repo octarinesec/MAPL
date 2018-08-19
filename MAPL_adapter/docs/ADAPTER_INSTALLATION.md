@@ -3,7 +3,7 @@
 ## Installation
 
 We assume a cluster with Kuberentes, Istio and the bookinfo app are already installed.  
-see [Istio Installation](https://github.com/octarinesec/MAPL/tree/master/MAPL_ADAPTER/docs/ISTIO_INSTALLATION.md) document.
+see [Istio Installation](https://github.com/octarinesec/MAPL/tree/master/MAPL_adapter/docs/ISTIO_INSTALLATION.md) document.
 
 ### Define the following environment variables
  change according to your setup:
@@ -35,14 +35,14 @@ $ docker build . -t $DOCKER_USER/mapl_adapter:{ADAPTER_TAG}
 ```bash
 $ docker push $DOCKER_USER/mapl_adapter:{ADAPTER_TAG}
 ```
-Edit [MAPL_adapter_dep.yaml](https://github.com/octarinesec/MAPL/tree/master/MAPL_ADAPTER/deployments/MAPL_adapter_dep.yaml) with the location of the adapter's docker image and imagePullSecrets.
+Edit [MAPL_adapter_dep.yaml](https://github.com/octarinesec/MAPL/tree/master/MAPL_adapter/deployments/MAPL_adapter_dep.yaml) with the location of the adapter's docker image and imagePullSecrets.
 
 ### Create image pull secret
 ```bash
 $ kubectl create secret docker-registry docker-secret -n istio-system --docker-username="<username>" --docker-password="<password>" --docker-email="<docker_email>" --docker-server="https://index.docker.io/v1/"
 ```
 Create the secret in the istio-system namespace.
-Make sure [MAPL_adapter_dep.yaml](https://github.com/octarinesec/MAPL/tree/master/MAPL_ADAPTER/deployments/MAPL_adapter_dep.yaml) has an imagePullSecrets section with docker-secret for the docker-registry field, and that the image can be pulled.
+Make sure [MAPL_adapter_dep.yaml](https://github.com/octarinesec/MAPL/tree/master/MAPL_adapter/deployments/MAPL_adapter_dep.yaml) has an imagePullSecrets section with docker-secret for the docker-registry field, and that the image can be pulled.
 
 ### Create configmap for the rules
 the configmap contains the file rules.yaml (pay attention that the file name is rules.yaml, the same as in the Dockerfile)
@@ -51,7 +51,7 @@ $ kubectl create configmap mapl-adapter-rules-config-map -n istio-system --from-
 ```
 
 ### Update the environment variables 
-Update file [MAPL_adapter_dep.yaml](https://github.com/octarinesec/MAPL/tree/master/MAPL_ADAPTER/deployments/MAPL_adapter_dep.yaml) with the following variables
+Update file [MAPL_adapter_dep.yaml](https://github.com/octarinesec/MAPL/tree/master/MAPL_adapter/deployments/MAPL_adapter_dep.yaml) with the following variables
 * LOGGING: "true" (output log to "log.txt") or "false"  
 * CACHE_TIMEOUT_SECS: number of seconds the Check results are cached for. 
 * ISTIO_TO_SERVICE_NAME_CONVENTION: The convention of translating from Istio's attributes to service name used in rules.
@@ -89,7 +89,7 @@ Test the effect of the policy rules on the bookinfo app.
 Refresh the webpage a few times to view the effects on the different versions of the ratings service.
 Also sign in and out of the app.
 
-The current set of rules [rules.yaml](https://github.com/octarinesec/MAPL/tree/master/MAPL_ADAPTER/rules/rules.yaml) have the following effect:
+The current set of rules [rules.yaml](https://github.com/octarinesec/MAPL/tree/master/MAPL_adapter/rules/rules.yaml) have the following effect:
 
 1) Allow ingress
 2) Allow specific services communications
