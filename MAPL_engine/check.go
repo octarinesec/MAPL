@@ -7,14 +7,14 @@ import (
 
 // general action codes
 const (
-	RULE_DOES_NOT_APPLY int = iota
+	DEFAULT int = iota
 	ALLOW
 	ALERT
 	BLOCK
 )
 
 var ActionTypeNames = [...]string{
-	RULE_DOES_NOT_APPLY: "rules do not apply to message - block by default",
+	DEFAULT: "rules do not apply to message - block by default",
 	ALLOW: "allow",
 	ALERT: "alert",
 	BLOCK: "block",
@@ -53,9 +53,9 @@ func Check(message *MessageAttributes, rules *Rules) (int, string, int, []int, [
 	appliedRulesIndices := make([]int, 0)
 	relevantRuleIndex := -1
 
-	max_decision := RULE_DOES_NOT_APPLY
+	max_decision := DEFAULT
 	for i := 0; i < N; i++ {
-		if results[i]>RULE_DOES_NOT_APPLY {
+		if results[i]>DEFAULT {
 			appliedRulesIndices = append(appliedRulesIndices,i)
 		}
 		if results[i]> max_decision {
@@ -74,33 +74,33 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 	// compare basic message attributes:
 	match := rule.SenderRegex.Match([]byte(message.SourceService)) // supports wildcards
 	if !match{
-		return RULE_DOES_NOT_APPLY
+		return DEFAULT
 	}
 
 	match = rule.ReceiverRegex.Match([]byte(message.DestinationService)) // supports wildcards
 	if !match{
-		return RULE_DOES_NOT_APPLY
+		return DEFAULT
 	}
 
 	match = rule.OperationRegex.Match([]byte(message.RequestMethod)) // supports wildcards
 	if !match{
-		return RULE_DOES_NOT_APPLY
+		return DEFAULT
 	}
 
 	// ----------------------
 	// compare resource:
 	if rule.Resource.ResourceProtocol != "*"{
 		if !strings.EqualFold(message.ContextProtocol, rule.Resource.ResourceProtocol) { // regardless of case // need to support wildcards!
-			return RULE_DOES_NOT_APPLY
+			return DEFAULT
 		}
 
 		if message.ContextType != rule.Resource.ResourceType { // need to support wildcards?
-			return RULE_DOES_NOT_APPLY
+			return DEFAULT
 		}
 
 		match = rule.Resource.ResourceNameRegex.Match([]byte(message.RequestPath)) // supports wildcards
 		if !match {
-			return RULE_DOES_NOT_APPLY
+			return DEFAULT
 		}
 	}
 
@@ -111,7 +111,7 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 		conditionsResult = testConditions(rule, message)
 	}
 	if conditionsResult == false {
-		return RULE_DOES_NOT_APPLY
+		return DEFAULT
 	}
 
 	// ----------------------
@@ -124,7 +124,7 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 	case "block","BLOCK","Block":
 			return BLOCK
 	}
-	return RULE_DOES_NOT_APPLY
+	return DEFAULT
 }
 
 

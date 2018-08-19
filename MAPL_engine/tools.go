@@ -35,7 +35,7 @@ func compareJsonAndYaml(jsonString string, yamlString string) (bool, string) {
 	jsonString = strings.Replace(jsonString,"0001-01-01T00:00:00Z\n","\n",-1) // change slightly so that the regex will not count it [this is a timestamp field]
 
 	//re := regexp.MustCompile("[[:alnum:]][:][ ][[:alnum:]]") // catches fieldnam[e: v]alue'
-	re := regexp.MustCompile(`(?m)^.*[:][ ]\S+`) // catches fieldnam[e: v]alue'
+	re := regexp.MustCompile(`(?m)^.*[:][ ]\S+`)
 
 	matches1 := re.FindAllString(yamlString, -1)
 	matches2 := re.FindAllString(jsonString, -1)
