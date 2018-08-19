@@ -20,8 +20,8 @@ var ActionTypeNames = [...]string{
 	ALERT: "alert",
 	BLOCK: "block",
 }
-// Check is the main function to tests if any of the rules is applicable for the message and decide according
-// to the relevant rules decisions.
+// Check is the main function to test if any of the rules is applicable for the message and decide according
+// to those rules' decisions.
 func Check(message *MessageAttributes, rules *Rules) (int, string, int, []int, []int) {
 	//
 	// for each message we check its attributes against all of the rules and return a decision
