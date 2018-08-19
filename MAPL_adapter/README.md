@@ -11,7 +11,7 @@ The language is described thoroughly in [MAPL Specification](https://github.com/
  
 ## Demo
 
-The adapter changes the behaviour of the bookinfo app by using rules in the [rules.yaml](insert link) file.
+The adapter changes the behaviour of the bookinfo app by using rules in the [rules.yaml](https://github.com/octarinesec/MAPL/tree/master/MAPL_ADAPTER/rules/rules.yaml) file.
 The default behaviour may be 
 The policy rules block some of the services from communicating via HTTP.
  
@@ -20,8 +20,8 @@ The  rules are:
 ```yaml
 rules:
 
-  - rule_id: 0  # allow everything from istio-system. especially istio-ingressgateway
-    sender: "istio-system.*" 
+  - rule_id: 0  # allow istio-ingressgateway
+    sender: "kubernetes://istio-ingressgateway-*-*.istio-system"
     receiver: "*"
     resource:
       resourceProtocol: "*"
@@ -31,8 +31,8 @@ rules:
     decision: allow
 
   - rule_id: 1  # block the details service. the review text will be un-available
-    sender: "default.productpage-v1"
-    receiver: "default.details-v1"
+    sender: "kubernetes://productpage-v1-*-*.default"
+    receiver: "kubernetes://details-v1-*-*.default"
     resource:
       resourceProtocol: http
       resourceType: httpPath
@@ -41,8 +41,8 @@ rules:
     decision: block
 
   - rule_id: 2  # allow productpage-v1 to communicate with all the versions of the reviews service
-    sender: "default.productpage-v1"
-    receiver: "default.reviews-*"
+    sender: "kubernetes://productpage-v1-*-*.default"
+    receiver: "kubernetes://reviews-*-*-*.default"
     resource:
       resourceProtocol: http
       resourceType: httpPath
@@ -51,8 +51,8 @@ rules:
     decision: allow
 
   - rule_id: 3 # allow all the versions of the reviews service to communicate with the ratings-v1 service
-    sender: "default.reviews-*"
-    receiver: "default.ratings-v1"
+    sender: "kubernetes://reviews-*-*-*.default"
+    receiver: "kubernetes://ratings-v1-*-*.default"
     resource:
       resourceProtocol: http
       resourceType: httpPath
@@ -60,9 +60,9 @@ rules:
     operation: GET
     decision: allow
 
-  - rule_id: 4 # all except all reviews-v2 ... the black star reviews will be un-available
-    sender: "default.reviews-v2"
-    receiver: "default.ratings-v1"
+  - rule_id: 4 # all except reviews-v2 ...
+    sender: "kubernetes://reviews-v2-*-*.default"
+    receiver: "kubernetes://ratings-v1-*-*.default"
     resource:
       resourceProtocol: http
       resourceType: httpPath
@@ -71,8 +71,8 @@ rules:
     decision: block
 
   - rule_id: 5  # allow the "login" path
-    sender: "istio-system.istio-ingressgateway"
-    receiver: "default.productpage-v1"
+    sender: "kubernetes://istio-ingressgateway-*-*.istio-system"
+    receiver: "kubernetes://productpage-v1-*-*.default"
     resource:
       resourceProtocol: http
       resourceType: httpPath
@@ -80,18 +80,17 @@ rules:
     operation: POST
     decision: alert
 
-  - rule_id: 6  # but block the "logout" path. when signing out the main page will be un-avialble
-    sender: "istio-system.istio-ingressgateway"
-    receiver: "default.productpage-v1"
+  - rule_id: 6  # but block the "logout" path
+    sender: "kubernetes://istio-ingressgateway-*-*.istio-system"
+    receiver: "kubernetes://productpage-v1-*-*.default"
     resource:
       resourceProtocol: http
       resourceType: httpPath
       resourceName: "/logout"
     operation: GET
     decision: block
-
 ``` 
 
 ## Installation
 
-Installing the adapter in a cluster with Kubernetes, Istio and the bookinfo app is described in [Adapter Installation](insert link) document. 
+Installing the adapter in a cluster with Kubernetes, Istio and the bookinfo app is described in [Adapter Installation](https://github.com/octarinesec/MAPL/tree/master/MAPL_ADAPTER/docs/ADAPTER_INSTALLATION.md) document. 

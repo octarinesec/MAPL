@@ -1,2 +1,0 @@
-1) need to do the go generate ./... from ubuntu vm because we need docker and linux on the same command line
-in folder /home/edo/sf_myCode/go/src/istio.io/istio/mixer/adapter/MAPL_adapter/config/config.proto
