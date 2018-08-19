@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+// config for MAPL_adapter
+package adapter.MAPL_adapter.config;
+
+import "gogoproto/gogo.proto";
+
+option go_package="config";
+
+// config for MAPL_adapter
+message Params {
+    string a = 1; // not used
+}

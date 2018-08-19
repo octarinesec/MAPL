@@ -1,0 +1,72 @@
+# handler for adapter octarine
+apiVersion: "config.istio.io/v1alpha2"
+kind: handler
+metadata:
+ name: h1
+ namespace: istio-system
+spec:
+ adapter: mapl-adapter
+ connection:
+   address: "mapl-adapter-dep.istio-system:7782"
+---
+
+# instance configuration for template 'authorization'
+apiVersion: "config.istio.io/v1alpha2"
+kind: instance
+metadata:
+  name: mapl-authorization
+  namespace: istio-system
+spec:
+  template: authorization
+  params:
+    subject:
+      user: request.auth.principal | ""
+      groups: request.auth.principal | ""
+      properties:
+        # sourceIp: source.ip | ip("0.0.0.0")
+        # sourcePort: source.port | 0
+        sourceName: source.name | ""
+        sourcePrincipal: source.principal | ""
+        sourceUid: source.uid | ""
+        sourceNamespace: source.namespace | ""
+        sourceVersion: source.labels["version"] | "unknown"
+        sourceOwner: source.owner | ""
+        sourceWorkloadUid: source.workload.uid | ""
+        sourceWorkloadName: source.workload.name | ""
+        sourceWorkloadNamespace: source.workload.namespace | ""
+    action:
+      namespace: destination.namespace | ""
+      service: destination.service | ""
+      method: request.method | ""
+      path: request.path | ""
+      properties:
+        protocol: request.scheme | ""
+        # destinationIp: destination.ip | ip("0.0.0.0")
+        destinationServiceHost: destination.service.host | ""
+        destinationPort: destination.port | 0
+        destinationName: destination.name | ""
+        destinationPrincipal: destination.principal | ""
+        destinationUid: destination.uid | ""
+        destinationNamespace: destination.namespace | ""
+        destinationVersion: destination.labels["version"] | "unknown"
+        destinationOwner: destination.owner | ""
+        destinationWorkloadUid: destination.workload.uid | ""
+        destinationWorkloadName: destination.workload.name | ""
+        destinationWorkloadNamespace: destination.workload.namespace | ""
+        destinationServiceUid: destination.service.uid | ""
+        destinationServiceName: destination.service.name | ""
+        destinationServiceNamespace: destination.service.namespace | ""
+
+---
+# rule to dispatch to handler
+apiVersion: "config.istio.io/v1alpha2"
+kind: rule
+metadata:
+ name: r1
+ namespace: istio-system
+spec:
+ actions:
+ - handler: h1.istio-system
+   instances:
+   - mapl-authorization
+---

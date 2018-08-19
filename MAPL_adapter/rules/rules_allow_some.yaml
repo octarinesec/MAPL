@@ -1,0 +1,73 @@
+rules:
+
+  - rule_id: 0
+    sender: "istio-system.*" # allow everything from istio-system. especially istio-ingressgateway
+    receiver: "*"
+    resource:
+      resourceProtocol: "*"
+      resourceType: "*"
+      resourceName: "*"
+    operation: "*"
+    decision: allow
+
+  - rule_id: 1
+    sender: "default.productpage-v1"
+    receiver: "default.details-v1"
+    resource:
+      resourceProtocol: http
+      resourceType: httpPath
+      resourceName: "/*"
+    operation: GET
+    decision: block
+
+  - rule_id: 2
+    sender: "default.productpage-v1"
+    receiver: "default.reviews-*"
+    resource:
+      resourceProtocol: http
+      resourceType: httpPath
+      resourceName: "/*"
+    operation: GET
+    decision: allow
+
+  - rule_id: 3
+    sender: "default.reviews-*"
+    receiver: "default.ratings-v1"
+    resource:
+      resourceProtocol: http
+      resourceType: httpPath
+      resourceName: "/*"
+    operation: GET
+    decision: allow
+
+  - rule_id: 4
+    sender: "default.reviews-v2"
+    receiver: "default.ratings-v1"
+    resource:
+      resourceProtocol: http
+      resourceType: httpPath
+      resourceName: "/*"
+    operation: GET
+    decision: block
+
+  - rule_id: 5
+    sender: "istio-system.istio-ingressgateway"
+    receiver: "default.productpage-v1"
+    resource:
+      resourceProtocol: http
+      resourceType: httpPath
+      resourceName: "/logout"
+    operation: GET
+    decision: block
+
+  - rule_id: 6
+    sender: "istio-system.istio-ingressgateway"
+    receiver: "default.productpage-v1"
+    resource:
+      resourceProtocol: http
+      resourceType: httpPath
+      resourceName: "/login"
+    operation: POST
+    decision: alert
+
+---

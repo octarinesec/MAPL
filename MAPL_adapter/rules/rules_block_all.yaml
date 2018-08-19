@@ -1,0 +1,11 @@
+rules:
+  - rule_id: 0
+    sender: "*"
+    receiver: "*"
+    resource:
+      resourceProtocol: "*"
+      resourceType: "*"
+      resourceName: "*"
+    operation: "*"
+    decision: block
+---
