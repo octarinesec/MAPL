@@ -3,6 +3,7 @@
 // supported template names (authorization in this case), and whether it is session or no-session based.
 //go:generate $GOPATH/src/istio.io/istio/bin/mixer_codegen.sh -a mixer/adapter/MAPL_adapter/config/config.proto -x "-s=false -n mapl-adapter -t authorization"
 
+// Package MAPL_adapter contains the gRPC adapter for Istio's mixer
 package MAPL_adapter
 
 import (
@@ -26,15 +27,15 @@ import (
 
 )
 
+// Server is basic server interface
 type (
-	// Server is basic server interface
 	Server interface {
 		Addr() string
 		Close() error
 		Run(shutdown chan error)
 	}
 
-	// McrlAdapter supports authorization templates
+	// MaplAdapter supports authorization templates
 	MaplAdapter struct {
 		listener net.Listener
 		server   *grpc.Server
@@ -44,7 +45,7 @@ type (
 
 var _ authorization.HandleAuthorizationServiceServer = &MaplAdapter{}
 
-// HandleAuthorization
+// HandleAuthorization is the main gRPC function that is called by Istio's Mixer and checks the message attributes against the rules.
 func (s *MaplAdapter) HandleAuthorization(ctx context.Context, authRequest *authorization.HandleAuthorizationRequest) (*v1beta1.CheckResult, error) {
 
 	fmt.Println("received request %v\n", *authRequest)
@@ -58,9 +59,9 @@ func (s *MaplAdapter) HandleAuthorization(ctx context.Context, authRequest *auth
 		}
 	}
 
-	message := convertAuthRequestToMaplMessage(authRequest)
-	maplCode, _, _, _, _:= MAPL_engine.Check(&message, &s.rules)
-	statusCode,statusMsg:=convertDecisionToIstioCode(maplCode)
+	message := convertAuthRequestToMaplMessage(authRequest)  // convert authRequest (from the mixer) to message attributes as in the definitions.go file.
+	maplCode, _, _, _, _:= MAPL_engine.Check(&message, &s.rules)  // check the message against the rules with the MAPL_engine's Check function.
+	statusCode,statusMsg:=convertDecisionToIstioCode(maplCode) // convert MAPL_engine's decision to Istio's status code.
 
 	//fmt.Println("logger",Params.Logger)
 
@@ -117,6 +118,7 @@ var IstioToServicenameConventionString = [...]string{
 	IstioWorkloadAndNamespace: "IstioWorkloadAndNamespace",
 }
 
+// MaplAdapterParams type contains global parameters
 type MaplAdapterParams struct {
 	AdapterName string
 	CacheTimeoutSecs int
@@ -164,6 +166,8 @@ func NewMaplAdapter(port string, rulesFilename string) (Server, error) {
 	return s, nil
 }
 
+
+// convertAuthRequestToMaplMessage converts authRequest (from Istio's Mixer) to MAPL_engine.MessageAttributes as defined in definitions.go.
 func convertAuthRequestToMaplMessage(authRequest *authorization.HandleAuthorizationRequest) MAPL_engine.MessageAttributes{
 	instance := authRequest.Instance
 	fmt.Println("-----------------------\n")
@@ -195,6 +199,7 @@ func convertAuthRequestToMaplMessage(authRequest *authorization.HandleAuthorizat
 	return message
 }
 
+//convertDecisionToIstioCode converts MAPL_engine's decision to Istio's status code
 func convertDecisionToIstioCode(decision int) (int32, string){
 	statusCode := int32(0)
 	statusMsg := ""
@@ -212,6 +217,7 @@ func convertDecisionToIstioCode(decision int) (int32, string){
 	return statusCode,statusMsg
 }
 
+// logInstance output authRequest data to log file (used for debugging)
 func logInstance(authRequest *authorization.HandleAuthorizationRequest) {
 	instance := authRequest.Instance
 	fmt.Println("sourceAddress:", instance.Subject.Properties["sourceAddress"].GetStringValue())
@@ -240,4 +246,8 @@ func logInstance(authRequest *authorization.HandleAuthorizationRequest) {
 	fmt.Println("destinationWorkloadUid:", instance.Action.Properties["destinationWorkloadUid"].GetStringValue())
 	fmt.Println("destinationWorkloadName:", instance.Action.Properties["destinationWorkloadName"].GetStringValue())
 	fmt.Println("destinationWorkloadNamespace:", instance.Action.Properties["destinationWorkloadNamespace"].GetStringValue())
+
+	fmt.Println("-------------------------------------------")
+	fmt.Println(instance)
+	fmt.Println("-------------------------------------------")
 }

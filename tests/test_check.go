@@ -1,4 +1,5 @@
-package main
+// Package main_tests contains sanity tests to check the validity of the MAPL engine
+package main_tests
 
 import (
 	"fmt"
@@ -9,7 +10,7 @@ import (
 	"github.com/octarinesec/MAPL/MAPL_engine"
 
 )
-
+// The main test calls Test_CheckMessages with different sets of rule and message yaml files as inputs. The rule and message yaml files are stored in the examples folder.
 func main() {
 
 	logging := false
@@ -85,6 +86,7 @@ func main() {
 
 }
 
+// Test_CheckMessages reads the rules and messages from yaml files and output the decision for each message to the stdout
 func Test_CheckMessages(rulesFilename string,messagesFilename string) {
 
 	var rules= MAPL_engine.YamlReadRulesFromFile(rulesFilename)

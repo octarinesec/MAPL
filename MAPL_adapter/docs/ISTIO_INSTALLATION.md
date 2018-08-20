@@ -1,7 +1,6 @@
 # Istio Installation
 
 The following instructions install Istio and the bookinfo app on a cluster with an installation of kubernetes 1.10 or higher.  
-They were tested with Istio branch "release-1.0".
 
 ### Define the following environment variables
 change according to your setup:
