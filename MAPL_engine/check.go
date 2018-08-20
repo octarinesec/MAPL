@@ -4,7 +4,6 @@ package MAPL_engine
 import (
 	"strings"
 	"regexp"
-	"fmt"
 )
 
 // general action codes
@@ -49,10 +48,8 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 	}else{ // used for debugging
 		for in_i,in_rule := range(rules.Rules) {
 			results[in_i] = CheckOneRule(message, &in_rule)
-			fmt.Println("results[in_i]=",results[in_i])
 		}
 	}
-
 
 	// go over the results and test by order of precedence
 	appliedRulesIndices = make([]int, 0)
