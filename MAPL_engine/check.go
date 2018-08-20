@@ -4,6 +4,7 @@ package MAPL_engine
 import (
 	"strings"
 	"regexp"
+	"fmt"
 )
 
 // general action codes
@@ -22,14 +23,15 @@ var ActionTypeNames = [...]string{
 }
 // Check is the main function to test if any of the rules is applicable for the message and decide according
 // to those rules' decisions.
-func Check(message *MessageAttributes, rules *Rules) (int, string, int, []int, []int) {
+
+func Check(message *MessageAttributes, rules *Rules) (decision int, descisionString string, relevantRuleIndex int,results []int,appliedRulesIndices []int) {
 	//
 	// for each message we check its attributes against all of the rules and return a decision
 	//
 
 	N := len(rules.Rules)
 
-	results := make([]int, N)
+	results = make([]int, N)
 	sem := make(chan int, N) // semaphore pattern
 	if true{  // check in parallel
 	for i, rule := range (rules.Rules) { // check all the rules in parallel
@@ -47,13 +49,14 @@ func Check(message *MessageAttributes, rules *Rules) (int, string, int, []int, [
 	}else{ // used for debugging
 		for in_i,in_rule := range(rules.Rules) {
 			results[in_i] = CheckOneRule(message, &in_rule)
+			fmt.Println("results[in_i]=",results[in_i])
 		}
 	}
 
 
 	// go over the results and test by order of precedence
-	appliedRulesIndices := make([]int, 0)
-	relevantRuleIndex := -1
+	appliedRulesIndices = make([]int, 0)
+	relevantRuleIndex = -1
 
 	max_decision := DEFAULT
 	for i := 0; i < N; i++ {
@@ -65,9 +68,9 @@ func Check(message *MessageAttributes, rules *Rules) (int, string, int, []int, [
 			relevantRuleIndex = i
 		}
 	}
-	decision := max_decision
-
-	return decision,ActionTypeNames[decision],relevantRuleIndex, results, appliedRulesIndices
+	decision = max_decision
+	descisionString = ActionTypeNames[decision]
+	return decision,descisionString,relevantRuleIndex, results, appliedRulesIndices
 }
 
 // CheckOneRules gives the result of testing the message attributes with of one rule

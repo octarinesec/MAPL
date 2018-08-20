@@ -1,12 +1,16 @@
-# Istio Installation
+# Istio and Bookinfo Installation
 
 The following instructions install Istio and the bookinfo app on a cluster with an installation of kubernetes 1.10 or higher.  
 
 ### Define the following environment variables
-change according to your setup:
+Change according to your setup.  
+Istio binaries: [https://github.com/istio/istio/releases/tag/1.0.0](https://github.com/istio/istio/releases/tag/1.0.0)
 ```bash
 $ export ISTIOLOC=~/istio-1.0.0
 $ export ISTIOCTL=~/istio-1.0.0/bin/istioctl
+```
+Istio sources: [https://github.com/istio/istio](https://github.com/istio/istio)
+```bash
 $ export ISTIOSRC=~/go/src/istio.io/istio
 ```
 ### Install Istio
@@ -56,3 +60,7 @@ where <HOST_NAME> is the cluster's external ip (make sure that the host accepts 
 * __Test the app:__   
   - Refresh the page a few times to view the effects of the different versions of the reviews service (different colors of the review-stars or no stars at all).
   - Sign in and out of the app (top-right of the web page).
+  
+# Install MAPL adapter
+Install the MAPL_adapter in order to manage access-control policy rules written in MAPL.  
+see: [MAPL Adapter Installation](https://github.com/octarinesec/MAPL/tree/master/MAPL_adapter/docs/ADAPTER_INSTALLATION.md). 

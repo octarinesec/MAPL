@@ -100,6 +100,7 @@ Installing the adapter in a cluster with Kubernetes, Istio and the bookinfo app 
 * fix broken logs
 * check use of istio's workload name and namespace
 * find better way to update rules. also, how to allow many rule files?
+* test the CACHE_TIMEOUT_SECS effect
  
 
  

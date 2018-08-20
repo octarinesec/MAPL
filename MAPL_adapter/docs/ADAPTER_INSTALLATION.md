@@ -1,4 +1,7 @@
-# Istio MAPL Adapter Installation
+# MAPL Adapter Installation
+
+## MAPL Adapter
+To demonstrate the use of the MAPL Engine, we created a gRPC adapter for Istio's Mixer that uses the MAPL Engine for policy rules written in MAPL.
 
 ## Installation
 
@@ -69,6 +72,8 @@ env:
   value: "3"
 - name: ISTIO_TO_SERVICE_NAME_CONVENTION
   value: "IstioUid" 
+-name: LOGGING
+  value: "true"
 
 ```
 
@@ -113,6 +118,11 @@ Pay attention that the configmap update may take up to a minute.
 Delete the adapter pod. It will be automatically reloaded with the new set of rules:
 ```bash
 $ kubectl delete pod -n istio-system $(kubectl get pods -n istio-system | grep mapl-adapter-dep | awk -F" " '{print $1}')
+```
+
+It might be necessary to restart also the mixer:
+```bash
+$ kubectl delete pod -n istio-system $(kubectl get pods -n istio-system | grep istio-policy | awk -F" " '{print $1}')
 ```
 
 ## Debug

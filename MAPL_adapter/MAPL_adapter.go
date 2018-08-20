@@ -65,8 +65,7 @@ func (s *MaplAdapter) HandleAuthorization(ctx context.Context, authRequest *auth
 
 	//fmt.Println("logger",Params.Logger)
 
-	fmt.Printf("Check result: %d\n", statusCode)
-	fmt.Printf("Check result: %d\n", statusCode)
+	fmt.Printf("Check result: %d [%d]\n", statusCode, maplCode)
 
 	status := rpc.Status{
 		Code:    statusCode,
@@ -171,7 +170,7 @@ func NewMaplAdapter(port string, rulesFilename string) (Server, error) {
 func convertAuthRequestToMaplMessage(authRequest *authorization.HandleAuthorizationRequest) MAPL_engine.MessageAttributes{
 	instance := authRequest.Instance
 	fmt.Println("-----------------------\n")
-	if true { // for debugging:
+	if false { // for debugging:
 		logInstance(authRequest)
 	}
 
