@@ -18,7 +18,7 @@ spec:
       imagePullSecrets: # needs to be under istio-system namespace
        - name: docker-secret
       containers:
-      - image: octarinesec/mapl_adapter:0.1
+      - image: octarinesec/mapl_adapter:latest
         imagePullPolicy: Always
         name: mapl-adapter-dep
         volumeMounts:

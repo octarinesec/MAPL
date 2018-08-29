@@ -134,6 +134,10 @@ If everything is ok then one of the output lines should be:
 ```bash
 <TIMESTAMP>     info    grpcAdapter     Connected to: mapl-adapter-dep.istio-system:7782
 ```
+* To view the adapter logs:
+```bash
+kubectl logs -n istio-system $(kubectl get pods -n istio-system | grep mapl-adapter-dep | awk -F" " '{print $1}')
+```
 
 * To get a bash command line in the mapl-adapter pod:
 ```
