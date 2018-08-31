@@ -23,8 +23,10 @@ spec:
       user: request.auth.principal | ""
       groups: request.auth.principal | ""
       properties:
-        # sourceIp: source.ip | ip("0.0.0.0")
-        # sourcePort: source.port | 0
+        sourceIp: source.ip | ip("0.0.0.0")
+        #sourcePort: source.port | 0
+        #sourceLabels: source.labels | emptyStringMap()
+
         sourceName: source.name | ""
         sourcePrincipal: source.principal | ""
         sourceUid: source.uid | ""
@@ -41,7 +43,7 @@ spec:
       path: request.path | ""
       properties:
         protocol: request.scheme | ""
-        # destinationIp: destination.ip | ip("0.0.0.0")
+        destinationIp: destination.ip | ip("0.0.0.0")
         destinationServiceHost: destination.service.host | ""
         destinationPort: destination.port | 0
         destinationName: destination.name | ""

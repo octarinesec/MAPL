@@ -18,7 +18,7 @@ spec:
       imagePullSecrets: # needs to be under istio-system namespace
        - name: docker-secret
       containers:
-      - image: octarinesec/mapl_adapter:latest
+      - image: octarinesec/mapl_adapter
         imagePullPolicy: Always
         name: mapl-adapter-dep
         volumeMounts:
@@ -40,7 +40,7 @@ spec:
         - name: CACHE_TIMEOUT_SECS
           value: "3"
         - name: ISTIO_TO_SERVICE_NAME_CONVENTION
-          value: "IstioUid"  # other options: "IstioWorkloadAndNamespace"
+          value: "IstioWorkloadAndNamespace"  # options: "IstioUid", "IstioWorkloadAndNamespace"
 
       volumes:
         - name: config-volume

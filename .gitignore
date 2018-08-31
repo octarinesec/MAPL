@@ -1,3 +1,6 @@
 .idea
 debug
+*.bak
 MAPL_adapter/docs/REMARKS.txt
+MAPL_adapter/adapter_main/MAPL_adapter
+MAPL_adapter/adapter_main/adapter_main

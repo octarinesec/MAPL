@@ -2,12 +2,12 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"istio.io/istio/mixer/adapter/MAPL_adapter"
 	"strings"
 	"strconv"
+	"log"
 )
 
 // main is called at the adapters start-up. the global parameters MAPL_adapter.Params are first initialized and then MAPL_adapter.NewMaplAdapter is created.
@@ -16,18 +16,18 @@ func main() {
 	rulesFilename := "rules.yaml"
 	if len(os.Args) > 1 {
 		port = os.Args[1]
-        fmt.Println("port=",port)
+        log.Println("port=",port)
 		rulesFilename = os.Args[2]
-        fmt.Println("rulesFilename=",rulesFilename)
+        log.Println("rulesFilename=",rulesFilename)
 	}
 	setParms()
 	MAPL_adapter.Params.RulesFileName = rulesFilename
 
-	fmt.Println(MAPL_adapter.Params)
+	log.Println("params=",MAPL_adapter.Params)
 
 	s, err := MAPL_adapter.NewMaplAdapter(port,MAPL_adapter.Params.RulesFileName)
 	if err != nil {
-		fmt.Printf("unable to start server: %v", err)
+		log.Printf("unable to start server: %v", err)
 		os.Exit(-1)
 	}
 
@@ -41,6 +41,10 @@ func main() {
 // read parameters from environment variables
 func setParms(){
 
+	/*for _, pair := range os.Environ() {
+		log.Println(pair)
+	}*/
+
 	MAPL_adapter.Params.Logging = false
 	if strings.EqualFold(os.Getenv("LOGGING"),"true") {
 		MAPL_adapter.Params.Logging = true
@@ -48,7 +52,8 @@ func setParms(){
 
 	MAPL_adapter.Params.CacheTimeoutSecs = 30 // default
 	cacheTimeoutSecs, err := strconv.Atoi(os.Getenv("CACHE_TIMEOUT_SECS"))
-	if err!=nil{
+	log.Println("CACHE_TIMEOUT_SECS=",os.Getenv("CACHE_TIMEOUT_SECS"),cacheTimeoutSecs)
+	if err==nil{
 		MAPL_adapter.Params.CacheTimeoutSecs=cacheTimeoutSecs
 	}
 	switch(os.Getenv("ISTIO_TO_SERVICE_NAME_CONVENTION")){

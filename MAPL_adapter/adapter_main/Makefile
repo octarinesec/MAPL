@@ -4,7 +4,7 @@ IMG    := ${NAME}:${TAG}
 LATEST := ${NAME}:latest
  
 build:
-	@docker build -t ${IMG} .
+	@docker build -t ${IMG} ./...
 	@docker tag ${IMG} ${LATEST}
  
 push:
