@@ -1,7 +1,7 @@
 rules:
 
   - rule_id: 0  # allow everything from istio-system. especially istio-ingressgateway
-    sender: "istio-system.*"
+    sender: "*.istio-system"
     receiver: "*"
     resource:
       resourceProtocol: "*"
@@ -11,8 +11,8 @@ rules:
     decision: allow
 
   - rule_id: 1  # block the details service. the review text will be un-available
-    sender: "default.productpage-v1"
-    receiver: "default.details-v1"
+    sender: "productpage-v1.default"
+    receiver: "details-v1.default"
     resource:
       resourceProtocol: http
       resourceType: httpPath
@@ -21,8 +21,8 @@ rules:
     decision: block
 
   - rule_id: 2  # allow productpage-v1 to communicate with all the versions of the reviews service
-    sender: "default.productpage-v1"
-    receiver: "default.reviews-*"
+    sender: "productpage-v1.default"
+    receiver: "reviews-*.default"
     resource:
       resourceProtocol: http
       resourceType: httpPath
@@ -31,8 +31,8 @@ rules:
     decision: allow
 
   - rule_id: 3 # allow all the versions of the reviews service to communicate with the ratings-v1 service
-    sender: "default.reviews-*"
-    receiver: "default.ratings-v1"
+    sender: "reviews-*.default"
+    receiver: "ratings-v1.default"
     resource:
       resourceProtocol: http
       resourceType: httpPath
@@ -40,9 +40,9 @@ rules:
     operation: GET
     decision: allow
 
-  - rule_id: 4 # all except all reviews-v2 ...
-    sender: "default.reviews-v2"
-    receiver: "default.ratings-v1"
+  - rule_id: 4 # all except reviews-v2 ...
+    sender: "reviews-v2.default"
+    receiver: "ratings-v1.default"
     resource:
       resourceProtocol: http
       resourceType: httpPath
@@ -51,8 +51,8 @@ rules:
     decision: block
 
   - rule_id: 5  # allow the "login" path
-    sender: "istio-system.istio-ingressgateway"
-    receiver: "default.productpage-v1"
+    sender: "*istio-ingressgateway*.istio-system"
+    receiver: "productpage-v1.default"
     resource:
       resourceProtocol: http
       resourceType: httpPath
@@ -61,8 +61,8 @@ rules:
     decision: alert
 
   - rule_id: 6  # but block the "logout" path
-    sender: "istio-system.istio-ingressgateway"
-    receiver: "default.productpage-v1"
+    sender: "*istio-ingressgateway*.istio-system"
+    receiver: "productpage-v1.default"
     resource:
       resourceProtocol: http
       resourceType: httpPath

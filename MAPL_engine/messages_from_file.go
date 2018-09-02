@@ -86,8 +86,8 @@ func addResourceTypeToMessages(messages *Messages) {
 }
 
 
-// addTimeInfoToMessage function parses timestamp data in one message and extract the second, minutes and hours since midnight.
-func addTimeInfoToMessage(message *MessageAttributes) {
+// AddTimeInfoToMessage function parses timestamp data in one message and extract the second, minutes and hours since midnight.
+func AddTimeInfoToMessage(message *MessageAttributes) {
 	//
 	// extract timestamp info
 	//
@@ -103,6 +103,9 @@ func addTimeInfoToMessage(message *MessageAttributes) {
 	message.RequestTimeSecondsFromMidnightUTC = nanosecondsFromMidnight/1e9
 	message.RequestTimeMinutesFromMidnightUTC = nanosecondsFromMidnight/1e9/60
 	message.RequestTimeHoursFromMidnightUTC = nanosecondsFromMidnight/1e9/60/60
+
+	message.RequestTimeMinutesParity = (int64(message.RequestTimeMinutesFromMidnightUTC)%60)%2
+
 }
 
 // addTimeInfoToMessages function parses timestamp data for all messages
@@ -111,6 +114,6 @@ func addTimeInfoToMessages(messages *Messages) {
 	// we have resource_type to allow for several types per one protocol.
 
 	for i, _ := range(messages.Messages) {
-		addTimeInfoToMessage(&messages.Messages[i])
+		AddTimeInfoToMessage(&messages.Messages[i])
 	}
 }

@@ -30,6 +30,7 @@ func compareJsonAndYaml(jsonString string, yamlString string) (bool, string) {
 	jsonString = strings.Replace(jsonString, "ValueRegex:", "ValueRegex-", -1) // change slightly so that the regex will not count it [this field is not part of the input so disregard it]
 	jsonString = strings.Replace(jsonString, "ValueTime:", "ValueTime-", -1) // change slightly so that the regex will not count it [this field is not part of the input so disregard it]
 	jsonString = strings.Replace(jsonString, "UTC:", "UTC-", -1) // change slightly so that the regex will not count it [this field is not part of the input so disregard it]
+	jsonString = strings.Replace(jsonString, "RequestTimeMinutesParity:", "RequestTimeMinutesParity-", -1) // change slightly so that the regex will not count it [this field is not part of the input so disregard it]
 	jsonString = strings.Replace(jsonString, "ContextType:", "ContextType-", -1) // change slightly so that the regex will not count it [this field is not part of the input so disregard it]
 
 	jsonString = strings.Replace(jsonString,"Size: 0\n","Size- 0\n",-1) // change slightly so that the regex will not count it [this is an integer field]

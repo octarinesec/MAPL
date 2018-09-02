@@ -145,6 +145,7 @@ type MessageAttributes struct {
 	RequestTimeSecondsFromMidnightUTC float64 `yaml:"-"` // conversion of RequestTime timestamp
 	RequestTimeMinutesFromMidnightUTC float64 `yaml:"-"` // conversion of RequestTime timestamp
 	RequestTimeHoursFromMidnightUTC float64 `yaml:"-"` // conversion of RequestTime timestamp
+	RequestTimeMinutesParity int64 `yaml:"-"` // conversion of RequestTime timestamp // used in istio demo condition
 }
 
 // Messages structure contains a list of messages

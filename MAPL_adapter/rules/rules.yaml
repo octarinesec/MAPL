@@ -18,6 +18,11 @@ rules:
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
+    DNFconditions:
+      - ANDconditions:
+        - attribute: minuteParity
+          method: EQ
+          value: 0
     decision: block
 
   - rule_id: 2  # allow productpage-v1 to communicate with all the versions of the reviews service

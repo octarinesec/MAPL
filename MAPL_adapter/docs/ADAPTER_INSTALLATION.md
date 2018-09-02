@@ -105,9 +105,9 @@ The current set of rules [rules.yaml](https://github.com/octarinesec/MAPL/tree/m
 
 ## How to Apply New Rules
 
-Create a new rule file (new_rules.yaml). Copy it over rules.yaml and replace the old configmap
+Edit the rules.yaml file or copy another file as rules.yaml.
 ```bash
-$ cat $MIXERLOC/adapter/MAPL_adapter/rules/new_rules.yaml > $MIXERLOC/adapter/MAPL_adapter/rules/rules.yaml
+$ cp $MIXERLOC/adapter/MAPL_adapter/rules/new_rules.yaml $MIXERLOC/adapter/MAPL_adapter/rules/rules.yaml
 ```
 Update the config map
 ```bash

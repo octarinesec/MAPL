@@ -58,6 +58,7 @@ spec:
         destinationServiceUid: destination.service.uid | ""
         destinationServiceName: destination.service.name | ""
         destinationServiceNamespace: destination.service.namespace | ""
+        timestamp: request.time
 
 ---
 # rule to dispatch to handler

@@ -4,6 +4,7 @@ package MAPL_engine
 import (
 	"strings"
 	"regexp"
+	"fmt"
 )
 
 // general action codes
@@ -178,7 +179,12 @@ func testOneCondition(c *Condition,message *MessageAttributes) bool {
 	case("utcHoursFromMidnight"):
 		valueToCompareFloat = message.RequestTimeHoursFromMidnightUTC
 		result = compareFloatFunc(valueToCompareFloat, c.Method, c.ValueFloat)
-
+	case("minuteParity"):
+		valueToCompareInt = message.RequestTimeMinutesParity
+		result = compareIntFunc(valueToCompareInt, c.Method, c.ValueInt)
+		fmt.Println("message.RequestTimeMinutesParity=",message.RequestTimeMinutesParity,valueToCompareInt,c.Method, c.ValueInt)
+	default:
+		panic("condition keyword not supported")
 	}
 	return result
 }
