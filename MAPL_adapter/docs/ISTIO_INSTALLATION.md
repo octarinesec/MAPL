@@ -1,6 +1,6 @@
 # Istio and Bookinfo Installation
 
-The following instructions install Istio and the bookinfo app on a cluster with an installation of kubernetes 1.10 or higher.  
+The following instructions install Istio (release 1.0.0) and the bookinfo app on a cluster with an installation of kubernetes 1.10 or higher.  
 
 ### Define the following environment variables
 Change according to your setup.  
@@ -14,55 +14,13 @@ Istio sources: [https://github.com/istio/istio](https://github.com/istio/istio)
 $ export ISTIOSRC=~/go/src/istio.io/istio
 ```
 ### Install Istio
-Add istio services in the "istio-system" namespace using helm.  
-see: https://istio.io/docs/setup/kubernetes/minimal-install/
+See: https://istio.io/docs/setup/kubernetes/helm-install/
+
 ```bash
-$ kubectl apply -f $ISTIOSRC/install/kubernetes/helm/helm-service-account.yaml
+$ kubectl apply -f $ISTIOLOC/install/kubernetes/helm/helm-service-account.yaml
 $ helm init --service-account tiller
-$ helm install install/kubernetes/helm/istio --name istio-minimal --namespace istio-system \
-    --set security.enabled=false \
-    --set ingress.enabled=true \
-    --set gateways.istio-ingressgateway.enabled=truee \
-    --set gateways.istio-egressgateway.enabled=false \
-    --set galley.enabled=false \
-    --set sidecarInjectorWebhook.enabled=false \
-    --set mixer.enabled=true \
-    --set prometheus.enabled=false \
-    --set global.proxy.envoyStatsd.enabled=false \
-    --set pilot.sidecar=false
+$ helm install $ISTIOLOC/install/kubernetes/helm/istio --name istio --namespace istio-system
 ```
-
-remark:
-to install with a different release of istio:
-```bash
-helm template $ISTIOSRC/install/kubernetes/helm/istio --name istio-minimal --namespace istio-system \
-  --set security.enabled=false \
-  --set ingress.enabled=true \
-  --set gateways.istio-ingressgateway.enabled=true \
-  --set gateways.istio-egressgateway.enabled=false \
-  --set galley.enabled=false \
-  --set sidecarInjectorWebhook.enabled=false \
-  --set mixer.enabled=true \
-  --set prometheus.enabled=false \
-  --set global.proxy.envoyStatsd.enabled=false \
-  --set pilot.sidecar=false > istio.yaml
-```
-and edit the output file in order to replace the containers image version.  
-For example:  
-change
-```bash
-image: "gcr.io/istio-release/proxyv2:release-1.0-latest-daily"
-```
-with
-```bash
-image: "gcr.io/istio-release/proxyv2:master-latest-daily"
-```
-etc...  
-Then deploy with 
-```bash
-$ kubectl apply -f istio.yaml
-```
-
 ### Install Bookinfo App
 This will add several services to the default namespace.  
 see: https://istio.io/docs/examples/bookinfo/
