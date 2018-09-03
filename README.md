@@ -19,6 +19,14 @@ The MAPL engine can be used in service meshes, API gateways and IAM solutions.
 # Demo
 A demonstration of the use of the MAPL engine for service-to-service authorization in [Istio](https://istio.io/) using a gRPC adapter for [Istio’s mixer service](https://istio.io/docs/concepts/policies-and-telemetry/) can be found in [MAPL_adapter](https://github.com/octarinesec/MAPL/tree/master/MAPL_adapter/).
 
+## Demo Versions
+
+<br>
+
+| istio release | git tag | docker image tag |
+|:-------:|:-----:|:-----:|
+|1.0.0|0.1|octarinesec/mapl_adapter:0.1|
+
 # Status of the MAPL Project
 This project is still under active development.  
 If you have any questions about MAPL, or about how to use the MAPL engine, please contact MAPL@octarinesec.com  
