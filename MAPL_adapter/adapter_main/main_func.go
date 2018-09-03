@@ -66,5 +66,5 @@ func setParms(){
 	}
 
 	//MAPL_adapter.Params.RulesFileName = os.Getenv("RULES_FILE_NAME")
-
+	log.Println("Params=",MAPL_adapter.Params)
 }
