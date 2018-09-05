@@ -99,7 +99,7 @@ The current set of rules [rules.yaml](https://github.com/octarinesec/MAPL/tree/m
 1) Allow ingress
 2) Allow specific services communications
 3) Block the communication of reviews-v2 and ratings-v1 (black stars ratings is not available)
-4) Block the communication of productpage-v1 and details-v1 (the reviews are not available)
+4) Block the communication of productpage-v1 and details-v1 (the reviews are not available) every other minute
 5) Allow login
 6) Block logout (the webpage is not available after signing out)
 
