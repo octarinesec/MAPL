@@ -21,6 +21,14 @@ $ cp -r MAPL_adapter $MIXERLOC/adapter/
 ```
 
 ### Build the adapter
+
+You can use Octarine's image in [MAPL_adapter_dep.yaml](https://github.com/octarinesec/MAPL/tree/master/MAPL_adapter/deployments/MAPL_adapter_dep.yaml) instead:
+```
+  - image: octarinesec/mapl_adapter:{mapl_adapter_version}
+```
+Or do the following in order to create your own docker image.  
+
+##### Compile
 ```bash
 $ cd $MIXERLOC/adapter/MAPL_adapter/
 $ go generate ./...
@@ -29,18 +37,18 @@ $ go build ./...
 $ mv $MIXERLOC/adapter/MAPL_adapter/adapter_main/adapter_main $MIXERLOC/adapter/MAPL_adapter/adapter_main/MAPL_adapter
 ```
 
-### Build the docker image
+##### Build the docker image
 ```bash
 $ cd $MIXERLOC/adapter/MAPL_adapter/adapter_main
 $ docker build . -t $DOCKER_USER/mapl_adapter:{ADAPTER_TAG}
 ```
-### Push to image repository
+##### Push to image repository
 ```bash
 $ docker push $DOCKER_USER/mapl_adapter:{ADAPTER_TAG}
 ```
 Edit [MAPL_adapter_dep.yaml](https://github.com/octarinesec/MAPL/tree/master/MAPL_adapter/deployments/MAPL_adapter_dep.yaml) with the location of the adapter's docker image and imagePullSecrets.
 
-### Create image pull secret
+##### Create image pull secret
 ```bash
 $ kubectl create secret docker-registry docker-secret -n istio-system --docker-username="<username>" --docker-password="<password>" --docker-email="<docker_email>" --docker-server="https://index.docker.io/v1/"
 ```
