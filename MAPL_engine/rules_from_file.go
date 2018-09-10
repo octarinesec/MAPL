@@ -7,6 +7,7 @@ import (
 	"strings"
 	"io/ioutil"
 	"strconv"
+	"fmt"
 )
 
 // YamlReadRulesFromString function reads rules from a yaml string
@@ -23,6 +24,7 @@ func YamlReadRulesFromString(yamlString string) Rules {
 		panic("number of fields in rules does not match number of fields in yaml file:\n" + outputString)
 	}
 	convertFieldsToRegex(&rules)
+	//testFieldsForIP(&rules)
 	rules = convertConditionStringToIntFloatRegex(rules)
 
 	return rules
@@ -56,6 +58,46 @@ func YamlReadOneRule(yamlString string) Rule {
 	}
 	return rule
 }
+/*
+// testFieldsForIP tests if sender or receiver are IP addresses or CIDRs
+func testFieldsForIP(rules *Rules) {
+	for i, _ := range(rules.Rules) {
+
+		rules.Rules[i].SenderIpFlag = isIPAddress(rules.Rules[i].Sender)
+		rules.Rules[i].SenderCIDRFlag = isCIDR(rules.Rules[i].Sender)
+		rules.Rules[i].ReceiverIpFlag = isIPAddress(rules.Rules[i].Receiver)
+		rules.Rules[i].ReceiverCIDTFlag = isCIDR(rules.Rules[i].Receiver)
+	}
+}
+*/
+func isIpCIDR(str string) (isIP,isCIDR bool) {
+	splitted:=strings.Split(str,".")
+	for i_splitted,str2:=range(splitted){
+		i,err:=strconv.Atoi(str2)
+		if err!=nil{
+			if i_splitted==3{
+				splitted2:=strings.Split(str,"/")
+				if len(splitted2)!=2{
+					return false,false
+				}
+				i1,err1:=strconv.Atoi(splitted2[0])
+				i2,err2:=strconv.Atoi(splitted2[1])
+
+				if err1==nil && err2==nil && i1>=0 && i1<256 && i2>=0 && i2<=32{
+					return false, true
+				}
+			}
+			return false,false
+		}
+		if i<0 || i>255 {
+			return false,false
+		}
+		if i_splitted>4 {
+			return false,false
+		}
+	}
+	return true,false
+}
 
 // convertFieldsToRegex converts some rule fields into regular expressions to be used later.
 // This enables use of wildcards in the sender, receiver names, etc...
@@ -71,8 +113,11 @@ func convertFieldsToRegex(rules *Rules) {
 		re := regexp.MustCompile(convertStringToRegex(rules.Rules[i].Resource.ResourceName))
 		rules.Rules[i].Resource.ResourceNameRegex = re.Copy()
 
+		rules.Rules[i].SenderList = convertStringToExpandedSenderReceiver(rules.Rules[i].Sender)
+		rules.Rules[i].SenderList = convertStringToExpandedSenderReceiver(rules.Rules[i].Receiver)
 	}
-
+ 	fmt.Printf("%+v\n",rules)
+	fmt.Println("-------------")
 }
 
 // convertStringToRegex function converts one string to regex. Remove spaces, handle special characters and wildcards.
@@ -100,6 +145,32 @@ func convertStringToRegex(str_in string) string{
 	str_out += ")"
 	return str_out
 }
+
+func convertStringToExpandedSenderReceiver(str_in string) []ExpandedSenderReceiver{
+	var output []ExpandedSenderReceiver
+
+	str_list := strings.Split(str_in, ";")
+	for _, str := range(str_list) {
+		var e ExpandedSenderReceiver
+		e.Name=str
+		e.IsIP,e.IsCIDR=isIpCIDR(str)
+
+		str = strings.Replace(str, " ", "", -1)    // remove spaces
+		str = strings.Replace(str, ".", "[.]", -1) // handle dot for conversion to regex
+		str = strings.Replace(str, "$", "\\$", -1)
+		str = strings.Replace(str, "^", "\\^", -1)
+		str = strings.Replace(str, "*", ".*", -1)
+		str = strings.Replace(str, "?", ".", -1)
+		str = strings.Replace(str, "/", "\\/", -1)
+		str = "^" + str + "$" // force full string
+
+		e.Regexp=regexp.MustCompile(str).Copy()
+
+		output=append(output,e)
+	}
+	return output
+}
+
 
 // convertOperationStringToRegex function converts the operations string to regex.
 // this is a special case of convertStringToRegex

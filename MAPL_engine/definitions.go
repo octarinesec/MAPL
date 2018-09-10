@@ -55,10 +55,23 @@ type Rule struct {
 	SenderRegex *regexp.Regexp `yaml:"-"`
 	ReceiverRegex *regexp.Regexp `yaml:"-"`
 	OperationRegex *regexp.Regexp `yaml:"-"`
+
+	SenderIpFlag bool `yaml:"-"`
+	ReceiverIpFlag bool `yaml:"-"`
+
+	SenderList []ExpandedSenderReceiver `yaml:"-"`
+	ReceiverList []ExpandedSenderReceiver `yaml:"-"`
 }
 // Rules structure contains a list of rules
 type Rules struct {
 	Rules []Rule `yaml:"rules,omitempty"`
+}
+//
+type ExpandedSenderReceiver struct {
+	Name string
+	Regexp *regexp.Regexp
+	IsIP bool
+	IsCIDR bool
 }
 
 // ToJson converts a structure into a json string

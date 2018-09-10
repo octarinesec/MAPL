@@ -1,5 +1,5 @@
 // Package main_tests contains sanity tests to check the validity of the MAPL engine
-package main_tests
+package main
 
 import (
 	"fmt"
@@ -26,6 +26,11 @@ func main() {
 	}else{
 		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
 	}
+
+
+	// test whitelist: sender. Expected results: message 0: allow, message 1: block by default (no relevant whitelist entry), message 2: block by default (no relevant whitelist entry)  message 3: block by default (no relevant whitelist entry)
+	Test_CheckMessages("examples/rules_with_ips.yaml","examples/messages_basic_sender_name.yaml")
+	fmt.Println("----------------------")
 
 	// test whitelist: sender. Expected results: message 0: allow, message 1: block by default (no relevant whitelist entry), message 2: block by default (no relevant whitelist entry)  message 3: block by default (no relevant whitelist entry)
 	Test_CheckMessages("examples/rules_basic.yaml","examples/messages_basic_sender_name.yaml")

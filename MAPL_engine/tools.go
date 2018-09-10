@@ -5,7 +5,6 @@ import (
 	"regexp"
 )
 
-
 // IsNumberOfFieldsEqual is used to compare the structures read from files (mostly while debugging).
 // We convert the structure into a string and count the number of non-empty "fields". Then we compare to the number of non empty fields in the original yaml string.
 // It will not work with structure fields with default values (for example ints or floats) so we remove them.
@@ -37,6 +36,7 @@ func compareJsonAndYaml(jsonString string, yamlString string) (bool, string) {
 	jsonString = strings.Replace(jsonString,"Duration: 0\n","Duration- 0\n",-1) // change slightly so that the regex will not count it [this is an integer field]
 	jsonString = strings.Replace(jsonString,"ResponseCode: 0\n","ResponseCode- 0\n",-1) // change slightly so that the regex will not count it [this is an integer field]
 	jsonString = strings.Replace(jsonString,"0001-01-01T00:00:00Z\n","\n",-1) // change slightly so that the regex will not count it [this is a timestamp field]
+	jsonString = strings.Replace(jsonString,"IpFlag: false\n","IpFlag- false\n",-1) // change slightly so that the regex will not count it [this is boolean field]
 
 	//re := regexp.MustCompile("[[:alnum:]][:][ ][[:alnum:]]") // catches fieldnam[e: v]alue'
 	re := regexp.MustCompile(`(?m)^.*[:][ ]\S+`)
