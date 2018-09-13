@@ -95,8 +95,6 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 		}
 	}
 
-	// previously without IP: just test SenderRegex
-	//match = rule.SenderRegex.Match([]byte(message.SourceService)) // supports wildcards
 	if !match{
 		return DEFAULT
 	}
@@ -119,8 +117,7 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 			break
 		}
 	}
-	// previously without IP: just test ReceiverRegex
-	//match = rule.ReceiverRegex.Match([]byte(message.DestinationService)) // supports wildcards
+
 	if !match{
 		return DEFAULT
 	}

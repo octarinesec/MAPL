@@ -53,12 +53,7 @@ type Rule struct {
 	DNFConditions []ANDConditions `yaml:"DNFconditions,omitempty"`
 	Decision      string          `yaml:"decision,omitempty"`
 
-	SenderRegex *regexp.Regexp `yaml:"-"`
-	ReceiverRegex *regexp.Regexp `yaml:"-"`
 	OperationRegex *regexp.Regexp `yaml:"-"`
-
-	SenderIpFlag bool `yaml:"-"`
-	ReceiverIpFlag bool `yaml:"-"`
 
 	SenderList []ExpandedSenderReceiver `yaml:"-"`
 	ReceiverList []ExpandedSenderReceiver `yaml:"-"`

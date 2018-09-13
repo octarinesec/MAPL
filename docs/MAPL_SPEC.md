@@ -14,8 +14,9 @@ Essentially, a rule gives a decision wheteher the sender (client) may do the ope
 
 ### Sender and Receiver
 Sender services (clients) and Receiver services (servers) names.  
+- The language allows IPs and CIDRs. 
 - The names are case sensitive strings, comprised of alphanumeric characters, '-', '/' and '.' and must not contain spaces or tabs.
-- The language allows wildcards (* and ?).
+- The language allows wildcards (* and ?). IPs and CIDRs should not contain wildcards (or unexpected results my occur).
 - The language allows lists of names for multiple sender of receiver services, separated by ';'
 
 Examples:
@@ -27,8 +28,11 @@ Examples:
     sender: "A.my_namespace;A.my_other_namespace"
     receiver: "B.my_namespace"
 (3)
-    sender: "A;B;C.*"
-    receiver: "x;y.1?3;z"
+    sender: "192.168.1.1"
+    receiver: "192.168.4.1/24"
+(3)
+    sender: "A;B;C.*;10.1.1.127"
+    receiver: "x;y.1?3;z;10.3.3.4/24"
 ```
 
 ### Resources

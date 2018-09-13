@@ -99,13 +99,11 @@ func main() {
 	Test_CheckMessages("examples/rules_with_conditions.yaml","examples/messages_test_with_conditions.yaml")
 	fmt.Println("----------------------")
 
-
 	//-------------------------------------------------------------------------------------------------------------------------------------------------
 	string="test rules for istio's bookinfo app"
 	fmt.Println(string)
 	Test_CheckMessages("examples/rules_istio.yaml","examples/messages_istio.yaml")
 	fmt.Println("----------------------")
-
 
 }
 

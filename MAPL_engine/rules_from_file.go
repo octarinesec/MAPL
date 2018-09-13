@@ -99,15 +99,14 @@ func convertFieldsToRegex(rules *Rules) {
 
 	for i, _ := range(rules.Rules) {
 
-		rules.Rules[i].SenderRegex = regexp.MustCompile(convertStringToRegex(rules.Rules[i].Sender)).Copy()
-		rules.Rules[i].ReceiverRegex = regexp.MustCompile(convertStringToRegex(rules.Rules[i].Receiver)).Copy()
+		rules.Rules[i].SenderList = convertStringToExpandedSenderReceiver(rules.Rules[i].Sender)
+		rules.Rules[i].ReceiverList = convertStringToExpandedSenderReceiver(rules.Rules[i].Receiver)
+
 		rules.Rules[i].OperationRegex = regexp.MustCompile(convertOperationStringToRegex(rules.Rules[i].Operation)).Copy() // a special case of regex for operations to support CRUD
 
 		re := regexp.MustCompile(convertStringToRegex(rules.Rules[i].Resource.ResourceName))
 		rules.Rules[i].Resource.ResourceNameRegex = re.Copy()
 
-		rules.Rules[i].SenderList = convertStringToExpandedSenderReceiver(rules.Rules[i].Sender)
-		rules.Rules[i].ReceiverList = convertStringToExpandedSenderReceiver(rules.Rules[i].Receiver)
 	}
  	//fmt.Printf("%+v\n",rules)
 	//fmt.Println("-------------")
