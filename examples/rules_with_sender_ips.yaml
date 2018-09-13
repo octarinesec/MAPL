@@ -1,0 +1,22 @@
+rules:
+
+  - rule_id: 0
+    sender: "192.168.1.1"
+    receiver: "B.my_namespace"
+    resource:
+      resourceProtocol: http
+      resourceType: httpPath
+      resourceName: "/*"
+    operation: GET
+    decision: allow
+  
+
+  - rule_id: 1
+    sender: "192.168.2.1/30;AA.*"
+    receiver: "192.168.4.1;B.my_namespace"
+    resource:
+      resourceProtocol: http
+      resourceType: httpPath
+      resourceName: "/*"
+    operation: GET
+    decision: allow

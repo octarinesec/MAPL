@@ -6,6 +6,7 @@ import (
 	"log"
 	"io/ioutil"
 	"time"
+	"net"
 )
 
 // YamlReadMessageAttributes function reads message attributes from a yaml string
@@ -41,7 +42,7 @@ func YamlReadMessagesFromString(yamlString string) Messages {
 
 	addResourceTypeToMessages(&messages)
 	addTimeInfoToMessages(&messages)
-
+	addNetIpToMessages(&messages)
 
 	flag, outputString := IsNumberOfFieldsEqual(messages, yamlString)
 	if flag == false {
@@ -115,5 +116,18 @@ func addTimeInfoToMessages(messages *Messages) {
 
 	for i, _ := range(messages.Messages) {
 		AddTimeInfoToMessage(&messages.Messages[i])
+	}
+}
+
+// AddNetIpToMessage converts string ips to type net.IP
+func AddNetIpToMessage(message *MessageAttributes) {
+	message.SourceNetIp = net.ParseIP(message.SourceIp)
+	message.DestinationNetIp = net.ParseIP(message.DestinationIp)
+}
+
+// addNetIpToMessages function parses string ip data for all messages
+func addNetIpToMessages(messages *Messages) {
+	for i, _ := range (messages.Messages) {
+		AddNetIpToMessage(&messages.Messages[i])
 	}
 }

@@ -75,12 +75,52 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 	// ----------------------
 	// compare basic message attributes:
-	match := rule.SenderRegex.Match([]byte(message.SourceService)) // supports wildcards
+
+	match:=false
+	for _,expandedSender:=range(rule.SenderList){
+		match_temp:=false
+		if !expandedSender.IsIP && !expandedSender.IsCIDR{
+			match_temp=expandedSender.Regexp.Match([]byte(message.SourceService)) // supports wildcards
+		}else{
+			if expandedSender.IsIP{
+				match_temp = (expandedSender.Name==message.SourceIp)
+			}
+			if expandedSender.IsCIDR{
+				match_temp=expandedSender.CIDR.Contains(message.SourceNetIp)
+			}
+		}
+		if match_temp == true{
+			match = true
+			break
+		}
+	}
+
+	// previously without IP: just test SenderRegex
+	//match = rule.SenderRegex.Match([]byte(message.SourceService)) // supports wildcards
 	if !match{
 		return DEFAULT
 	}
 
-	match = rule.ReceiverRegex.Match([]byte(message.DestinationService)) // supports wildcards
+	match=false
+	for _,expandedReceiver:=range(rule.ReceiverList){
+		match_temp:=false
+		if !expandedReceiver.IsIP && !expandedReceiver.IsCIDR{
+			match_temp=expandedReceiver.Regexp.Match([]byte(message.DestinationService)) // supports wildcards
+		}else{
+			if expandedReceiver.IsIP{
+				match_temp = (expandedReceiver.Name==message.DestinationIp)
+			}
+			if expandedReceiver.IsCIDR{
+				match_temp=expandedReceiver.CIDR.Contains(message.DestinationNetIp)
+			}
+		}
+		if match_temp == true{
+			match = true
+			break
+		}
+	}
+	// previously without IP: just test ReceiverRegex
+	//match = rule.ReceiverRegex.Match([]byte(message.DestinationService)) // supports wildcards
 	if !match{
 		return DEFAULT
 	}

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"io/ioutil"
 	"strconv"
-	"fmt"
+	"net"
 )
 
 // YamlReadRulesFromString function reads rules from a yaml string
@@ -70,33 +70,26 @@ func testFieldsForIP(rules *Rules) {
 	}
 }
 */
-func isIpCIDR(str string) (isIP,isCIDR bool) {
-	splitted:=strings.Split(str,".")
-	for i_splitted,str2:=range(splitted){
-		i,err:=strconv.Atoi(str2)
-		if err!=nil{
-			if i_splitted==3{
-				splitted2:=strings.Split(str,"/")
-				if len(splitted2)!=2{
-					return false,false
-				}
-				i1,err1:=strconv.Atoi(splitted2[0])
-				i2,err2:=strconv.Atoi(splitted2[1])
 
-				if err1==nil && err2==nil && i1>=0 && i1<256 && i2>=0 && i2<=32{
-					return false, true
-				}
-			}
-			return false,false
-		}
-		if i<0 || i>255 {
-			return false,false
-		}
-		if i_splitted>4 {
-			return false,false
+//
+func isIpCIDR(str string) (isIP,isCIDR bool,IP_out net.IP,IPNet_out net.IPNet) {
+
+	_, IPNet_temp, error := net.ParseCIDR(str)
+	if error==nil{
+		isCIDR=true
+		isIP=false
+		IPNet_out = *IPNet_temp
+	}else {
+		//fmt.Println(error)
+		IP2 := net.ParseIP(str)
+		if IP2 != nil {
+			isCIDR = false
+			isIP = true
+			IP_out = IP2
 		}
 	}
-	return true,false
+	//fmt.Println(IP_out,IPNet_out)
+	return isIP,isCIDR,IP_out,IPNet_out
 }
 
 // convertFieldsToRegex converts some rule fields into regular expressions to be used later.
@@ -114,10 +107,10 @@ func convertFieldsToRegex(rules *Rules) {
 		rules.Rules[i].Resource.ResourceNameRegex = re.Copy()
 
 		rules.Rules[i].SenderList = convertStringToExpandedSenderReceiver(rules.Rules[i].Sender)
-		rules.Rules[i].SenderList = convertStringToExpandedSenderReceiver(rules.Rules[i].Receiver)
+		rules.Rules[i].ReceiverList = convertStringToExpandedSenderReceiver(rules.Rules[i].Receiver)
 	}
- 	fmt.Printf("%+v\n",rules)
-	fmt.Println("-------------")
+ 	//fmt.Printf("%+v\n",rules)
+	//fmt.Println("-------------")
 }
 
 // convertStringToRegex function converts one string to regex. Remove spaces, handle special characters and wildcards.
@@ -153,7 +146,7 @@ func convertStringToExpandedSenderReceiver(str_in string) []ExpandedSenderReceiv
 	for _, str := range(str_list) {
 		var e ExpandedSenderReceiver
 		e.Name=str
-		e.IsIP,e.IsCIDR=isIpCIDR(str)
+		e.IsIP,e.IsCIDR,e.IP,e.CIDR=isIpCIDR(str)
 
 		str = strings.Replace(str, " ", "", -1)    // remove spaces
 		str = strings.Replace(str, ".", "[.]", -1) // handle dot for conversion to regex

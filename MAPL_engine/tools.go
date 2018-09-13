@@ -37,6 +37,7 @@ func compareJsonAndYaml(jsonString string, yamlString string) (bool, string) {
 	jsonString = strings.Replace(jsonString,"ResponseCode: 0\n","ResponseCode- 0\n",-1) // change slightly so that the regex will not count it [this is an integer field]
 	jsonString = strings.Replace(jsonString,"0001-01-01T00:00:00Z\n","\n",-1) // change slightly so that the regex will not count it [this is a timestamp field]
 	jsonString = strings.Replace(jsonString,"IpFlag: false\n","IpFlag- false\n",-1) // change slightly so that the regex will not count it [this is boolean field]
+	jsonString = strings.Replace(jsonString,"NetIp: ","NetIp- ",-1) // change slightly so that the regex will not count it [this is net.IP field]
 
 	//re := regexp.MustCompile("[[:alnum:]][:][ ][[:alnum:]]") // catches fieldnam[e: v]alue'
 	re := regexp.MustCompile(`(?m)^.*[:][ ]\S+`)

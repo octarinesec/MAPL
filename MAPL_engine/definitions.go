@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"encoding/json"
 	"time"
+	"net"
 )
 
 type GeneralStruct interface { // a general interface to structures.
@@ -72,6 +73,8 @@ type ExpandedSenderReceiver struct {
 	Regexp *regexp.Regexp
 	IsIP bool
 	IsCIDR bool
+	CIDR net.IPNet
+	IP net.IP
 }
 
 // ToJson converts a structure into a json string
@@ -159,6 +162,9 @@ type MessageAttributes struct {
 	RequestTimeMinutesFromMidnightUTC float64 `yaml:"-"` // conversion of RequestTime timestamp
 	RequestTimeHoursFromMidnightUTC float64 `yaml:"-"` // conversion of RequestTime timestamp
 	RequestTimeMinutesParity int64 `yaml:"-"` // conversion of RequestTime timestamp // used in istio demo condition
+
+	SourceNetIp net.IP `yaml:"-"`
+	DestinationNetIp net.IP `yaml:"-"`
 }
 
 // Messages structure contains a list of messages
