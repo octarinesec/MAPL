@@ -151,3 +151,27 @@ kubectl logs -n istio-system $(kubectl get pods -n istio-system | grep mapl-adap
 ```
 $ kubectl exec -n istio-system -ti $(kubectl get pods -n istio-system | grep mapl-adapter-dep | awk -F" " '{print $1}') /bin/bash
 ```
+
+* To view the effect of the new rules in the command-line   
+
+Login to the reviews-v1 pod. For example:
+```bash
+$  kubectl exec reviews-v1-7cffb56b4d-ghpns  -i -t -- bash -il
+```
+Connect to the ratings service via HTTP: 
+```bash
+# wget -O temp.txt http://ratings:9080/ratings/0
+# cat temp.txt
+    {"id":0,"ratings":{"Reviewer1":5,"Reviewer2":4}}
+# exit
+``` 
+Now, login to the reviews-v2 pod. For example:
+```bash
+$  kubectl exec reviews-v2-869dcbf5c4-z7xhk  -i -t -- bash -il
+``` 
+But we cannot connect to the ratings services from the reviews-v2 pod as there is a rule that prevents it. 
+```bash
+# wget -O temp.txt http://ratings:9080/ratings/0
+    HTTP request sent, awaiting response... 401 Unauthorized
+    Username/Password Authentication Failed. 
+```
