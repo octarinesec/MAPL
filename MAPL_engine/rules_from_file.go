@@ -200,15 +200,61 @@ func convertConditionStringToIntFloatRegex(rules_in Rules) Rules {
 				}
 				re, err := regexp.Compile(condition.Value)
 				if err == nil {
-					rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueRegex = re.Copy()
+					rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueRegex = re.Copy()  // this is used in RE,NRE
 				}
+
+				re,err = regexp.Compile(convertStringToRegex(condition.Value))
+				if err == nil{
+					rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueStringRegex = re.Copy() // this is used in EQ,NEQ
+				}else{
+					panic("condition.Value could not be converted to regex")
+				}
+
 				/*t, err := time.Parse(time.RFC3339,condition.Value)
 				if err == nil{
 					rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueTime = t
 				}*/
+
+				if strings.Index(condition.Attribute,"senderLabel[")==0{ // test if ATTRIBUTE is of type senderLabel
+					rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].AttributeIsSenderLabel=true
+					i1:=strings.Index(condition.Attribute,"[")+1
+					i2:=strings.Index(condition.Attribute,"]")
+					if i2 < len(condition.Attribute)-1{
+						panic("senderLabel has a wrong format")
+					}
+					rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].AttributeSenderLabelKey=condition.Attribute[i1:i2]
+					rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].Attribute="senderLabel"
+				}
+				if strings.Index(condition.Attribute,"receiverLabel[")==0{ // test if ATTRIBUTE is of type receiverLabel
+					rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].AttributeIsReceiverLabel=true
+					i1:=strings.Index(condition.Attribute,"[")+1
+					i2:=strings.Index(condition.Attribute,"]")
+					if i2 < len(condition.Attribute)-1{
+						panic("receiverLabel has a wrong format")
+					}
+					rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].AttributeReceiverLabelKey=condition.Attribute[i1:i2]
+					rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].Attribute="receiverLabel"
+				}
+
+				if strings.Index(condition.Value,"receiverLabel[")==0{ // test if VALUE is of type receiverLabel (used to compare attribute senderLabel[key1] to value receiverLabel[key2])
+					rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueIsReceiverLabel=true
+					i1:=strings.Index(condition.Value,"[")+1
+					i2:=strings.Index(condition.Value,"]")
+					if i2 < len(condition.Value)-1{
+						panic("value receiverLabel has a wrong format")
+					}
+					rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueReceiverLabelKey=condition.Value[i1:i2]
+					rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].Value="receiverLabel"
+				}
+
 			}
+
+
+
+
 		}
 	}
 
 	return rules_out
 }
+

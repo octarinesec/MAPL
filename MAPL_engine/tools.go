@@ -38,14 +38,36 @@ func compareJsonAndYaml(jsonString string, yamlString string) (bool, string) {
 	jsonString = strings.Replace(jsonString,"0001-01-01T00:00:00Z\n","\n",-1) // change slightly so that the regex will not count it [this is a timestamp field]
 	jsonString = strings.Replace(jsonString,"IpFlag: false\n","IpFlag- false\n",-1) // change slightly so that the regex will not count it [this is boolean field]
 	jsonString = strings.Replace(jsonString,"NetIp: ","NetIp- ",-1) // change slightly so that the regex will not count it [this is net.IP field]
+	jsonString = strings.Replace(jsonString,"AttributeIsSenderLabel: ","AttributeIsSenderLabel- ",-1) // change slightly so that the regex will not count it [this is a boolean field]
+	jsonString = strings.Replace(jsonString,"AttributeIsReceiverLabel: ","AttributeIsReceiverLabel- ",-1) // change slightly so that the regex will not count it [this is a boolean field]
+	jsonString = strings.Replace(jsonString,"ValueIsReceiverLabel: ","ValueIsReceiverLabel- ",-1) // change slightly so that the regex will not count it [this is a boolean field]
+	jsonString = strings.Replace(jsonString,"SourceLabels: ","SourceLabels- ",-1) // change slightly so that the regex will not count it [this is a map[string]string field]
+	jsonString = strings.Replace(jsonString,"DestinationLabels: ","DestinationLabels- ",-1) // change slightly so that the regex will not count it [this is a map[string]string field]
+
+
 
 	//re := regexp.MustCompile("[[:alnum:]][:][ ][[:alnum:]]") // catches fieldnam[e: v]alue'
 	re := regexp.MustCompile(`(?m)^.*[:][ ]\S+`)
 
 	matches1 := re.FindAllString(yamlString, -1)
 	matches2 := re.FindAllString(jsonString, -1)
+	L3a := 0
+	L3b := 0
+	for _,s :=range(matches1){
+		if strings.Index(s,"sender_label")>=0{
+			re2 := regexp.MustCompile("[[:alnum:]][:][[:alnum:]]") // catches fieldnam[e: v]alue'
+			matches3 := re2.FindAllString(s,-1)
+			L3a += len(matches3)
+		}
+		if strings.Index(s,"receiver_label")>=0{
 
-	L1 := len(matches1)
+			re2 := regexp.MustCompile("[[:alnum:]][:][[:alnum:]]") // catches fieldnam[e: v]alue'
+			matches3 := re2.FindAllString(s,-1)
+			L3b += len(matches3)
+		}
+	}
+
+	L1 := len(matches1)+L3a+L3b
 	L2 := len(matches2)
 	if L1 != L2 {
 		return false, jsonString

@@ -33,7 +33,7 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 
 	results = make([]int, N)
 	sem := make(chan int, N) // semaphore pattern
-	if true{  // check in parallel
+	if false{  // check in parallel
 	for i, rule := range (rules.Rules) { // check all the rules in parallel
 		go func(in_i int, in_rule Rule) {
 			results[in_i] = CheckOneRule(message, &in_rule)
@@ -211,7 +211,7 @@ func testOneCondition(c *Condition,message *MessageAttributes) bool {
 		if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
 			result = compareRegexFunc(valueToCompareString, c.Method, c.ValueRegex)
 		}else{
-			result = compareStringFunc(valueToCompareString, c.Method, c.Value)
+			result = compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex)
 		}
 	case("utcHoursFromMidnight"):
 		valueToCompareFloat = message.RequestTimeHoursFromMidnightUTC
@@ -220,6 +220,46 @@ func testOneCondition(c *Condition,message *MessageAttributes) bool {
 		valueToCompareInt = message.RequestTimeMinutesParity
 		result = compareIntFunc(valueToCompareInt, c.Method, c.ValueInt)
 		fmt.Println("message.RequestTimeMinutesParity=",message.RequestTimeMinutesParity,valueToCompareInt,c.Method, c.ValueInt)
+	case("senderLabel"):
+		if c.AttributeIsSenderLabel==false{
+			panic("senderLabel without the correct format")
+		}
+		if valueToCompareString1,ok := message.SourceLabels[c.AttributeSenderLabelKey]; ok { // enter the block only if the key exists
+			if c.ValueIsReceiverLabel {
+				if valueToCompareString2,ok2 := message.DestinationLabels[c.ValueReceiverLabelKey];ok2 {
+					if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
+						panic("wrong method with comparison of two labels")
+					}
+					result = compareStringFunc(valueToCompareString1, c.Method, valueToCompareString2) // string comparison without wildcards
+				}
+			} else {
+				if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
+					result = compareRegexFunc(valueToCompareString1, c.Method, c.ValueRegex)
+				} else {
+					if c.Method == "EX" || c.Method == "ex" { // just test the existence of the key
+						result = true
+					} else {
+						result = compareStringWithWildcardsFunc(valueToCompareString1, c.Method, c.ValueStringRegex) // string comparison with wildcards
+					}
+				}
+			}
+		}
+	case("receiverLabel"):
+		if c.AttributeIsReceiverLabel==false{
+			panic("receiverLabel without the correct format")
+		}
+		if valueToCompareString1,ok := message.DestinationLabels[c.AttributeReceiverLabelKey]; ok { // enter the block only if the key exists
+			if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
+				result = compareRegexFunc(valueToCompareString1, c.Method, c.ValueRegex)
+			} else {
+				if c.Method == "EX" || c.Method == "ex" { // just test the existence of the key
+					result = true
+				} else {
+					result = compareStringWithWildcardsFunc(valueToCompareString1, c.Method, c.ValueStringRegex) // compare strings with wildcards
+				}
+			}
+		}
+
 	default:
 		panic("condition keyword not supported")
 	}
@@ -262,7 +302,7 @@ func compareFloatFunc(value1 float64, method string ,value2 float64) bool{ //val
 	}
 	return false
 }
-// compareStringFunc compares one string value according the method string.
+// compareStringFunc compares one string value according the method string
 func compareStringFunc(value1 string, method string ,value2 string) bool{
 	switch(method){
 	case "EQ","eq":
@@ -271,6 +311,18 @@ func compareStringFunc(value1 string, method string ,value2 string) bool{
 		return(value1!=value2)
 	}
 	return false
+}
+// compareStringWithWildcardsFunc compares one string value according the method string (supports wildcards)
+func compareStringWithWildcardsFunc(value1 string, method string ,value2 *regexp.Regexp) bool{
+	switch(method){
+	case "EQ","eq":
+		fmt.Println(value2)
+		return (value2.MatchString(value1))
+	case "NEQ","neq":
+		return !(value2.MatchString(value1))
+	}
+	return false
+
 }
 // compareRegexFunc compares one string value according the regular expression string.
 func compareRegexFunc(value1 string, method string ,value2 *regexp.Regexp) bool{ //value2 is the reference value from the rule

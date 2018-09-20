@@ -7,6 +7,9 @@ import (
 	"io/ioutil"
 	"time"
 	"net"
+	"fmt"
+	"encoding/json"
+	"strings"
 )
 
 // YamlReadMessageAttributes function reads message attributes from a yaml string
@@ -36,13 +39,17 @@ func YamlReadMessagesFromString(yamlString string) Messages {
 	var messages Messages
 	err := yaml.Unmarshal([]byte(yamlString), &messages)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		temp_str,_:=fmt.Printf("error: %v", err)
+		panic(temp_str)
 	}
 	//fmt.Printf("---values found:\n%+v\n\n", rule)
 
 	addResourceTypeToMessages(&messages)
 	addTimeInfoToMessages(&messages)
 	addNetIpToMessages(&messages)
+	parseLabelsJsonOfMessages(&messages)
+
+	fmt.Println(messages)
 
 	flag, outputString := IsNumberOfFieldsEqual(messages, yamlString)
 	if flag == false {
@@ -130,4 +137,40 @@ func addNetIpToMessages(messages *Messages) {
 	for i, _ := range (messages.Messages) {
 		AddNetIpToMessage(&messages.Messages[i])
 	}
+}
+
+
+// parseLabelsJsonOfMessage converts json string of labels to map[string]string
+func parseLabelsJsonOfMessage(message *MessageAttributes) {
+
+	/*
+	str:="{key1:abc,key2:def ,key3 : xyz}"
+	str=addQuotesToJsonString(str)
+	z:=make(map[string]string)
+	json.Unmarshal([]byte(str),&z)
+	fmt.Println(z)
+	*/
+
+	str:=addQuotesToJsonString(message.SourceLabelsJson)
+	json.Unmarshal([]byte(str),&message.SourceLabels)
+
+	str=addQuotesToJsonString(message.DestinationLabelsJson)
+	json.Unmarshal([]byte(str),&message.DestinationLabels)
+
+}
+
+func parseLabelsJsonOfMessages(messages *Messages) {
+	for i, _ := range (messages.Messages) {
+		parseLabelsJsonOfMessage(&messages.Messages[i])
+	}
+}
+
+func addQuotesToJsonString(json_string string) (out_string string) {
+	out_string=json_string
+	out_string=strings.Replace(out_string," ","",-1)
+	out_string=strings.Replace(out_string,"{","{\"",-1)
+	out_string=strings.Replace(out_string,",","\",\"",-1)
+	out_string=strings.Replace(out_string,":","\":\"",-1)
+	out_string=strings.Replace(out_string,"}","\"}",-1)
+	return out_string
 }

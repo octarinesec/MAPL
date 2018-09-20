@@ -34,6 +34,15 @@ type Condition struct {
 	ValueInt int64 `yaml:"-"`
 	ValueFloat float64 `yaml:"-"`
 	ValueRegex *regexp.Regexp `yaml:"-"`
+	ValueStringRegex *regexp.Regexp `yaml:"-"`
+
+	AttributeIsSenderLabel bool `yaml:"-"`
+	AttributeSenderLabelKey string `yaml:"-"`
+	AttributeIsReceiverLabel bool `yaml:"-"`
+	AttributeReceiverLabelKey string `yaml:"-"`
+	ValueIsReceiverLabel bool `yaml:"-"`
+	ValueReceiverLabelKey string `yaml:"-"`
+
 }
 
 // ANDConditions structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
@@ -148,6 +157,9 @@ type MessageAttributes struct {
 	SourceService string  `yaml:"sender_service,omitempty"`//  The service identifier
 	DestinationService    string  `yaml:"receiver_service,omitempty"`//  The fully qualified name of the service that the server belongs to.my-svc.my-namespace
 
+	SourceLabelsJson string  `yaml:"sender_labels,omitempty"`//  The sender service labels
+	DestinationLabelsJson string  `yaml:"receiver_labels,omitempty"`//  The receiver service labels
+
 	ContextType string `yaml:"request_type,omitempty"`  // type of context in relation to the ContextProtocol.
 	// examples:
 	// for ContextProtocol HTTP  ContextType=httpPath
@@ -160,6 +172,10 @@ type MessageAttributes struct {
 
 	SourceNetIp net.IP `yaml:"-"`
 	DestinationNetIp net.IP `yaml:"-"`
+
+	SourceLabels map[string]string `yaml:"-"`
+	DestinationLabels map[string]string `yaml:"-"`
+
 }
 
 // Messages structure contains a list of messages
