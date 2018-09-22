@@ -33,7 +33,7 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 
 	results = make([]int, N)
 	sem := make(chan int, N) // semaphore pattern
-	if false{  // check in parallel
+	if true{  // check in parallel
 	for i, rule := range (rules.Rules) { // check all the rules in parallel
 		go func(in_i int, in_rule Rule) {
 			results[in_i] = CheckOneRule(message, &in_rule)
@@ -316,7 +316,6 @@ func compareStringFunc(value1 string, method string ,value2 string) bool{
 func compareStringWithWildcardsFunc(value1 string, method string ,value2 *regexp.Regexp) bool{
 	switch(method){
 	case "EQ","eq":
-		fmt.Println(value2)
 		return (value2.MatchString(value1))
 	case "NEQ","neq":
 		return !(value2.MatchString(value1))

@@ -93,10 +93,27 @@ For example, one rule may have the following set of conditions:
           method: GE
           value: 14
 ```
-which may be traslated to:
+which may be translated to:
 ```
 (payloadSize>=1024 && payloadSize<=4096) || (payloadSize>=16384 && payloadSize<=20000) || (utcHoursFromMidnight>=14 && utcHoursFromMidnight<=16)
 ```
+another rule may have the following set of conditions:
+```yaml
+DNFconditions:
+  - ANDconditions:
+    - attribute: "senderLabel[key1]"
+      method: EQ
+      value: "abc"
+   - ANDconditions:
+    - attribute: "senderLabel[key2]"
+      method: EQ
+      value: "receiverLabel[key2]"
+```      
+which may be translated to: 
+```
+sender service has a label "abc" (for "key1") and the labels of the sender and receiver services for "key2" are equal.
+```
+for an extended spec for conditions on sender/receiver labels please see [Supported Attributes](https://github.com/octarinesec/MAPL/tree/master/docs/SUPPORTED_ATTRIBUTES.md) doc.
 
 #### one-attribute-condition
 A condition is defined as `<attribute, method, value>`  
@@ -127,7 +144,7 @@ The decision is ones of
 - Alert (allow and alert)
 - Block
 
-#### Defaults
+### Defaults
 
 The language was develpoed to handle whitelists.  
 Therefore, in case of several applicable rules, it selects to most restricting decision:  

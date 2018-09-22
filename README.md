@@ -24,7 +24,7 @@ This project is still under active development.
 If you have any questions about MAPL, or about how to use the MAPL engine, please contact MAPL@octarinesec.com  
 
 # Engine Roadmap
-- Currently the engine supports service to service communication. We need to support ingress and egress by IP or CIDR  
+ 
 - Support Istio's source.labels and destination.labels  
 - Suppert HTTP request headers
 - Add patterns to the wildcard use (*,?) similar to fnmatch [https://www.gnu.org/software/libc/manual/html_node/Wildcard-Matching.html]? Or allow input of regex in rules?
@@ -34,8 +34,6 @@ If you have any questions about MAPL, or about how to use the MAPL engine, pleas
 
 # TO-DO:
 
-- handle EX
-- add license
 - add auto-test with full message to see if they follow the syntax
 - fix convertConditionStringToIntFloatRegex. need to avoid putting default values for values that are actually used later
 
