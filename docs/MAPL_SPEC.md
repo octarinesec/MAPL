@@ -69,7 +69,7 @@ The verb "write" corresponds to any of POST, PUT, DELETE, PRODUCE
 MAPL conditions part is a DNF (OR of ANDs) of one-attribute-conditions.  
 This allows for rich and expressive enough testing of message attributes while keeping the rule simple and tractable.  
 For example, one rule may have the following set of conditions:
-```
+```yaml
     DNFconditions:
       - ANDconditions:
         - attribute: payloadSize
@@ -99,15 +99,15 @@ which may be translated to:
 ```
 another rule may have the following set of conditions:
 ```yaml
-DNFconditions:
-  - ANDconditions:
-    - attribute: "senderLabel[key1]"
-      method: EQ
-      value: "abc"
-   - ANDconditions:
-    - attribute: "senderLabel[key2]"
-      method: EQ
-      value: "receiverLabel[key2]"
+    DNFconditions:
+      - ANDconditions:
+        - attribute: "senderLabel[key1]"
+          method: EQ
+          value: "abc"
+       - ANDconditions:
+        - attribute: "senderLabel[key2]"
+          method: EQ
+          value: "receiverLabel[key2]"
 ```      
 which may be translated to: 
 ```

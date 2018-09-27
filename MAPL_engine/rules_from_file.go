@@ -23,9 +23,9 @@ func YamlReadRulesFromString(yamlString string) Rules {
 	if flag == false {
 		panic("number of fields in rules does not match number of fields in yaml file:\n" + outputString)
 	}
-	convertFieldsToRegex(&rules)
+	ConvertFieldsToRegex(&rules)
 	//testFieldsForIP(&rules)
-	rules = convertConditionStringToIntFloatRegex(rules)
+	rules = ConvertConditionStringToIntFloatRegex(rules)
 
 	return rules
 }
@@ -58,20 +58,7 @@ func YamlReadOneRule(yamlString string) Rule {
 	}
 	return rule
 }
-/*
-// testFieldsForIP tests if sender or receiver are IP addresses or CIDRs
-func testFieldsForIP(rules *Rules) {
-	for i, _ := range(rules.Rules) {
 
-		rules.Rules[i].SenderIpFlag = isIPAddress(rules.Rules[i].Sender)
-		rules.Rules[i].SenderCIDRFlag = isCIDR(rules.Rules[i].Sender)
-		rules.Rules[i].ReceiverIpFlag = isIPAddress(rules.Rules[i].Receiver)
-		rules.Rules[i].ReceiverCIDTFlag = isCIDR(rules.Rules[i].Receiver)
-	}
-}
-*/
-
-//
 func isIpCIDR(str string) (isIP,isCIDR bool,IP_out net.IP,IPNet_out net.IPNet) {
 
 	_, IPNet_temp, error := net.ParseCIDR(str)
@@ -94,17 +81,17 @@ func isIpCIDR(str string) (isIP,isCIDR bool,IP_out net.IP,IPNet_out net.IPNet) {
 
 // convertFieldsToRegex converts some rule fields into regular expressions to be used later.
 // This enables use of wildcards in the sender, receiver names, etc...
-func convertFieldsToRegex(rules *Rules) {
+func ConvertFieldsToRegex(rules *Rules) {
 	// we replace wildcards with the corresponding regex
 
 	for i, _ := range(rules.Rules) {
 
-		rules.Rules[i].SenderList = convertStringToExpandedSenderReceiver(rules.Rules[i].Sender)
-		rules.Rules[i].ReceiverList = convertStringToExpandedSenderReceiver(rules.Rules[i].Receiver)
+		rules.Rules[i].SenderList = ConvertStringToExpandedSenderReceiver(rules.Rules[i].Sender)
+		rules.Rules[i].ReceiverList = ConvertStringToExpandedSenderReceiver(rules.Rules[i].Receiver)
 
-		rules.Rules[i].OperationRegex = regexp.MustCompile(convertOperationStringToRegex(rules.Rules[i].Operation)).Copy() // a special case of regex for operations to support CRUD
+		rules.Rules[i].OperationRegex = regexp.MustCompile(ConvertOperationStringToRegex(rules.Rules[i].Operation)).Copy() // a special case of regex for operations to support CRUD
 
-		re := regexp.MustCompile(convertStringToRegex(rules.Rules[i].Resource.ResourceName))
+		re := regexp.MustCompile(ConvertStringToRegex(rules.Rules[i].Resource.ResourceName))
 		rules.Rules[i].Resource.ResourceNameRegex = re.Copy()
 
 	}
@@ -113,7 +100,7 @@ func convertFieldsToRegex(rules *Rules) {
 }
 
 // convertStringToRegex function converts one string to regex. Remove spaces, handle special characters and wildcards.
-func convertStringToRegex(str_in string) string{
+func ConvertStringToRegex(str_in string) string{
 
 	str_list := strings.Split(str_in, ";")
 
@@ -138,7 +125,7 @@ func convertStringToRegex(str_in string) string{
 	return str_out
 }
 
-func convertStringToExpandedSenderReceiver(str_in string) []ExpandedSenderReceiver{
+func ConvertStringToExpandedSenderReceiver(str_in string) []ExpandedSenderReceiver{
 	var output []ExpandedSenderReceiver
 
 	str_list := strings.Split(str_in, ";")
@@ -166,7 +153,7 @@ func convertStringToExpandedSenderReceiver(str_in string) []ExpandedSenderReceiv
 
 // convertOperationStringToRegex function converts the operations string to regex.
 // this is a special case of convertStringToRegex
-func convertOperationStringToRegex(str_in string) string{
+func ConvertOperationStringToRegex(str_in string) string{
 
 	str_out:=""
 	switch(str_in){
@@ -177,14 +164,14 @@ func convertOperationStringToRegex(str_in string) string{
 	case "read", "READ":
 		str_out="(^GET$|^HEAD$|^OPTIONS$|^TRACE$|^read$|^READ$)"
 	default:
-		str_out=convertStringToRegex(str_in)
+		str_out=ConvertStringToRegex(str_in)
 	}
 	return str_out
 }
 
 // convertConditionStringToIntFloatRegex convert values in strings in the conditions to integers, floats and regex
 // (or keep them default in case of failure)
-func convertConditionStringToIntFloatRegex(rules_in Rules) Rules {
+func ConvertConditionStringToIntFloatRegex(rules_in Rules) Rules {
 	rules_out := rules_in
 
 	for i_rule, r := range(rules_out.Rules) {
@@ -203,7 +190,7 @@ func convertConditionStringToIntFloatRegex(rules_in Rules) Rules {
 					rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueRegex = re.Copy()  // this is used in RE,NRE
 				}
 
-				re,err = regexp.Compile(convertStringToRegex(condition.Value))
+				re,err = regexp.Compile(ConvertStringToRegex(condition.Value))
 				if err == nil{
 					rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueStringRegex = re.Copy() // this is used in EQ,NEQ
 				}else{

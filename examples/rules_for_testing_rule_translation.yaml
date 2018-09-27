@@ -1,0 +1,158 @@
+rules:
+
+  - rule_id: 0
+    sender: "A.my_namespace"
+    receiver: "B.my_namespace"
+    resource:
+      resourceProtocol: http
+      resourceType: httpPath
+      resourceName: "/*"
+    operation: GET
+    decision: allow
+
+  - rule_id: 1
+    sender: "*"
+    receiver: "serviceX"
+    resource:
+      resourceProtocol: HTTP
+      resourceType: httpPath
+      resourceName: "/*"
+    operation: GET
+    DNFconditions:
+      - ANDconditions:
+        - attribute: "senderLabel[key1]"
+          method: EQ
+          value: "a"
+        - attribute: payloadSize
+          method: LE
+          value: 4096
+    decision: allow
+
+  - rule_id: 2
+    sender: "*"
+    receiver: "serviceX"
+    resource:
+      resourceProtocol: HTTP
+      resourceType: httpPath
+      resourceName: "/*"
+    operation: GET
+    DNFconditions:
+      - ANDconditions:
+        - attribute: "senderLabel[key3]"
+          method: EQ
+          value: "c"
+        - attribute: "senderLabel[key5]"
+          method: EQ
+          value: "e"
+    decision: allow
+
+  - rule_id: 3
+    sender: "serviceY"
+    receiver: "*"
+    resource:
+      resourceProtocol: HTTP
+      resourceType: httpPath
+      resourceName: "/*"
+    operation: GET
+    DNFconditions:
+      - ANDconditions:
+        - attribute: "receiverLabel[key3]"
+          method: EQ
+          value: "c"
+    decision: allow
+
+  - rule_id: 4
+    sender: "*"
+    receiver: "*"
+    resource:
+      resourceProtocol: HTTP
+      resourceType: httpPath
+      resourceName: "/books/*"
+    operation: WRITE
+    DNFconditions:
+      - ANDconditions:
+        - attribute: "receiverLabel[key3]"
+          method: EQ
+          value: "c"
+    decision: allow
+
+  - rule_id: 5
+    sender: "*"
+    receiver: "*"
+    resource:
+      resourceProtocol: HTTP
+      resourceType: httpPath
+      resourceName: "/books/*"
+    operation: POST
+    DNFconditions:
+      - ANDconditions:
+        - attribute: "receiverLabel[key3]"
+          method: EQ
+          value: "c"
+        - attribute: "senderLabel[key1]"
+          method: EQ
+          value: "A"
+    decision: allow
+
+
+  - rule_id: 6
+    sender: "*"
+    receiver: "*"
+    resource:
+      resourceProtocol: HTTP
+      resourceType: httpPath
+      resourceName: "/books/*"
+    operation: POST
+    DNFconditions:
+      - ANDconditions:
+        - attribute: "receiverLabel[key3]"
+          method: EQ
+          value: "C"
+        - attribute: "senderLabel[key1]"
+          method: EQ
+          value: "A"
+      - ANDconditions:
+        - attribute: "receiverLabel[key4]"
+          method: EQ
+          value: "d"
+        - attribute: "senderLabel[key5]"
+          method: EQ
+          value: "e"
+      - ANDconditions:
+        - attribute: "receiverLabel[key4]"
+          method: EQ
+          value: "d"
+        - attribute: "senderLabel[key1]"
+          method: EQ
+          value: "abc"
+    decision: allow
+
+  - rule_id: 7
+    sender: "*"
+    receiver: "serviceX"
+    resource:
+      resourceProtocol: HTTP
+      resourceType: httpPath
+      resourceName: "/books/*"
+    operation: WRITE
+    DNFconditions:
+      - ANDconditions:
+        - attribute: "senderLabel[can-access-serviceX]"
+          method: EQ
+          value: "true"
+    decision: allow
+
+  - rule_id: 8
+    sender: "*"
+    receiver: "serviceY"
+    resource:
+      resourceProtocol: HTTP
+      resourceType: httpPath
+      resourceName: "/books/*"
+    operation: WRITE
+    DNFconditions:
+      - ANDconditions:
+        - attribute: "senderLabel[can-access-serviceY]"
+          method: EQ
+          value: "true"
+    decision: allow

@@ -16,6 +16,20 @@ The following keywords are used in MAPL conditions with the value to-compare-wit
 
 ## Sender/Receiver Labels
 
+The conditions may use labels when the service environment supports them.  
+For example, in Kubernetes, a service may have labels in its metadata:
+```yaml
+"metadata": {
+  "labels": {
+    "key1" : "value1",
+    "key2" : "value2"
+  }
+}
+``` 
+see also: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/  
+  
+  
+#### Using the Labels 
 * Conditions on the labels have the following syntax:
    - <"senderLabel[key]", "EQ"/"EX"/"RE"/"NEQ"/"NEX"/"NRE", value>  
    where the condition compares the sender service label with the given key, using the method EQ (equality), EX (existence), RE (regular expression) or their negation, 

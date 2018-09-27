@@ -148,7 +148,7 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 	// test conditions:
 	conditionsResult := true // if there are no conditions then we skip the test and return the rule.Decision
 	if len(rule.DNFConditions)>0{
-		conditionsResult = testConditions(rule, message)
+		conditionsResult = TestConditions(rule, message)
 	}
 	if conditionsResult == false {
 		return DEFAULT
@@ -168,7 +168,7 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 }
 
 // testConditions tests the conditions of the rule with the message attributes
-func testConditions(rule *Rule, message *MessageAttributes) bool{
+func TestConditions(rule *Rule, message *MessageAttributes) bool{
 	//
 	dnfConditions:=rule.DNFConditions
 	res:=make([]bool, len(dnfConditions))
@@ -203,6 +203,10 @@ func testOneCondition(c *Condition,message *MessageAttributes) bool {
 	result:=false
 	// select type of test by types of attribute and methods
 	switch (c.Attribute){
+	case "true","TRUE":
+		result = true
+	case "false","FALSE":
+		result = false
 	case("payloadSize"):
 		valueToCompareInt = message.RequestSize
 		result = compareIntFunc(valueToCompareInt, c.Method, c.ValueInt)
