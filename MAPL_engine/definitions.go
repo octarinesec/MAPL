@@ -43,6 +43,9 @@ type Condition struct {
 	ValueIsReceiverLabel bool `yaml:"-"`
 	ValueReceiverLabelKey string `yaml:"-"`
 
+	OriginalAttribute string `yaml:"-"` // used in hash
+	OriginalValue     string `yaml:"-"` // used in hash
+
 }
 
 // ANDConditions structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)

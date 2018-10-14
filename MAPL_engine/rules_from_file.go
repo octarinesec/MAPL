@@ -8,6 +8,9 @@ import (
 	"io/ioutil"
 	"strconv"
 	"net"
+	"crypto/md5"
+	"fmt"
+	"sort"
 )
 
 // YamlReadRulesFromString function reads rules from a yaml string
@@ -177,6 +180,10 @@ func ConvertConditionStringToIntFloatRegex(rules_in Rules) Rules {
 	for i_rule, r := range(rules_out.Rules) {
 		for i_dnf, andConditions:=range(r.DNFConditions) {
 			for i_and, condition := range (andConditions.ANDConditions) {
+
+				rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].OriginalAttribute=condition.Attribute // used in hash
+				rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].OriginalValue=condition.Value // used in hash
+
 				valFloat, err := strconv.ParseFloat(condition.Value, 64)
 				if err == nil {
 					rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueFloat = valFloat
@@ -245,3 +252,35 @@ func ConvertConditionStringToIntFloatRegex(rules_in Rules) Rules {
 	return rules_out
 }
 
+func RuleMD5Hash(rule Rule) (md5hash string){
+	strMainPart := rule.Decision+"-"+rule.Sender+"-"+rule.Receiver+"-"+rule.Operation+"-["+rule.Resource.ResourceProtocol+"-"+rule.Resource.ResourceType+"-"+rule.Resource.ResourceName+"]"
+
+	dnfStrings:= []string{}
+	for _, andConditions := range rule.DNFConditions{
+		andStrings := []string{}
+		for _,condition := range andConditions.ANDConditions{
+			andStrings=append(andStrings,"<"+condition.OriginalAttribute+":"+condition.Method+":"+condition.OriginalValue+">")
+		}
+		sort.Strings(andStrings)
+		andStr:=""
+		for _, str:=range(andStrings){
+			andStr+=str+"&"
+		}
+		andStr=andStr[:len(andStr)-1]
+		dnfStrings=append(dnfStrings,andStr)
+	}
+	sort.Strings(dnfStrings)
+	totalDNFstring:="("
+	for _, str:=range(dnfStrings){
+		totalDNFstring+=str+")|("
+	}
+	totalDNFstring=totalDNFstring[:len(totalDNFstring)-2]
+
+	ruleStr:=strMainPart+"-"+totalDNFstring
+
+	data := []byte(ruleStr)
+	//md5hash = fmt.Sprintf("%x", md5.Sum(data))
+	md5hash = fmt.Sprintf("%x", md5.Sum(data))
+
+	return md5hash
+}

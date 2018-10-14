@@ -27,7 +27,14 @@ func main() {
 		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
 	}
 
-	str:="test whitelist: conditions with sender and receiver labels. Expected results:"
+
+	str:="test hash function. expected result: although the conditions are ordered differently, rule 0 and rule 1 should have the same hash\n and also rule 2 and rule 4"
+	fmt.Println(str)
+	Test_MD5Hash("examples/rules_with_label_conditions_for_hash_tests.yaml")
+	fmt.Println("----------------------")
+
+
+	str="test whitelist: conditions with sender and receiver labels. Expected results:"
 	fmt.Println(str)
 	Test_CheckMessages("examples/rules_with_label_conditions.yaml","examples/messages_test_with_label_conditions.yaml")
 	fmt.Println("----------------------")
@@ -134,3 +141,16 @@ func Test_CheckMessages(rulesFilename string,messagesFilename string) {
 	}
 }
 
+
+// Test_MD5Hash reads the rules outputs the MD5 hash of the rule
+func Test_MD5Hash(rulesFilename string) {
+
+	var rules= MAPL_engine.YamlReadRulesFromFile(rulesFilename)
+
+	for i_rule, rule := range(rules.Rules) {
+
+		md5hash:=MAPL_engine.RuleMD5Hash(rule)
+		fmt.Printf("rule #%v: md5hash = %v\n", i_rule, md5hash)
+
+	}
+}
