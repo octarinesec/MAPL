@@ -259,7 +259,15 @@ func RuleMD5Hash(rule Rule) (md5hash string){
 	for _, andConditions := range rule.DNFConditions{
 		andStrings := []string{}
 		for _,condition := range andConditions.ANDConditions{
-			andStrings=append(andStrings,"<"+condition.OriginalAttribute+":"+condition.Method+":"+condition.OriginalValue+">")
+			tempStr1:=condition.OriginalAttribute
+			if len(tempStr1)==0{
+				tempStr1=condition.Attribute
+			}
+			tempStr2:=condition.OriginalValue
+			if len(tempStr2)==0{
+				tempStr2=condition.Value
+			}
+			andStrings=append(andStrings,"<"+tempStr1+":"+condition.Method+":"+tempStr2+">")
 		}
 		sort.Strings(andStrings)
 		andStr:=""
@@ -274,7 +282,11 @@ func RuleMD5Hash(rule Rule) (md5hash string){
 	for _, str:=range(dnfStrings){
 		totalDNFstring+=str+")|("
 	}
-	totalDNFstring=totalDNFstring[:len(totalDNFstring)-2]
+	if len(dnfStrings)>0 {
+		totalDNFstring = totalDNFstring[:len(totalDNFstring)-2]
+	}else{
+		totalDNFstring="no conditions"
+	}
 
 	ruleStr:=strMainPart+"-"+totalDNFstring
 
