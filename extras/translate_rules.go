@@ -1,4 +1,4 @@
-package main
+package extras
 
 import (
 	"github.com/octarinesec/MAPL/MAPL_engine"
@@ -14,144 +14,132 @@ import (
 // this is an empty message populated later with message.SenderLabels and message.DestinationLabels to test the rule conditions on the message.
 var message_attributes MAPL_engine.MessageAttributes
 
-// The main test calls RemoveLabelConditionsFromRules with the rule structure.
-func main() {
 
-	service_labels := make(map[string]map[string]string)
-
-	service_labels["serviceA"]=map[string]string{"key1":"a", "key2":"b", "key3":"c", "key4":"d", "key5":"e","can-access-serviceX":"true"}
-	service_labels["serviceB"]=map[string]string{"key1":"a", "key2":"b", "key3":"c", "key4":"d"}
-	service_labels["serviceC"]=map[string]string{"key1":"A", "key2":"B", "key3":"C"}
-	service_labels["serviceD"]=map[string]string{"key1":"A", "key2":"B","can-access-serviceX":"true"}
-	service_labels["serviceE"]=map[string]string{"key1":"abc", "key2":"def","can-access-serviceY":"true"}
-	service_labels["serviceX"]=map[string]string{}
-	service_labels["serviceY"]=map[string]string{}
-
-	rulesFilename := "examples/rules_for_testing_rule_translation.yaml"
-	var rules= MAPL_engine.YamlReadRulesFromFile(rulesFilename)
-
-	messagesFilename := "examples/messages_for_rule_translation.yaml"
-	var messages = MAPL_engine.YamlReadMessagesFromFile(messagesFilename)
-	message_attributes = messages.Messages[0]
-
-	RemoveLabelConditionsFromRules(rules,service_labels)
-}
-
-// function RemoveLabelConditionsFromRules is the main function for translation of conditions on Sender and Receiver Labels to
+// function RemoveLabelConditionsFromRule is the main function for translation of conditions on Sender and Receiver Labels to
 // the equivalent Sender/Receiver names
-func RemoveLabelConditionsFromRules(rules MAPL_engine.Rules, service_labels map[string]map[string]string) (new_rules MAPL_engine.Rules){
+func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[string]map[string]string) (new_rules MAPL_engine.Rules) {
 
-	for _, rule := range(rules.Rules){ // go over all of the rules
+	translateSenderLabelsFlag := false
+	translateReceiverLabelsFlag := false
 
-		translateSenderLabelsFlag:=false
-		translateReceiverLabelsFlag:=false
+	senders := []string{}
+	receivers := []string{}
+	receivers_map := map[string][]string{}
 
-		senders := []string{}
-		receivers := []string{}
-		receivers_map := map[string][]string{}
-
-		rule_temp:=rule // we work on rule_temp. since we send a pointer to rule_temp and changes are made to it.
-		new_rule:=rule // by default we just copy the rule without a change
-		// check for label conditions:
-		for _,andCondition:=range(rule_temp.DNFConditions){
-			for _,condition:=range(andCondition.ANDConditions){
-				if condition.AttributeIsSenderLabel{
-					//sanity: if we translate sender labels to sender names then the sender name must be "*"
-					if rule_temp.Sender!="*"{
-						panic("when translating rules: sender!=\"*\"")
-					}
-					translateSenderLabelsFlag=true
+	rule_temp := rule // we work on rule_temp. since we send a pointer to rule_temp and changes are made to it.
+	new_rule := rule  // by default we just copy the rule without a change
+	// check for label conditions:
+	for _, andCondition := range (rule_temp.DNFConditions) {
+		for _, condition := range (andCondition.ANDConditions) {
+			if condition.AttributeIsSenderLabel {
+				//sanity: if we translate sender labels to sender names then the sender name must be "*"
+				if rule_temp.Sender != "*" {
+					panic("when translating rules: sender!=\"*\"")
 				}
-				if condition.AttributeIsReceiverLabel{
-					//sanity: if we translate receiver labels to receiver names then the receiver name must be "*"
-					if rule_temp.Receiver!="*"{
-						panic("when translating rules: receiver!=\"*\"")
-					}
-					translateReceiverLabelsFlag=true
-				}
-				if condition.ValueIsReceiverLabel{
-					panic("when translating rules: labels as values are not supported")
-				}
+				translateSenderLabelsFlag = true
 			}
-		}
-
-		if translateSenderLabelsFlag && translateReceiverLabelsFlag{ // this is a special case: there are conditions both on the sender labels and the receiver labels
-			rule_temp=rule
-			senders = getServicesFromRule(&rule_temp, service_labels, 1) // test which senders satisfy at least one sender label condition
-			rule_temp=rule
-			receivers = getServicesFromRule(&rule_temp, service_labels, 2)  // test which receivers satisfy at least one receiver label condition
-			rule_temp=rule
-			receivers_map = getServicesFromRuleWithSenderReceiverLists(&rule_temp, service_labels, senders, receivers) // now go over all the pairs and test which are satisfied together
-
-			useRulePerReceiverFlag:=false // test if all the receivers are satisfied by the same sender list:
-			i:=0
-			var value0 []string
-			for _,value:=range(receivers_map){
-				if i==0{
-					value0=value
-				}else{
-					if !testSliceEquality(value,value0){
-						useRulePerReceiverFlag=true
-					}
+			if condition.AttributeIsReceiverLabel {
+				//sanity: if we translate receiver labels to receiver names then the receiver name must be "*"
+				if rule_temp.Receiver != "*" {
+					panic("when translating rules: receiver!=\"*\"")
 				}
-				i++
+				translateReceiverLabelsFlag = true
 			}
-
-			if !useRulePerReceiverFlag{ // all the receivers are satisfied by the same sender list. then we can make it one rule
-				//sanity:
-				if !testSliceEquality(senders,value0) {
-					panic("somethings is wrong: in \"translateSenderLabelsFlag && translateReceiverLabelsFlag == true\" part")
-				}
-				new_rule.DNFConditions=removeLabelConditions(&new_rule)
-				new_rule.Sender=strings.Join(senders, ";")
-				new_rule.Receiver=strings.Join(receivers, ";")
-				new_rules.Rules = append(new_rules.Rules, new_rule)
-			}else{ // NOT all the receivers are satisfied by the same sender list. then we have to make one rule per receiver in the list
-				counter:=0
-				for r,s:=range(receivers_map) {
-					counter+=1
-					new_rule=rule
-					new_rule.RuleID=fmt.Sprintf("%s-%d",new_rule.RuleID,counter)
-					new_rule.DNFConditions = removeLabelConditions(&new_rule)
-					new_rule.Sender = strings.Join(s, ";")
-					new_rule.Receiver = r
-					new_rules.Rules = append(new_rules.Rules, new_rule)
-				}
-			}
-		}else {
-			if translateSenderLabelsFlag { // there are only conditions on the sender labels
-
-				senders = getServicesFromRule(&rule_temp, service_labels, 1)
-				if len(senders) == 0 {
-					panic("failed to translate sender labels")
-				}
-				new_rule.DNFConditions=removeLabelConditions(&new_rule)
-				new_rule.Sender=strings.Join(senders, ";")
-				new_rules.Rules = append(new_rules.Rules, new_rule)
-			}
-			if translateReceiverLabelsFlag { // there are only conditions on the receiver labels
-				receivers = getServicesFromRule(&rule_temp, service_labels, 2)
-				if len(receivers) == 0 {
-					panic("failed to translate receiver labels")
-				}
-				new_rule.DNFConditions=removeLabelConditions(&new_rule)
-				new_rule.Receiver=strings.Join(receivers, ";")
-				new_rules.Rules = append(new_rules.Rules, new_rule)
-			}
-			if !translateSenderLabelsFlag && !translateReceiverLabelsFlag { // there are no condtions on any labels, so we just copy the rule
-				new_rules.Rules = append(new_rules.Rules, new_rule)
+			if condition.ValueIsReceiverLabel {
+				panic("when translating rules: labels as values are not supported")
 			}
 		}
 	}
 
-	// recreate regular expressions and convert condition values:
-	MAPL_engine.ConvertFieldsToRegex(&new_rules)
-	new_rules = MAPL_engine.ConvertConditionStringToIntFloatRegex(new_rules)
+	if translateSenderLabelsFlag && translateReceiverLabelsFlag { // this is a special case: there are conditions both on the sender labels and the receiver labels
+		rule_temp = rule
+		senders = getServicesFromRule(&rule_temp, service_labels, 1) // test which senders satisfy at least one sender label condition
+		rule_temp = rule
+		receivers = getServicesFromRule(&rule_temp, service_labels, 2) // test which receivers satisfy at least one receiver label condition
+		rule_temp = rule
+		receivers_map = getServicesFromRuleWithSenderReceiverLists(&rule_temp, service_labels, senders, receivers) // now go over all the pairs and test which are satisfied together
 
-	filename := "outputs/translated_rules.yaml"
-	outputRulesToFile(&new_rules,filename)
+		useRulePerReceiverFlag := false // test if all the receivers are satisfied by the same sender list:
+		i := 0
+		var value0 []string
+		for _, value := range (receivers_map) {
+			if i == 0 {
+				value0 = value
+			} else {
+				if !testSliceEquality(value, value0) {
+					useRulePerReceiverFlag = true
+				}
+			}
+			i++
+		}
 
+		if !useRulePerReceiverFlag { // all the receivers are satisfied by the same sender list. then we can make it one rule
+			//sanity:
+			if !testSliceEquality(senders, value0) {
+				panic("somethings is wrong: in \"translateSenderLabelsFlag && translateReceiverLabelsFlag == true\" part")
+			}
+			new_rule.DNFConditions = removeLabelConditions(&new_rule)
+			new_rule.Sender = strings.Join(senders, ";")
+			new_rule.Receiver = strings.Join(receivers, ";")
+			new_rules.Rules = append(new_rules.Rules, new_rule)
+		} else { // NOT all the receivers are satisfied by the same sender list. then we have to make one rule per receiver in the list
+			counter := 0
+			for r, s := range (receivers_map) {
+				counter += 1
+				new_rule = rule
+				new_rule.RuleID = fmt.Sprintf("%s-%d", new_rule.RuleID, counter)
+				new_rule.DNFConditions = removeLabelConditions(&new_rule)
+				new_rule.Sender = strings.Join(s, ";")
+				new_rule.Receiver = r
+				new_rules.Rules = append(new_rules.Rules, new_rule)
+			}
+		}
+	} else {
+		if translateSenderLabelsFlag { // there are only conditions on the sender labels
+
+			senders = getServicesFromRule(&rule_temp, service_labels, 1)
+			if len(senders) == 0 {
+				senders = []string{"NO_SENDER_COMPLY_WITH_RULE"}
+				//panic("failed to translate sender labels")
+			}
+			new_rule.DNFConditions = removeLabelConditions(&new_rule)
+			new_rule.Sender = strings.Join(senders, ";")
+			new_rules.Rules = append(new_rules.Rules, new_rule)
+		}
+		if translateReceiverLabelsFlag { // there are only conditions on the receiver labels
+			receivers = getServicesFromRule(&rule_temp, service_labels, 2)
+			if len(receivers) == 0 {
+				receivers = []string{"NO_RECEIVER_COMPLY_WITH_RULE"}
+				//panic("failed to translate receiver labels")
+			}
+			new_rule.DNFConditions = removeLabelConditions(&new_rule)
+			new_rule.Receiver = strings.Join(receivers, ";")
+			new_rules.Rules = append(new_rules.Rules, new_rule)
+		}
+		if !translateSenderLabelsFlag && !translateReceiverLabelsFlag { // there are no condtions on any labels, so we just copy the rule
+			new_rules.Rules = append(new_rules.Rules, new_rule)
+		}
+	}
 	return new_rules
+}
+
+// function RemoveLabelConditionsFromRules calls RemoveLabelConditionsFromRule which is the main function for translation of conditions on Sender and Receiver Labels to
+// the equivalent Sender/Receiver names
+func RemoveLabelConditionsFromRules(rules MAPL_engine.Rules, service_labels map[string]map[string]string) (newRules MAPL_engine.Rules){
+
+	for _, rule := range(rules.Rules){ // go over all of the rules
+
+		new_rules:=RemoveLabelConditionsFromRule(rule, service_labels)
+		for _,new_rule:=range(new_rules.Rules) {
+			newRules.Rules = append(newRules.Rules, new_rule)
+		}
+	}
+
+	// recreate regular expressions and convert condition values:
+	MAPL_engine.ConvertFieldsToRegex(&newRules)
+	MAPL_engine.ConvertConditionStringToIntFloatRegex(&newRules)
+
+	return newRules
 }
 
 // getSendersFromRule translate the conditions on the labels into services that satisfy them
@@ -256,8 +244,8 @@ func removeLabelConditions(rule *MAPL_engine.Rule) (new_DNFConditions []MAPL_eng
 	return new_DNFConditions
 }
 
-// outputRulesToFile: create a new yaml file of the new translated rules
-func outputRulesToFile(rules *MAPL_engine.Rules,filename string){
+// OutputRulesToFile: create a new yaml file of the new translated rules
+func OutputRulesToFile(rules *MAPL_engine.Rules,filename string){
 	f, err := os.Create(filename)
 	if err != nil {
 		panic(err)

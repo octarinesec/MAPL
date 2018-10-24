@@ -21,54 +21,54 @@ type Resource struct {
 	kafka:consumerGroup:<consumer_group_name>
 	TCP:port:<port number>
 	*/
-	ResourceProtocol string `yaml:"resourceProtocol,omitempty"`
-	ResourceType     string `yaml:"resourceType,omitempty"`
-	ResourceName     string `yaml:"resourceName,omitempty"`
-	ResourceNameRegex *regexp.Regexp `yaml:"-"`
+	ResourceProtocol string `yaml:"resourceProtocol,omitempty" bson:"ResourceProtocol"`
+	ResourceType     string `yaml:"resourceType,omitempty" bson:"ResourceType"`
+	ResourceName     string `yaml:"resourceName,omitempty" bson:"ResourceName"`
+	ResourceNameRegex *regexp.Regexp `yaml:"-" bson:",omitempty"`
 }
 // Condition structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
 type Condition struct {
-	Attribute string `yaml:"attribute,omitempty"`
-	Method    string `yaml:"method,omitempty"`
-	Value     string `yaml:"value,omitempty"`
-	ValueInt int64 `yaml:"-"`
-	ValueFloat float64 `yaml:"-"`
-	ValueRegex *regexp.Regexp `yaml:"-"`
-	ValueStringRegex *regexp.Regexp `yaml:"-"`
+	Attribute string `yaml:"attribute,omitempty" bson:"Attribute"`
+	Method    string `yaml:"method,omitempty" bson:"Method"`
+	Value     string `yaml:"value,omitempty" bson:"Value"`
+	ValueInt int64 `yaml:"-" bson:",omitempty"`
+	ValueFloat float64 `yaml:"-" bson:",omitempty"`
+	ValueRegex *regexp.Regexp `yaml:"-" bson:",omitempty"`
+	ValueStringRegex *regexp.Regexp `yaml:"-" bson:",omitempty"`
 
-	AttributeIsSenderLabel bool `yaml:"-"`
-	AttributeSenderLabelKey string `yaml:"-"`
-	AttributeIsReceiverLabel bool `yaml:"-"`
-	AttributeReceiverLabelKey string `yaml:"-"`
-	ValueIsReceiverLabel bool `yaml:"-"`
-	ValueReceiverLabelKey string `yaml:"-"`
+	AttributeIsSenderLabel bool `yaml:"-" bson:",omitempty"`
+	AttributeSenderLabelKey string `yaml:"-" bson:",omitempty"`
+	AttributeIsReceiverLabel bool `yaml:"-" bson:",omitempty"`
+	AttributeReceiverLabelKey string `yaml:"-" bson:",omitempty"`
+	ValueIsReceiverLabel bool `yaml:"-" bson:",omitempty"`
+	ValueReceiverLabelKey string `yaml:"-" bson:",omitempty"`
 
-	OriginalAttribute string `yaml:"-"` // used in hash
-	OriginalValue     string `yaml:"-"` // used in hash
+	OriginalAttribute string `yaml:"-" bson:",omitempty"` // used in hash
+	OriginalValue     string `yaml:"-" bson:",omitempty"` // used in hash
 
 }
 
 // ANDConditions structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
 type ANDConditions struct {
-	ANDConditions []Condition `yaml:"ANDconditions,omitempty"`
+	ANDConditions []Condition `yaml:"ANDconditions,omitempty" bson:"ANDConditions,omitempty"`
 }
 // Rule structure - as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
 type Rule struct {
 	// rule syntax:
 	//	<sender, receiver, resource, operation> : <conditions> : <decision>
 	//
-	RuleID        string          `yaml:"rule_id,omitempty"`
-	Sender        string          `yaml:"sender,omitempty"`
-	Receiver      string          `yaml:"receiver,omitempty"`
-	Resource      Resource        `yaml:"resource,omitempty"`
-	Operation     string          `yaml:"operation,omitempty"`
-	DNFConditions []ANDConditions `yaml:"DNFconditions,omitempty"`
-	Decision      string          `yaml:"decision,omitempty"`
+	RuleID        string          `yaml:"rule_id,omitempty" bson:"RuleID,omitempty"`
+	Sender        string          `yaml:"sender,omitempty" bson:"Sender"`
+	Receiver      string          `yaml:"receiver,omitempty" bson:"Receiver"`
+	Resource      Resource        `yaml:"resource,omitempty" bson:"Resource"`
+	Operation     string          `yaml:"operation,omitempty" bson:"Operation"`
+	DNFConditions []ANDConditions `yaml:"DNFconditions,omitempty" bson:"DNFConditions,omitempty"`
+	Decision      string          `yaml:"decision,omitempty" bson:"Decision"`
 
-	OperationRegex *regexp.Regexp `yaml:"-"`
+	OperationRegex *regexp.Regexp `yaml:"-" bson:",omitempty"`
 
-	SenderList []ExpandedSenderReceiver `yaml:"-"`
-	ReceiverList []ExpandedSenderReceiver `yaml:"-"`
+	SenderList []ExpandedSenderReceiver `yaml:"-" bson:",omitempty"`
+	ReceiverList []ExpandedSenderReceiver `yaml:"-" bson:",omitempty"`
 }
 // Rules structure contains a list of rules
 type Rules struct {
