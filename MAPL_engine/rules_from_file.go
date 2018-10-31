@@ -26,9 +26,9 @@ func YamlReadRulesFromString(yamlString string) Rules {
 	if flag == false {
 		panic("number of fields in rules does not match number of fields in yaml file:\n" + outputString)
 	}
-	ConvertFieldsToRegex(&rules)
+	ConvertFieldsToRegexManyRules(&rules)
 	//testFieldsForIP(&rules)
-	ConvertConditionStringToIntFloatRegex(&rules)
+	ConvertConditionStringToIntFloatRegexManyRules(&rules)
 
 	return rules
 }
@@ -83,21 +83,27 @@ func isIpCIDR(str string) (isIP,isCIDR bool,IP_out net.IP,IPNet_out net.IPNet) {
 }
 
 // convertFieldsToRegex converts some rule fields into regular expressions to be used later.
-// This enables use of wildcards in the sender, receiver names, etc...
-func ConvertFieldsToRegex(rules *Rules) {
+// This enables use of wildcards in the sender, receiver names, etc... for array of rules
+func ConvertFieldsToRegexManyRules(rules *Rules) {
 	// we replace wildcards with the corresponding regex
 
-	for i, _ := range(rules.Rules) {
-
-		rules.Rules[i].SenderList = ConvertStringToExpandedSenderReceiver(rules.Rules[i].Sender)
-		rules.Rules[i].ReceiverList = ConvertStringToExpandedSenderReceiver(rules.Rules[i].Receiver)
-
-		rules.Rules[i].OperationRegex = regexp.MustCompile(ConvertOperationStringToRegex(rules.Rules[i].Operation)).Copy() // a special case of regex for operations to support CRUD
-
-		re := regexp.MustCompile(ConvertStringToRegex(rules.Rules[i].Resource.ResourceName))
-		rules.Rules[i].Resource.ResourceNameRegex = re.Copy()
-
+	for i, _ := range (rules.Rules) {
+		ConvertFieldsToRegex(&rules.Rules[i])
 	}
+}
+
+// convertFieldsToRegex converts some rule fields into regular expressions to be used later.
+// This enables use of wildcards in the sender, receiver names, etc...
+func ConvertFieldsToRegex(rule *Rule) {
+
+		rule.SenderList = ConvertStringToExpandedSenderReceiver(rule.Sender)
+		rule.ReceiverList = ConvertStringToExpandedSenderReceiver(rule.Receiver)
+
+		rule.OperationRegex = regexp.MustCompile(ConvertOperationStringToRegex(rule.Operation)).Copy()  // a special case of regex for operations to support CRUD
+
+		re := regexp.MustCompile(ConvertStringToRegex(rule.Resource.ResourceName))
+		rule.Resource.ResourceNameRegex = re.Copy()
+
  	//fmt.Printf("%+v\n",rules)
 	//fmt.Println("-------------")
 }
@@ -172,79 +178,82 @@ func ConvertOperationStringToRegex(str_in string) string{
 	return str_out
 }
 
-// convertConditionStringToIntFloatRegex convert values in strings in the conditions to integers, floats and regex
+// ConvertConditionStringToIntFloatRegexManyRules convert values in strings in the conditions to integers, floats and regex
+// (or keep them default in case of failure) for array of rules
+func ConvertConditionStringToIntFloatRegexManyRules(rules *Rules) {
+
+	for i_rule, _ := range (rules.Rules) {
+		ConvertConditionStringToIntFloatRegex(&rules.Rules[i_rule])
+	}
+}
+
+// ConvertConditionStringToIntFloatRegexManyRules convert values in strings in the conditions to integers, floats and regex
 // (or keep them default in case of failure)
-func ConvertConditionStringToIntFloatRegex(rules *Rules) {
+func ConvertConditionStringToIntFloatRegex(r *Rule) {
+	for i_dnf, andConditions:=range(r.DNFConditions) {
+		for i_and, condition := range (andConditions.ANDConditions) {
 
-	for i_rule, r := range(rules.Rules) {
-		for i_dnf, andConditions:=range(r.DNFConditions) {
-			for i_and, condition := range (andConditions.ANDConditions) {
-
-				rules.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].OriginalAttribute=condition.Attribute // used in hash
-				rules.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].OriginalValue=condition.Value // used in hash
-
-				valFloat, err := strconv.ParseFloat(condition.Value, 64)
-				if err == nil {
-					rules.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueFloat = valFloat
-				}
-				valInt, err := strconv.ParseInt(condition.Value, 10, 64)
-				if err == nil {
-					rules.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueInt = valInt
-				}
-				re, err := regexp.Compile(condition.Value)
-				if err == nil {
-					rules.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueRegex = re.Copy()  // this is used in RE,NRE
-				}
-
-				re,err = regexp.Compile(ConvertStringToRegex(condition.Value))
-				if err == nil{
-					rules.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueStringRegex = re.Copy() // this is used in EQ,NEQ
-				}else{
-					panic("condition.Value could not be converted to regex")
-				}
-
-				/*t, err := time.Parse(time.RFC3339,condition.Value)
-				if err == nil{
-					rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueTime = t
-				}*/
-
-				if strings.Index(condition.Attribute,"senderLabel[")==0{ // test if ATTRIBUTE is of type senderLabel
-					rules.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].AttributeIsSenderLabel=true
-					i1:=strings.Index(condition.Attribute,"[")+1
-					i2:=strings.Index(condition.Attribute,"]")
-					if i2 < len(condition.Attribute)-1{
-						panic("senderLabel has a wrong format")
-					}
-					rules.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].AttributeSenderLabelKey=condition.Attribute[i1:i2]
-					rules.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].Attribute="senderLabel"
-				}
-				if strings.Index(condition.Attribute,"receiverLabel[")==0{ // test if ATTRIBUTE is of type receiverLabel
-					rules.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].AttributeIsReceiverLabel=true
-					i1:=strings.Index(condition.Attribute,"[")+1
-					i2:=strings.Index(condition.Attribute,"]")
-					if i2 < len(condition.Attribute)-1{
-						panic("receiverLabel has a wrong format")
-					}
-					rules.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].AttributeReceiverLabelKey=condition.Attribute[i1:i2]
-					rules.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].Attribute="receiverLabel"
-				}
-
-				if strings.Index(condition.Value,"receiverLabel[")==0{ // test if VALUE is of type receiverLabel (used to compare attribute senderLabel[key1] to value receiverLabel[key2])
-					rules.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueIsReceiverLabel=true
-					i1:=strings.Index(condition.Value,"[")+1
-					i2:=strings.Index(condition.Value,"]")
-					if i2 < len(condition.Value)-1{
-						panic("value receiverLabel has a wrong format")
-					}
-					rules.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueReceiverLabelKey=condition.Value[i1:i2]
-					rules.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].Value="receiverLabel"
-				}
-
+			valFloat, err := strconv.ParseFloat(condition.Value, 64)
+			if err == nil {
+				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueFloat = valFloat
+			}
+			valInt, err := strconv.ParseInt(condition.Value, 10, 64)
+			if err == nil {
+				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueInt = valInt
+			}
+			re, err := regexp.Compile(condition.Value)
+			if err == nil {
+				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueRegex = re.Copy()  // this is used in RE,NRE
 			}
 
+			re,err = regexp.Compile(ConvertStringToRegex(condition.Value))
+			if err == nil{
+				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueStringRegex = re.Copy() // this is used in EQ,NEQ
+			}else{
+				panic("condition.Value could not be converted to regex")
+			}
+
+			/*t, err := time.Parse(time.RFC3339,condition.Value)
+			if err == nil{
+				rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueTime = t
+			}*/
+
+			if strings.Index(condition.Attribute,"senderLabel[")==0{ // test if ATTRIBUTE is of type senderLabel
+				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeIsSenderLabel=true
+				i1:=strings.Index(condition.Attribute,"[")+1
+				i2:=strings.Index(condition.Attribute,"]")
+				if i2 < len(condition.Attribute)-1{
+					panic("senderLabel has a wrong format")
+				}
+				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeSenderLabelKey=condition.Attribute[i1:i2]
+				r.DNFConditions[i_dnf].ANDConditions[i_and].Attribute="senderLabel"
+				r.DNFConditions[i_dnf].ANDConditions[i_and].OriginalAttribute=condition.Attribute // used in hash
+			}
+			if strings.Index(condition.Attribute,"receiverLabel[")==0{ // test if ATTRIBUTE is of type receiverLabel
+				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeIsReceiverLabel=true
+				i1:=strings.Index(condition.Attribute,"[")+1
+				i2:=strings.Index(condition.Attribute,"]")
+				if i2 < len(condition.Attribute)-1{
+					panic("receiverLabel has a wrong format")
+				}
+				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeReceiverLabelKey=condition.Attribute[i1:i2]
+				r.DNFConditions[i_dnf].ANDConditions[i_and].Attribute="receiverLabel"
+				r.DNFConditions[i_dnf].ANDConditions[i_and].OriginalAttribute=condition.Attribute // used in hash
+			}
+
+			if strings.Index(condition.Value,"receiverLabel[")==0{ // test if VALUE is of type receiverLabel (used to compare attribute senderLabel[key1] to value receiverLabel[key2])
+				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueIsReceiverLabel=true
+				i1:=strings.Index(condition.Value,"[")+1
+				i2:=strings.Index(condition.Value,"]")
+				if i2 < len(condition.Value)-1{
+					panic("value receiverLabel has a wrong format")
+				}
+				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueReceiverLabelKey=condition.Value[i1:i2]
+				r.DNFConditions[i_dnf].ANDConditions[i_and].Value="receiverLabel"
+				r.DNFConditions[i_dnf].ANDConditions[i_and].OriginalValue=condition.Value // used in hash
+			}
 		}
 	}
-
 }
 
 func RuleMD5Hash(rule Rule) (md5hash string){

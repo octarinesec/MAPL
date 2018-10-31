@@ -24,27 +24,27 @@ type Resource struct {
 	ResourceProtocol string `yaml:"resourceProtocol,omitempty" bson:"ResourceProtocol"`
 	ResourceType     string `yaml:"resourceType,omitempty" bson:"ResourceType"`
 	ResourceName     string `yaml:"resourceName,omitempty" bson:"ResourceName"`
-	ResourceNameRegex *regexp.Regexp `yaml:"-" bson:",omitempty"`
+	ResourceNameRegex *regexp.Regexp `yaml:"-" bson:"ResourceNameRegex,omitempty"`
 }
 // Condition structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
 type Condition struct {
 	Attribute string `yaml:"attribute,omitempty" bson:"Attribute"`
 	Method    string `yaml:"method,omitempty" bson:"Method"`
 	Value     string `yaml:"value,omitempty" bson:"Value"`
-	ValueInt int64 `yaml:"-" bson:",omitempty"`
-	ValueFloat float64 `yaml:"-" bson:",omitempty"`
-	ValueRegex *regexp.Regexp `yaml:"-" bson:",omitempty"`
-	ValueStringRegex *regexp.Regexp `yaml:"-" bson:",omitempty"`
+	ValueInt int64 `yaml:"-" bson:"ValueInt,omitempty"`
+	ValueFloat float64 `yaml:"-" bson:"ValueFloat,omitempty"`
+	ValueRegex *regexp.Regexp `yaml:"-" bson:"ValueRegex,omitempty"`
+	ValueStringRegex *regexp.Regexp `yaml:"-" bson:"ValueStringRegex,omitempty"`
 
-	AttributeIsSenderLabel bool `yaml:"-" bson:",omitempty"`
-	AttributeSenderLabelKey string `yaml:"-" bson:",omitempty"`
-	AttributeIsReceiverLabel bool `yaml:"-" bson:",omitempty"`
-	AttributeReceiverLabelKey string `yaml:"-" bson:",omitempty"`
-	ValueIsReceiverLabel bool `yaml:"-" bson:",omitempty"`
-	ValueReceiverLabelKey string `yaml:"-" bson:",omitempty"`
+	AttributeIsSenderLabel bool `yaml:"-" bson:"AttributeIsSenderLabel,omitempty"`
+	AttributeSenderLabelKey string `yaml:"-" bson:"AttributeSenderLabelKey,omitempty"`
+	AttributeIsReceiverLabel bool `yaml:"-" bson:"AttributeIsReceiverLabel,omitempty"`
+	AttributeReceiverLabelKey string `yaml:"-" bson:"AttributeReceiverLabelKey,omitempty"`
+	ValueIsReceiverLabel bool `yaml:"-" bson:"ValueIsReceiverLabel,omitempty"`
+	ValueReceiverLabelKey string `yaml:"-" bson:"ValueReceiverLabelKey,omitempty"`
 
-	OriginalAttribute string `yaml:"-" bson:",omitempty"` // used in hash
-	OriginalValue     string `yaml:"-" bson:",omitempty"` // used in hash
+	OriginalAttribute string `yaml:"-" bson:"OriginalAttribute,omitempty"` // used in hash
+	OriginalValue     string `yaml:"-" bson:"OriginalValue,omitempty"` // used in hash
 
 }
 
@@ -65,10 +65,10 @@ type Rule struct {
 	DNFConditions []ANDConditions `yaml:"DNFconditions,omitempty" bson:"DNFConditions,omitempty"`
 	Decision      string          `yaml:"decision,omitempty" bson:"Decision"`
 
-	OperationRegex *regexp.Regexp `yaml:"-" bson:",omitempty"`
+	OperationRegex *regexp.Regexp `yaml:"-" bson:"OperationRegex,omitempty"`
 
-	SenderList []ExpandedSenderReceiver `yaml:"-" bson:",omitempty"`
-	ReceiverList []ExpandedSenderReceiver `yaml:"-" bson:",omitempty"`
+	SenderList []ExpandedSenderReceiver `yaml:"-" bson:"SenderList,omitempty"`
+	ReceiverList []ExpandedSenderReceiver `yaml:"-" bson:"ReceiverList,omitempty"`
 }
 // Rules structure contains a list of rules
 type Rules struct {
@@ -76,12 +76,12 @@ type Rules struct {
 }
 //
 type ExpandedSenderReceiver struct {
-	Name string
-	Regexp *regexp.Regexp
-	IsIP bool
-	IsCIDR bool
-	CIDR net.IPNet
-	IP net.IP
+	Name string `yaml:"-" bson:"Name,omitempty"`
+	Regexp *regexp.Regexp `yaml:"-" bson:"Regexp,omitempty"`
+	IsIP bool `yaml:"-" bson:"IsIP,omitempty"`
+	IsCIDR bool `yaml:"-" bson:"IsCIDR,omitempty"`
+	CIDR net.IPNet `yaml:"-" bson:"CIDR,omitempty"`
+	IP net.IP `yaml:"-" bson:"IP,omitempty"`
 }
 
 // ToJson converts a structure into a json string

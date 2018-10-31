@@ -136,8 +136,8 @@ func RemoveLabelConditionsFromRules(rules MAPL_engine.Rules, service_labels map[
 	}
 
 	// recreate regular expressions and convert condition values:
-	MAPL_engine.ConvertFieldsToRegex(&newRules)
-	MAPL_engine.ConvertConditionStringToIntFloatRegex(&newRules)
+	MAPL_engine.ConvertFieldsToRegexManyRules(&newRules)
+	MAPL_engine.ConvertConditionStringToIntFloatRegexManyRules(&newRules)
 
 	return newRules
 }

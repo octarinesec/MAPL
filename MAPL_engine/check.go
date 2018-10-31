@@ -34,19 +34,22 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 	results = make([]int, N)
 	sem := make(chan int, N) // semaphore pattern
 	if true{  // check in parallel
-	for i, rule := range (rules.Rules) { // check all the rules in parallel
-		go func(in_i int, in_rule Rule) {
-			results[in_i] = CheckOneRule(message, &in_rule)
-			sem <- 1 // mark that the one rule check is finished
-		}(i, rule)
-	}
 
-	// wait for all goroutines to finish
-	for i := 0; i < N; i++ {
-		<-sem
-	}
+		for i, rule := range (rules.Rules) { // check all the rules in parallel
+			go func(in_i int, in_rule Rule) {
+				results[in_i] = CheckOneRule(message, &in_rule)
+				sem <- 1 // mark that the one rule check is finished
+			}(i, rule)
+
+		}
+
+		// wait for all goroutines to finish
+		for i := 0; i < N; i++ {
+			<-sem
+		}
 
 	}else{ // used for debugging
+
 		for in_i,in_rule := range(rules.Rules) {
 			results[in_i] = CheckOneRule(message, &in_rule)
 		}

@@ -43,6 +43,7 @@ func compareJsonAndYaml(jsonString string, yamlString string) (bool, string) {
 	jsonString = strings.Replace(jsonString,"ValueIsReceiverLabel: ","ValueIsReceiverLabel- ",-1) // change slightly so that the regex will not count it [this is a boolean field]
 	jsonString = strings.Replace(jsonString,"SourceLabels: ","SourceLabels- ",-1) // change slightly so that the regex will not count it [this is a map[string]string field]
 	jsonString = strings.Replace(jsonString,"DestinationLabels: ","DestinationLabels- ",-1) // change slightly so that the regex will not count it [this is a map[string]string field]
+	jsonString = strings.Replace(jsonString,"Regex: ","Regex- ",-1) // change slightly so that the regex will not count it [this is a map[string]string field]
 
 
 
