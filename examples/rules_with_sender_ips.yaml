@@ -1,10 +1,14 @@
 rules:
 
   - rule_id: 0
-    sender: "192.168.1.1"
-    receiver: "B.my_namespace"
+    sender:
+      senderName: "192.168.1.1"
+      senderType: "subnet"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "service"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -12,10 +16,14 @@ rules:
   
 
   - rule_id: 1
-    sender: "192.168.2.1/30;AA.*"
-    receiver: "192.168.4.1;B.my_namespace"
+    sender:
+      senderName: "192.168.2.1/30,*"
+      senderType: "subnet"
+    receiver:
+      receiverName: "192.168.4.1"
+      receiverType: "subnet"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET

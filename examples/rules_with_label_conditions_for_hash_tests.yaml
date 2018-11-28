@@ -1,10 +1,14 @@
 rules:
 
   - rule_id: 0
-    sender: "*"
-    receiver: "*"
+    sender:
+      senderName: "*"
+      senderType: "service"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: HTTP
     resource:
-      resourceProtocol: HTTP
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -23,10 +27,14 @@ rules:
     decision: allow
 
   - rule_id: 1
-    sender: "*"
-    receiver: "*"
+    sender:
+      senderName: "*"
+      senderType: "service"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: HTTP
     resource:
-      resourceProtocol: HTTP
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -46,10 +54,14 @@ rules:
     decision: allow
 
   - rule_id: 2
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "service"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: HTTP
     resource:
-      resourceProtocol: HTTP
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -78,10 +90,14 @@ rules:
     decision: block
 
   - rule_id: 3
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "service"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: HTTP
     resource:
-      resourceProtocol: HTTP
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -107,10 +123,14 @@ rules:
     decision: block
 
   - rule_id: 4
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "service"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: HTTP
     resource:
-      resourceProtocol: HTTP
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -139,10 +159,14 @@ rules:
     decision: block
 
   - rule_id: 5
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "service"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: HTTP
     resource:
-      resourceProtocol: HTTP
       resourceType: httpPath
       resourceName: "/*"
     operation: GET

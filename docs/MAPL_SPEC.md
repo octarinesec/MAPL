@@ -160,8 +160,8 @@ Allow all traffic by adding the following rule:
   - rule_id: default_allow
     sender: "*"
     receiver: "*"
+    protocol: "*"
     resource:
-      resourceProtocol: "*"
       resourceType: "*"
       resourceName: "*"
     operation: "*"
@@ -177,8 +177,8 @@ Allow service A.my_namespace to communicate with service B.my_namespace over HTT
   - rule_id: 0
     sender: "A.my_namespace"
     receiver: "B.my_namespace"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -191,8 +191,8 @@ Allow all services of name *.my_namespace to communicate with service B.my_names
   - rule_id: 1
     sender: "*.my_namespace"
     receiver: "B.my_namespace"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/books"
     operation: GET
@@ -206,8 +206,8 @@ Allow service A.my_namespace to communicate with service B.my_namespace over HTT
   - rule_id: 2
     sender: "A.my_namespace"
     receiver: "B.my_namespace"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/books/*"
     operation: GET
@@ -220,8 +220,8 @@ Allow service A.my_namespace to communicate with service B.my_namespace over HTT
   - rule_id: 3
     sender: "A.my_namespace"
     receiver: "B.my_namespace"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/books/*"
     operation: read
@@ -234,8 +234,8 @@ Block service A.my_namespace from communicating with service B.my_namespace over
   - rule_id: 4
     sender: "A.my_namespace"
     receiver: "B.my_namespace"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/books"
     operation: write
@@ -255,8 +255,8 @@ or
   - rule_id: 5
     sender: "A.my_namespace"
     receiver: "B.my_namespace"
+    protocol: http
     resource:
-      resourceProtocol: HTTP
       resourceType: httpPath
       resourceName: "/*"
     operation: GET

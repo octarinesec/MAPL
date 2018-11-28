@@ -2,8 +2,8 @@ rules:
   - rule_id: 0
     sender: "*"
     receiver: "*"
+    protocol: "*"
     resource:
-      resourceProtocol: "*"
       resourceType: "*"
       resourceName: "*"
     operation: "*"

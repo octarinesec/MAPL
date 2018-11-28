@@ -1,10 +1,14 @@
 rules:
 
   - rule_id: 0
-    sender: "*"
-    receiver: "*"
+    sender:
+      senderName: "*"
+      senderType: "service"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: HTTP
     resource:
-      resourceProtocol: HTTP
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -23,10 +27,14 @@ rules:
     decision: allow
 
   - rule_id: 1
-    sender: "*"
-    receiver: "*"
+    sender:
+      senderName: "*"
+      senderType: "service"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: HTTP
     resource:
-      resourceProtocol: HTTP
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -38,10 +46,14 @@ rules:
     decision: allow
 
   - rule_id: 2
-    sender: "*"
-    receiver: "*"
+    sender:
+      senderName: "*"
+      senderType: "service"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: HTTP
     resource:
-      resourceProtocol: HTTP
       resourceType: httpPath
       resourceName: "/*"
     operation: GET

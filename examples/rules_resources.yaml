@@ -1,20 +1,28 @@
 rules:
 
   - rule_id: 0
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "service"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/book/123"
     operation: GET
     decision: alert
 
   - rule_id: 1
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "service"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/book/321"
     operation: GET

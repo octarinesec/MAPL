@@ -1,8 +1,8 @@
 package MAPL_engine
 
 import (
-	"strings"
 	"regexp"
+	"strings"
 )
 
 // IsNumberOfFieldsEqual is used to compare the structures read from files (mostly while debugging).

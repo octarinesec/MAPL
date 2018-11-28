@@ -33,14 +33,14 @@ func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[str
 		for _, condition := range (andCondition.ANDConditions) {
 			if condition.AttributeIsSenderLabel {
 				//sanity: if we translate sender labels to sender names then the sender name must be "*"
-				if rule_temp.Sender != "*" {
+				if rule_temp.Sender.SenderName != "*" || (rule_temp.Sender.SenderType != "service" && rule_temp.Sender.SenderType != "*") {
 					panic("when translating rules: sender!=\"*\"")
 				}
 				translateSenderLabelsFlag = true
 			}
 			if condition.AttributeIsReceiverLabel {
 				//sanity: if we translate receiver labels to receiver names then the receiver name must be "*"
-				if rule_temp.Receiver != "*" {
+				if rule_temp.Receiver.ReceiverName != "*" || (rule_temp.Receiver.ReceiverType != "service" && rule_temp.Receiver.ReceiverType != "*"){
 					panic("when translating rules: receiver!=\"*\"")
 				}
 				translateReceiverLabelsFlag = true
@@ -79,8 +79,10 @@ func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[str
 				panic("somethings is wrong: in \"translateSenderLabelsFlag && translateReceiverLabelsFlag == true\" part")
 			}
 			new_rule.DNFConditions = removeLabelConditions(&new_rule)
-			new_rule.Sender = strings.Join(senders, ";")
-			new_rule.Receiver = strings.Join(receivers, ";")
+			new_rule.Sender.SenderName = strings.Join(senders, ";")
+			new_rule.Sender.SenderType = "service"
+			new_rule.Receiver.ReceiverName = strings.Join(receivers, ";")
+			new_rule.Receiver.ReceiverType = "service"
 			new_rules.Rules = append(new_rules.Rules, new_rule)
 		} else { // NOT all the receivers are satisfied by the same sender list. then we have to make one rule per receiver in the list
 			counter := 0
@@ -89,8 +91,10 @@ func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[str
 				new_rule = rule
 				new_rule.RuleID = fmt.Sprintf("%s-%d", new_rule.RuleID, counter)
 				new_rule.DNFConditions = removeLabelConditions(&new_rule)
-				new_rule.Sender = strings.Join(s, ";")
-				new_rule.Receiver = r
+				new_rule.Sender.SenderName = strings.Join(s, ";")
+				new_rule.Sender.SenderType = "service"
+				new_rule.Receiver.ReceiverName = r
+				new_rule.Receiver.ReceiverType = "service"
 				new_rules.Rules = append(new_rules.Rules, new_rule)
 			}
 		}
@@ -103,7 +107,8 @@ func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[str
 				//panic("failed to translate sender labels")
 			}
 			new_rule.DNFConditions = removeLabelConditions(&new_rule)
-			new_rule.Sender = strings.Join(senders, ";")
+			new_rule.Sender.SenderName = strings.Join(senders, ";")
+			new_rule.Sender.SenderType = "service"
 			new_rules.Rules = append(new_rules.Rules, new_rule)
 		}
 		if translateReceiverLabelsFlag { // there are only conditions on the receiver labels
@@ -113,7 +118,8 @@ func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[str
 				//panic("failed to translate receiver labels")
 			}
 			new_rule.DNFConditions = removeLabelConditions(&new_rule)
-			new_rule.Receiver = strings.Join(receivers, ";")
+			new_rule.Receiver.ReceiverName = strings.Join(receivers, ";")
+			new_rule.Receiver.ReceiverType = "service"
 			new_rules.Rules = append(new_rules.Rules, new_rule)
 		}
 		if !translateSenderLabelsFlag && !translateReceiverLabelsFlag { // there are no condtions on any labels, so we just copy the rule
@@ -145,6 +151,7 @@ func RemoveLabelConditionsFromRules(rules MAPL_engine.Rules, service_labels map[
 // getSendersFromRule translate the conditions on the labels into services that satisfy them
 func getServicesFromRule(rule *MAPL_engine.Rule,service_labels map[string]map[string]string,sender_receiver int) (services_list []string){
 
+	result:=false
 	for name,labels := range(service_labels) {
 		message := message_attributes
 
@@ -158,7 +165,7 @@ func getServicesFromRule(rule *MAPL_engine.Rule,service_labels map[string]map[st
 
 
 		rule.DNFConditions = filterLabelRules(rule.DNFConditions,sender_receiver)
-		result:=MAPL_engine.TestConditions(rule, &message)
+		result=MAPL_engine.TestConditions(rule, &message) && result
 
 		if result{
 			services_list=append(services_list, name)
@@ -255,10 +262,10 @@ func OutputRulesToFile(rules *MAPL_engine.Rules,filename string){
 	f.WriteString("rules:\n")
 	for _,rule:=range(rules.Rules){
 		fmt.Fprintf(f,"\n  - rule_id: %v\n", rule.RuleID)
-		fmt.Fprintf(f,"    sender: \"%v\"\n",rule.Sender)
-		fmt.Fprintf(f,"    receiver: \"%v\"\n",rule.Receiver)
+		fmt.Fprintf(f,"    sender: \"%+v\"\n",rule.Sender)
+		fmt.Fprintf(f,"    receiver: \"%+v\"\n",rule.Receiver)
+		fmt.Fprintf(f,"    protocol: %v\n",rule.Protocol)
 		fmt.Fprintf(f,"    resource:\n")
-		fmt.Fprintf(f,"      resourceProtocol: %v\n",rule.Resource.ResourceProtocol)
 		fmt.Fprintf(f,"      resourceType: %v\n",rule.Resource.ResourceType)
 		fmt.Fprintf(f,"      resourceName: \"%v\"\n",rule.Resource.ResourceName)
 		fmt.Fprintf(f,"    operation: %v\n",rule.Operation)

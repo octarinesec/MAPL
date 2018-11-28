@@ -3,8 +3,8 @@ rules:
   - rule_id: 0
     sender: "istio-system.*" # allow everything from istio-system. especially istio-ingressgateway
     receiver: "*"
+    protocol: "*"
     resource:
-      resourceProtocol: "*"
       resourceType: "*"
       resourceName: "*"
     operation: "*"
@@ -13,8 +13,8 @@ rules:
   - rule_id: 1
     sender: "default.productpage-v1"
     receiver: "default.details-v1"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -23,8 +23,8 @@ rules:
   - rule_id: 2
     sender: "default.productpage-v1"
     receiver: "default.reviews-*"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -33,8 +33,8 @@ rules:
   - rule_id: 3
     sender: "default.reviews-*"
     receiver: "default.ratings-v1"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -43,8 +43,8 @@ rules:
   - rule_id: 4
     sender: "default.reviews-v2"
     receiver: "default.ratings-v1"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -53,8 +53,8 @@ rules:
   - rule_id: 5
     sender: "istio-system.istio-ingressgateway"
     receiver: "default.productpage-v1"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/logout"
     operation: GET
@@ -63,8 +63,8 @@ rules:
   - rule_id: 6
     sender: "istio-system.istio-ingressgateway"
     receiver: "default.productpage-v1"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/login"
     operation: POST

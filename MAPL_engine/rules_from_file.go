@@ -96,8 +96,8 @@ func ConvertFieldsToRegexManyRules(rules *Rules) {
 // This enables use of wildcards in the sender, receiver names, etc...
 func ConvertFieldsToRegex(rule *Rule) {
 
-		rule.SenderList = ConvertStringToExpandedSenderReceiver(rule.Sender)
-		rule.ReceiverList = ConvertStringToExpandedSenderReceiver(rule.Receiver)
+		rule.Sender.SenderList = ConvertStringToExpandedSenderReceiver(rule.Sender.SenderName,rule.Sender.SenderType)
+		rule.Receiver.ReceiverList = ConvertStringToExpandedSenderReceiver(rule.Receiver.ReceiverName,rule.Receiver.ReceiverType)
 
 		rule.OperationRegex = regexp.MustCompile(ConvertOperationStringToRegex(rule.Operation)).Copy()  // a special case of regex for operations to support CRUD
 
@@ -134,15 +134,24 @@ func ConvertStringToRegex(str_in string) string{
 	return str_out
 }
 
-func ConvertStringToExpandedSenderReceiver(str_in string) []ExpandedSenderReceiver{
+func ConvertStringToExpandedSenderReceiver(str_in string,type_in string) []ExpandedSenderReceiver{
 	var output []ExpandedSenderReceiver
 
-	str_list := strings.Split(str_in, ";")
+	str_list := strings.Split(str_in, ",")
 	for _, str := range(str_list) {
 		var e ExpandedSenderReceiver
-		e.Name=str
-		e.IsIP,e.IsCIDR,e.IP,e.CIDR=isIpCIDR(str)
-
+		e.Name = str
+		//e.IsIP,e.IsCIDR,e.IP,e.CIDR=isIpCIDR(str)
+		e.Type = type_in
+		if type_in=="subnet"{
+			if str=="*"{
+				str="0.0.0.0/0"
+			}
+			e.IsIP,e.IsCIDR,e.IP, e.CIDR = isIpCIDR(str)
+			if !e.IsIP && !e.IsCIDR{
+				panic("Type is 'subnet' but value is not an IP or CIDR")
+			}
+		}
 		str = strings.Replace(str, " ", "", -1)    // remove spaces
 		str = strings.Replace(str, ".", "[.]", -1) // handle dot for conversion to regex
 		str = strings.Replace(str, "$", "\\$", -1)
@@ -257,7 +266,8 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) {
 }
 
 func RuleMD5Hash(rule Rule) (md5hash string){
-	strMainPart := rule.Decision+"-"+rule.Sender+"-"+rule.Receiver+"-"+rule.Operation+"-["+rule.Resource.ResourceProtocol+"-"+rule.Resource.ResourceType+"-"+rule.Resource.ResourceName+"]"
+	strMainPart := strings.ToLower(rule.Decision)+"-<"+strings.ToLower(rule.Sender.SenderType)+":"+rule.Sender.SenderName+">-<"+strings.ToLower(rule.Receiver.ReceiverType)+
+		":"+rule.Receiver.ReceiverName+">-"+strings.ToLower(rule.Operation)+"-"+strings.ToLower(rule.Protocol)+"-<"+rule.Resource.ResourceType+"-"+rule.Resource.ResourceName+">"
 
 	dnfStrings:= []string{}
 	for _, andConditions := range rule.DNFConditions{

@@ -1,18 +1,26 @@
 rules:
 
   - rule_id: 0
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "service"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
     decision: allow
 
   - rule_id: 1
-    sender: "*"
-    receiver: "serviceX"
+    sender:
+      senderName: "*"
+      senderType: "service"
+    receiver:
+      receiverName: "serviceX"
+      receiverType: "*"
     resource:
       resourceProtocol: HTTP
       resourceType: httpPath
@@ -29,8 +37,12 @@ rules:
     decision: allow
 
   - rule_id: 2
-    sender: "*"
-    receiver: "serviceX"
+    sender:
+      senderName: "*"
+      senderType: "service"
+    receiver:
+      receiverName: "serviceX"
+      receiverType: "*"
     resource:
       resourceProtocol: HTTP
       resourceType: httpPath
@@ -47,8 +59,12 @@ rules:
     decision: allow
 
   - rule_id: 3
-    sender: "serviceY"
-    receiver: "*"
+    sender:
+      senderName: "serviceY"
+      senderType: "service"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
     resource:
       resourceProtocol: HTTP
       resourceType: httpPath
@@ -62,10 +78,14 @@ rules:
     decision: allow
 
   - rule_id: 4
-    sender: "*"
-    receiver: "*"
+    sender:
+      senderName: "*"
+      senderType: "service"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: HTTP
     resource:
-      resourceProtocol: HTTP
       resourceType: httpPath
       resourceName: "/books/*"
     operation: WRITE
@@ -77,10 +97,14 @@ rules:
     decision: allow
 
   - rule_id: 5
-    sender: "*"
-    receiver: "*"
+    sender:
+      senderName: "*"
+      senderType: "service"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: HTTP
     resource:
-      resourceProtocol: HTTP
       resourceType: httpPath
       resourceName: "/books/*"
     operation: POST
@@ -96,10 +120,14 @@ rules:
 
 
   - rule_id: 6
-    sender: "*"
-    receiver: "*"
+    sender:
+      senderName: "*"
+      senderType: "service"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: HTTP
     resource:
-      resourceProtocol: HTTP
       resourceType: httpPath
       resourceName: "/books/*"
     operation: POST
@@ -128,10 +156,14 @@ rules:
     decision: allow
 
   - rule_id: 7
-    sender: "*"
-    receiver: "serviceX"
+    sender:
+      senderName: "*"
+      senderType: "service"
+    receiver:
+      receiverName: "serviceX"
+      receiverType: "*"
+    protocol: HTTP
     resource:
-      resourceProtocol: HTTP
       resourceType: httpPath
       resourceName: "/books/*"
     operation: WRITE
@@ -143,10 +175,14 @@ rules:
     decision: allow
 
   - rule_id: 8
-    sender: "*"
-    receiver: "serviceY"
+    sender:
+      senderName: "*"
+      senderType: "service"
+    receiver:
+      receiverName: "serviceY"
+      receiverType: "*"
+    protocol: HTTP
     resource:
-      resourceProtocol: HTTP
       resourceType: httpPath
       resourceName: "/books/*"
     operation: WRITE

@@ -23,8 +23,8 @@ rules:
   - rule_id: 0  # allow istio-ingressgateway
     sender: "kubernetes://istio-ingressgateway-*-*.istio-system"
     receiver: "*"
+    protocol: "*"
     resource:
-      resourceProtocol: "*"
       resourceType: "*"
       resourceName: "*"
     operation: "*"
@@ -33,8 +33,8 @@ rules:
   - rule_id: 1  # block the details service. the review text will be un-available
     sender: "kubernetes://productpage-v1-*-*.default"
     receiver: "kubernetes://details-v1-*-*.default"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -43,8 +43,8 @@ rules:
   - rule_id: 2  # allow productpage-v1 to communicate with all the versions of the reviews service
     sender: "kubernetes://productpage-v1-*-*.default"
     receiver: "kubernetes://reviews-*-*-*.default"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -53,8 +53,8 @@ rules:
   - rule_id: 3 # allow all the versions of the reviews service to communicate with the ratings-v1 service
     sender: "kubernetes://reviews-*-*-*.default"
     receiver: "kubernetes://ratings-v1-*-*.default"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -63,8 +63,8 @@ rules:
   - rule_id: 4 # all except reviews-v2 ...
     sender: "kubernetes://reviews-v2-*-*.default"
     receiver: "kubernetes://ratings-v1-*-*.default"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -73,8 +73,8 @@ rules:
   - rule_id: 5  # allow the "login" path
     sender: "kubernetes://istio-ingressgateway-*-*.istio-system"
     receiver: "kubernetes://productpage-v1-*-*.default"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/login"
     operation: POST
@@ -83,8 +83,8 @@ rules:
   - rule_id: 6  # but block the "logout" path
     sender: "kubernetes://istio-ingressgateway-*-*.istio-system"
     receiver: "kubernetes://productpage-v1-*-*.default"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/logout"
     operation: GET

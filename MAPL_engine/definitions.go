@@ -12,63 +12,74 @@ type GeneralStruct interface { // a general interface to structures.
 }
 
 //-------------------rules-------------------------------------
+type Sender struct {
+	// if SenderName is a list (example: "srv1,srv2,srv123") then it is assumed that all are of the same type
+	SenderName string `yaml:"senderName,omitempty" json:"SenderName,omitempty" bson:"SenderName" structs:"SenderName,omitempty"`
+	SenderType string `yaml:"senderType,omitempty" json:"SenderType,omitempty" bson:"SenderType,omitempty" structs:"SenderType,omitempty"`
+	SenderList []ExpandedSenderReceiver `yaml:"-" json:"SenderList,omitempty" bson:"SenderList,omitempty" structs:"SenderList,omitempty"`
+}
+
+type Receiver struct {
+	// if ReceiverName is a list (example: "srv1,srv2,srv123") then it is assumed that all are of the same type
+	ReceiverName string `yaml:"receiverName,omitempty" json:"ReceiverName,omitempty" bson:"ReceiverName" structs:"ReceiverName,omitempty"`
+	ReceiverType string `yaml:"receiverType,omitempty" json:"ReceiverType,omitempty" bson:"ReceiverType,omitempty" structs:"ReceiverType,omitempty"`
+	ReceiverList []ExpandedSenderReceiver `yaml:"-" json:"ReceiverList,omitempty" bson:"ReceiverList,omitempty" structs:"ReceiverList,omitempty"`
+}
 
 // Resource structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
 type Resource struct {
-	/* Examples:
-	HTTP:httpPath:<http_path_name>,
-	kafka:kafkaTopic:<kafka_topic_name>
-	kafka:consumerGroup:<consumer_group_name>
-	TCP:port:<port number>
+	/* Examples: // pay attention that the resource type should match the protocol
+	httpPath:<http_path_name>,
+	kafkaTopic:<kafka_topic_name>
+	consumerGroup:<consumer_group_name>
+	port:<port number>
 	*/
-	ResourceProtocol string `yaml:"resourceProtocol,omitempty" bson:"ResourceProtocol"`
-	ResourceType     string `yaml:"resourceType,omitempty" bson:"ResourceType"`
-	ResourceName     string `yaml:"resourceName,omitempty" bson:"ResourceName"`
-	ResourceNameRegex *regexp.Regexp `yaml:"-" bson:"ResourceNameRegex,omitempty"`
+	ResourceType     string `yaml:"resourceType,omitempty" json:"ResourceType,omitempty" bson:"ResourceType,omitempty" structs:"ResourceType,omitempty"`
+	ResourceName     string `yaml:"resourceName,omitempty" json:"ResourceName,omitempty" bson:"ResourceName,omitempty" structs:"ResourceName,omitempty"`
+	ResourceNameRegex *regexp.Regexp `yaml:"-" json:"ResourceNameRegex,omitempty" bson:"ResourceNameRegex,omitempty" structs:"ResourceNameRegex,omitempty"`
 }
 // Condition structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
 type Condition struct {
-	Attribute string `yaml:"attribute,omitempty" bson:"Attribute"`
-	Method    string `yaml:"method,omitempty" bson:"Method"`
-	Value     string `yaml:"value,omitempty" bson:"Value"`
-	ValueInt int64 `yaml:"-" bson:"ValueInt,omitempty"`
-	ValueFloat float64 `yaml:"-" bson:"ValueFloat,omitempty"`
-	ValueRegex *regexp.Regexp `yaml:"-" bson:"ValueRegex,omitempty"`
-	ValueStringRegex *regexp.Regexp `yaml:"-" bson:"ValueStringRegex,omitempty"`
+	Attribute string `yaml:"attribute,omitempty" json:"Attribute" bson:"Attribute" structs:"Attribute,omitempty"`
+	Method    string `yaml:"method,omitempty" json:"Method" bson:"Method" structs:"Method,omitempty"`
+	Value     string `yaml:"value,omitempty" json:"Value" bson:"Value" structs:"Value,omitempty"`
+	ValueInt int64 `yaml:"-" json:"ValueInt,omitempty" bson:"ValueInt,omitempty" structs:"ValueInt,omitempty"`
+	ValueFloat float64 `yaml:"-" json:"ValueFloat,omitempty" bson:"ValueFloat,omitempty" structs:"ValueFloat,omitempty"`
+	ValueRegex *regexp.Regexp `yaml:"-" json:"ValueRegex,omitempty" bson:"ValueRegex,omitempty" structs:"ValueRegex,omitempty"`
+	ValueStringRegex *regexp.Regexp `yaml:"-" json:"ValueStringRegex,omitempty" bson:"ValueStringRegex,omitempty" structs:"ValueStringRegex,omitempty"`
 
-	AttributeIsSenderLabel bool `yaml:"-" bson:"AttributeIsSenderLabel,omitempty"`
-	AttributeSenderLabelKey string `yaml:"-" bson:"AttributeSenderLabelKey,omitempty"`
-	AttributeIsReceiverLabel bool `yaml:"-" bson:"AttributeIsReceiverLabel,omitempty"`
-	AttributeReceiverLabelKey string `yaml:"-" bson:"AttributeReceiverLabelKey,omitempty"`
-	ValueIsReceiverLabel bool `yaml:"-" bson:"ValueIsReceiverLabel,omitempty"`
-	ValueReceiverLabelKey string `yaml:"-" bson:"ValueReceiverLabelKey,omitempty"`
+	AttributeIsSenderLabel bool `yaml:"-" json:"AttributeIsSenderLabel,omitempty" bson:"AttributeIsSenderLabel,omitempty" structs:"AttributeIsSenderLabel,omitempty"`
+	AttributeSenderLabelKey string `yaml:"-" json:"AttributeSenderLabelKey,omitempty" bson:"AttributeSenderLabelKey,omitempty" structs:"AttributeSenderLabelKey,omitempty"`
+	AttributeIsReceiverLabel bool `yaml:"-" json:"AttributeIsReceiverLabel,omitempty" bson:"AttributeIsReceiverLabel,omitempty" structs:"AttributeIsReceiverLabel,omitempty"`
+	AttributeReceiverLabelKey string `yaml:"-" json:"AttributeReceiverLabelKey,omitempty" bson:"AttributeReceiverLabelKey,omitempty" structs:"AttributeReceiverLabelKey,omitempty"`
+	ValueIsReceiverLabel bool `yaml:"-" json:"ValueIsReceiverLabel,omitempty" bson:"ValueIsReceiverLabel,omitempty" structs:"ValueIsReceiverLabel,omitempty"`
+	ValueReceiverLabelKey string `yaml:"-" json:"ValueReceiverLabelKey,omitempty" bson:"ValueReceiverLabelKey,omitempty" structs:"ValueReceiverLabelKey,omitempty"`
 
-	OriginalAttribute string `yaml:"-" bson:"OriginalAttribute,omitempty"` // used in hash
-	OriginalValue     string `yaml:"-" bson:"OriginalValue,omitempty"` // used in hash
+	OriginalAttribute string `yaml:"-" json:"OriginalAttribute,omitempty" bson:"OriginalAttribute,omitempty" structs:"OriginalAttribute,omitempty"` // used in hash
+	OriginalValue     string `yaml:"-" json:"OriginalValue,omitempty" bson:"OriginalValue,omitempty" structs:"OriginalValue,omitempty"` // used in hash
 
 }
 
 // ANDConditions structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
 type ANDConditions struct {
-	ANDConditions []Condition `yaml:"ANDconditions,omitempty" bson:"ANDConditions,omitempty"`
+	ANDConditions []Condition `yaml:"ANDconditions,omitempty" json:"ANDConditions,omitempty" bson:"ANDConditions,omitempty"`
 }
 // Rule structure - as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
 type Rule struct {
 	// rule syntax:
 	//	<sender, receiver, resource, operation> : <conditions> : <decision>
 	//
-	RuleID        string          `yaml:"rule_id,omitempty" bson:"RuleID,omitempty"`
-	Sender        string          `yaml:"sender,omitempty" bson:"Sender"`
-	Receiver      string          `yaml:"receiver,omitempty" bson:"Receiver"`
-	Resource      Resource        `yaml:"resource,omitempty" bson:"Resource"`
-	Operation     string          `yaml:"operation,omitempty" bson:"Operation"`
-	DNFConditions []ANDConditions `yaml:"DNFconditions,omitempty" bson:"DNFConditions,omitempty"`
-	Decision      string          `yaml:"decision,omitempty" bson:"Decision"`
+	RuleID        string          `yaml:"rule_id,omitempty" json:"RuleID,omitempty" bson:"RuleID,omitempty" structs:"RuleID,omitempty"`
+	Sender        Sender          `yaml:"sender,omitempty" json:"Sender,omitempty" bson:"Sender" structs:"Sender,omitempty"`
+	Receiver      Receiver        `yaml:"receiver,omitempty" json:"Receiver,omitempty" bson:"Receiver" structs:"Receiver,omitempty"`
+	Protocol      string          `yaml:"protocol,omitempty" json:"Protocol,omitempty" bson:"ResourceProtocol" structs:"Protocol,omitempty"`
+	Resource      Resource        `yaml:"resource,omitempty" json:"Resource,omitempty" bson:"Resource" structs:"Resource,omitempty"`
+	Operation     string          `yaml:"operation,omitempty" json:"Operation,omitempty" bson:"Operation" structs:"Operation,omitempty"`
+	DNFConditions []ANDConditions `yaml:"DNFconditions,omitempty" json:"DNFConditions,omitempty" bson:"DNFConditions,omitempty" structs:"DNFConditions,omitempty"`
+	Decision      string          `yaml:"decision,omitempty" json:"Decision,omitempty" bson:"Decision" structs:"Decision,omitempty"`
 
-	OperationRegex *regexp.Regexp `yaml:"-" bson:"OperationRegex,omitempty"`
+	OperationRegex *regexp.Regexp `yaml:"-" json:"OperationRegex,omitempty" bson:"OperationRegex,omitempty" structs:"OperationRegex,omitempty"`
 
-	SenderList []ExpandedSenderReceiver `yaml:"-" bson:"SenderList,omitempty"`
-	ReceiverList []ExpandedSenderReceiver `yaml:"-" bson:"ReceiverList,omitempty"`
 }
 // Rules structure contains a list of rules
 type Rules struct {
@@ -76,12 +87,13 @@ type Rules struct {
 }
 //
 type ExpandedSenderReceiver struct {
-	Name string `yaml:"-" bson:"Name,omitempty"`
-	Regexp *regexp.Regexp `yaml:"-" bson:"Regexp,omitempty"`
-	IsIP bool `yaml:"-" bson:"IsIP,omitempty"`
-	IsCIDR bool `yaml:"-" bson:"IsCIDR,omitempty"`
-	CIDR net.IPNet `yaml:"-" bson:"CIDR,omitempty"`
-	IP net.IP `yaml:"-" bson:"IP,omitempty"`
+	Name string `yaml:"-" json:"Name,omitempty" bson:"Name,omitempty"`
+	Type string `yaml:"-" json:"Type,omitempty" bson:"Type,omitempty"`
+	Regexp *regexp.Regexp `yaml:"-" json:"Regexp,omitempty" bson:"Regexp,omitempty"`
+	IsIP bool `yaml:"-" json:"IsIP,omitempty" bson:"IsIP,omitempty"`
+	IsCIDR bool `yaml:"-" json:"IsCIDR,omitempty" bson:"IsCIDR,omitempty"`
+	CIDR net.IPNet `yaml:"-" json:"CIDR,omitempty"  bson:"CIDR,omitempty"`
+	IP net.IP `yaml:"-" json:"IP,omitempty" bson:"IP,omitempty"`
 }
 
 // ToJson converts a structure into a json string
@@ -109,6 +121,7 @@ type MessageAttributes struct {
 
 	SourceUid string  `yaml:"sender_uid,omitempty"`//  Platform-specific unique identifier for the client instance of the source service. example: kubernetes: //redis-master-2353460263-1ecey.my-namespace
 	SourceIp string  `yaml:"sender_ip,omitempty"` //   Client IP address  example: 10.0.0.117
+	SourceType string  `yaml:"sender_type,omitempty"`//  Source workload instance type. example: redis-master-2353460263-1ecey is a "service" and "10.0.0.2" is "subnet"
 	SourceName string  `yaml:"sender_name,omitempty"`//  Source workload instance name. example: redis-master-2353460263-1ecey
 	SourceNamespace string  `yaml:"sender_namespace,omitempty"`//  Source workload instance namespace. example: my-namespace
 	SourcePrincipal string  `yaml:"sender_principal,omitempty"`//  Authority under which the source workload instance is running. example: service-account-foo
@@ -123,6 +136,7 @@ type MessageAttributes struct {
 	DestinationUid    string  `yaml:"receiver_uid,omitempty"`//  Platform-specific unique identifier for the server instance of the destination service. example: kubernetes://my-svc-234443-5sffe.my-namespace
 	DestinationIp  string  `yaml:"receiver_ip,omitempty"`//  Server IP address. example: 10.0.0.104
 	DestinationPort  string  `yaml:"receiver_port,omitempty"`//  The recipient port on the server IP address. example: 8080
+	DestinationType  string  `yaml:"receiver_type,omitempty"`//  Destination workload instance type. example: redis-master-2353460263-1ecey is a "service" and "10.0.0.2" is "subnet"
 	DestinationName  string  `yaml:"receiver_name,omitempty"`//  Destination workload instance name. example: istio-telemetry-2359333
 	DestinationNamespace  string  `yaml:"receiver_namespace,omitempty"`//  Destination workload instance namespace. example: istio-system
 	DestinationPrincipal  string  `yaml:"receiver_principal,omitempty"`//  Authority under which the destination workload instance is running. example: service-account

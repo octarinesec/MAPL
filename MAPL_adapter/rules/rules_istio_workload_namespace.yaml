@@ -3,8 +3,8 @@ rules:
   - rule_id: 0  # allow everything from istio-system. especially istio-ingressgateway
     sender: "*.istio-system"
     receiver: "*"
+    protocol: "*"
     resource:
-      resourceProtocol: "*"
       resourceType: "*"
       resourceName: "*"
     operation: "*"
@@ -13,8 +13,8 @@ rules:
   - rule_id: 1  # block the details service. the review text will be un-available
     sender: "productpage-v1.default"
     receiver: "details-v1.default"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -23,8 +23,8 @@ rules:
   - rule_id: 2  # allow productpage-v1 to communicate with all the versions of the reviews service
     sender: "productpage-v1.default"
     receiver: "reviews-*.default"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -33,8 +33,8 @@ rules:
   - rule_id: 3 # allow all the versions of the reviews service to communicate with the ratings-v1 service
     sender: "reviews-*.default"
     receiver: "ratings-v1.default"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -43,8 +43,8 @@ rules:
   - rule_id: 4 # all except reviews-v2 ...
     sender: "reviews-v2.default"
     receiver: "ratings-v1.default"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -53,8 +53,8 @@ rules:
   - rule_id: 5  # allow the "login" path
     sender: "*istio-ingressgateway*.istio-system"
     receiver: "productpage-v1.default"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/login"
     operation: POST
@@ -63,8 +63,8 @@ rules:
   - rule_id: 6  # but block the "logout" path
     sender: "*istio-ingressgateway*.istio-system"
     receiver: "productpage-v1.default"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/logout"
     operation: GET

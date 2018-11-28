@@ -1,20 +1,28 @@
 rules:
 
   - rule_id: 0
-    sender: "*"
-    receiver: "*"
+    sender:
+      senderName: "*"
+      senderType: "*"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: "*"
     resource:
-      resourceProtocol: "*"
       resourceType: "*"
       resourceName: "*"
     operation: "*"
     decision: allow
 
   - rule_id: 1
-    sender: "ratings.my_namespace"
-    receiver: "reviews.my_namespace"
+    sender:
+      senderName: "ratings.my_namespace"
+      senderType: "service"
+    receiver:
+      receiverName: "reviews.my_namespace"
+      receiverType: "*"
+    protocol: HTTP
     resource:
-      resourceProtocol: HTTP
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -43,60 +51,83 @@ rules:
     decision: block
     
   - rule_id: 2
-    sender: "ratings.my_namespace"
-    receiver: "reviews.my_namespace"
+    sender:
+      senderName: "ratings.my_namespace"
+      senderType: "*"
+    receiver:
+      receiverName: "reviews.my_namespace"
+      receiverType: "service"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: POST
     decision: block
     
   - rule_id: 3
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
-    resource:
-      resourceProtocol: http
-      resourceType: httpPath
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "*"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
+    resource:      resourceType: httpPath
       resourceName: "/*"
     operation: POST
     decision: block
   
   - rule_id: 4
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "*"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/book/123"
     operation: GET
     decision: allow
     
   - rule_id: 5
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "*"
+    receiver:
+      senderName: "B.my_namespace"
+      senderType: "*"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/book/321"
     operation: GET
     decision: alert
   
   - rule_id: 6
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "*"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/book/1?3"
     operation: GET
     decision: block
     
   - rule_id: 7
-    sender: "ratings.*.svc.*.local"
-    receiver: "*.my_namespace"
+    sender:
+      senderName: "ratings.*.svc.*.local"
+      senderType: "*"
+    receiver:
+      receiverName: "*.my_namespace"
+      receiverType: "*"
+    protocol: HTTP
     resource:
-      resourceProtocol: HTTP
       resourceType: httpPath
       resourceName: "/*"
     operation: GET    

@@ -34,7 +34,7 @@ func main() {
 	fmt.Println("----------------------")
 
 
-	str="test whitelist: conditions with sender and receiver labels. Expected results:"
+	str="test whitelist: conditions with sender and receiver labels. Expected results:?"
 	fmt.Println(str)
 	Test_CheckMessages("examples/rules_with_label_conditions.yaml","examples/messages_test_with_label_conditions.yaml")
 	fmt.Println("----------------------")

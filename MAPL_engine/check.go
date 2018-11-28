@@ -79,48 +79,12 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 	// ----------------------
 	// compare basic message attributes:
 
-	match:=false
-	for _,expandedSender:=range(rule.SenderList){
-		match_temp:=false
-		if !expandedSender.IsIP && !expandedSender.IsCIDR{
-			match_temp=expandedSender.Regexp.Match([]byte(message.SourceService)) // supports wildcards
-		}else{
-			if expandedSender.IsIP{
-				match_temp = (expandedSender.Name==message.SourceIp)
-			}
-			if expandedSender.IsCIDR{
-				match_temp=expandedSender.CIDR.Contains(message.SourceNetIp)
-			}
-		}
-		if match_temp == true{
-			match = true
-			break
-		}
-	}
-
+	match:=TestSender(rule,message)
 	if !match{
 		return DEFAULT
 	}
 
-	match=false
-	for _,expandedReceiver:=range(rule.ReceiverList){
-		match_temp:=false
-		if !expandedReceiver.IsIP && !expandedReceiver.IsCIDR{
-			match_temp=expandedReceiver.Regexp.Match([]byte(message.DestinationService)) // supports wildcards
-		}else{
-			if expandedReceiver.IsIP{
-				match_temp = (expandedReceiver.Name==message.DestinationIp)
-			}
-			if expandedReceiver.IsCIDR{
-				match_temp=expandedReceiver.CIDR.Contains(message.DestinationNetIp)
-			}
-		}
-		if match_temp == true{
-			match = true
-			break
-		}
-	}
-
+	match=TestReceiver(rule,message)
 	if !match{
 		return DEFAULT
 	}
@@ -132,8 +96,8 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 
 	// ----------------------
 	// compare resource:
-	if rule.Resource.ResourceProtocol != "*"{
-		if !strings.EqualFold(message.ContextProtocol, rule.Resource.ResourceProtocol) { // regardless of case // need to support wildcards!
+	if rule.Protocol != "*"{
+		if !strings.EqualFold(message.ContextProtocol, rule.Protocol) { // regardless of case // need to support wildcards!
 			return DEFAULT
 		}
 
@@ -170,6 +134,58 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 	return DEFAULT
 }
 
+func TestSender(rule *Rule, message *MessageAttributes) bool {
+	match := false
+	for _, expandedSender := range (rule.Sender.SenderList) {
+		match_temp := false
+
+		switch expandedSender.Type {
+		case "subnet":
+			if expandedSender.IsIP {
+				match_temp = (expandedSender.Name == message.SourceIp)
+			}
+			if expandedSender.IsCIDR {
+				match_temp = expandedSender.CIDR.Contains(message.SourceNetIp)
+			}
+		case "*", "service":
+			match_temp = expandedSender.Regexp.Match([]byte(message.SourceService)) // supports wildcards
+		default:
+			panic("type not supported")
+		}
+		if match_temp == true {
+			match = true
+			break
+		}
+	}
+	return match
+}
+
+func TestReceiver(rule *Rule, message *MessageAttributes) bool {
+	match := false
+	for _, expandedReceiver := range (rule.Receiver.ReceiverList) {
+		match_temp := false
+
+		switch expandedReceiver.Type {
+		case "subnet":
+			if expandedReceiver.IsIP {
+				match_temp = (expandedReceiver.Name == message.DestinationIp)
+			}
+			if expandedReceiver.IsCIDR {
+				match_temp = expandedReceiver.CIDR.Contains(message.DestinationNetIp)
+			}
+		case "*", "service":
+			match_temp = expandedReceiver.Regexp.Match([]byte(message.DestinationService)) // supports wildcards
+		default:
+			panic("type not supported")
+		}
+
+		if match_temp == true {
+			match = true
+			break
+		}
+	}
+	return match
+}
 // testConditions tests the conditions of the rule with the message attributes
 func TestConditions(rule *Rule, message *MessageAttributes) bool{
 	//

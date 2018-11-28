@@ -1,40 +1,56 @@
 rules:
 
   - rule_id: 0
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "service"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "*"
     operation: GET
     decision: allow
 
   - rule_id: 1
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "service"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "*"
     operation: POST
     decision: block
 
   - rule_id: 2
-    sender: "A.my_namespace"
-    receiver: "C.my_namespace"
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "service"
+    receiver:
+      receiverName: "C.my_namespace"
+      receiverType: "*"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "*"
     operation: read
     decision: allow
 
   - rule_id: 3
-    sender: "A.my_namespace"
-    receiver: "C.my_namespace"
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "service"
+    receiver:
+      receiverName: "C.my_namespace"
+      receiverType: "*"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "*"
     operation: write

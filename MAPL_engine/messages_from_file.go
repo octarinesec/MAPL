@@ -49,7 +49,7 @@ func YamlReadMessagesFromString(yamlString string) Messages {
 	addNetIpToMessages(&messages)
 	parseLabelsJsonOfMessages(&messages)
 
-	fmt.Println(messages)
+	// fmt.Println(messages)
 
 	flag, outputString := IsNumberOfFieldsEqual(messages, yamlString)
 	if flag == false {
