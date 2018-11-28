@@ -314,8 +314,7 @@ or
 #MAPL versions
 |fields|version 1|version 2
 |:----:|:----:|:----:|
-|sender|a string that represents the sender name|a structure that contains sender name (as before) and sender type (used to avoid ambiguity, especially when working with wildcards)
-|receiver|a string that represents the receiver name|a structure that contains receiver name (as before) and receiver type (used to avoid ambiguity, especially when working with wildcards)
-|resource and protocol| resource fields is a structure that contains resource protocol, resource type and resource name|protocol is a separate field from the resource field
-
+sender|a string that represents the sender name|a structure that contains sender name (as before) and sender type (used to avoid ambiguity, especially when working with wildcards)
+receiver|a string that represents the receiver name|a structure that contains receiver name (as before) and receiver type (used to avoid ambiguity, especially when working with wildcards)
+resource and protocol| resource fields is a structure that contains resource protocol, resource type and resource name|protocol is a separate field from the resource field
 
