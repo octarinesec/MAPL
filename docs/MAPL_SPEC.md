@@ -312,6 +312,9 @@ or
 ```
 
 #MAPL versions
+
+<br>
+
 |fields|version 1|version 2
 |:----:|:----:|:----:|
 sender|a string that represents the sender name|a structure that contains sender name (as before) and sender type (used to avoid ambiguity, especially when working with wildcards)
