@@ -8,7 +8,10 @@ build:
 	@docker tag ${IMG} ${LATEST}
  
 push:
-	@docker push ${NAME}
+	#@docker push ${NAME}
+	docker push ${NAME}:${TAG}
+	docker push ${LATEST}
+
  
 login:
 	@docker log -u ${DOCKER_USER} -p ${DOCKER_PASS}
