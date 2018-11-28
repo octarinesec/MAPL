@@ -72,7 +72,7 @@ type Rule struct {
 	RuleID        string          `yaml:"rule_id,omitempty" json:"RuleID,omitempty" bson:"RuleID,omitempty" structs:"RuleID,omitempty"`
 	Sender        Sender          `yaml:"sender,omitempty" json:"Sender,omitempty" bson:"Sender" structs:"Sender,omitempty"`
 	Receiver      Receiver        `yaml:"receiver,omitempty" json:"Receiver,omitempty" bson:"Receiver" structs:"Receiver,omitempty"`
-	Protocol      string          `yaml:"protocol,omitempty" json:"Protocol,omitempty" bson:"ResourceProtocol" structs:"Protocol,omitempty"`
+	Protocol      string          `yaml:"protocol,omitempty" json:"Protocol,omitempty" bson:"Protocol" structs:"Protocol,omitempty"`
 	Resource      Resource        `yaml:"resource,omitempty" json:"Resource,omitempty" bson:"Resource" structs:"Resource,omitempty"`
 	Operation     string          `yaml:"operation,omitempty" json:"Operation,omitempty" bson:"Operation" structs:"Operation,omitempty"`
 	DNFConditions []ANDConditions `yaml:"DNFconditions,omitempty" json:"DNFConditions,omitempty" bson:"DNFConditions,omitempty" structs:"DNFConditions,omitempty"`

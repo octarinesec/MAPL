@@ -1,10 +1,14 @@
 rules:
 
   - rule_id: 0
-    sender: "A.*"
-    receiver: "B.my_namespace"
+    sender:
+      senderName: "A.*"
+      senderType: "service"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET

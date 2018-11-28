@@ -8,39 +8,57 @@ MAPL makes it easier to declare and maintain access control rules. The language 
 
 Policy rules have the following syntax:  
 
-`<sender, receiver, resource, operation> : <conditions> : <decision>`
+`<sender, receiver, protocol, resource, operation> : <conditions> : <decision>`
 
-Essentially, a rule gives a decision wheteher the sender (client) may do the operaion on the resource of the receiver (server) when the conditions apply.
+Essentially, a rule gives a decision whether the sender (client) may do the operation on the resource of the receiver (server) using the protocol when the conditions apply.
 
 ### Sender and Receiver
-Sender services (clients) and Receiver services (servers) names.  
+Sender services (clients) and Receiver services (servers) name structures.  
+Sender is comprised of sender name and sender type.  
+Receiver is comprised of receiver name and receiver type.
+
 - The names are case sensitive strings, comprised of alphanumeric characters, '-', '/' and '.' and must not contain spaces or tabs.
 - The language allows wildcards (* and ?).
-- The language allows lists of names for multiple sender of receiver services, separated by ';'
+- The language allows lists of names for multiple sender of receiver services, separated by ';'. Pay attention that all of the services in the list are of the same type as specified in the type.
 
 Examples:
 ```
 (1)
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
+    sender: 
+      senderName: "A.my_namespace"
+      senderType: service
+    receiver: 
+      receiverName: "B.my_namespace"
+      receiverType: service
+      
 (2)
-    sender: "A.my_namespace;A.my_other_namespace"
-    receiver: "B.my_namespace"
+    sender: 
+      senderName: "A.my_namespace;A.my_other_namespace"
+      senderType: service
+    receiver: 
+      receiverName: "B.my_namespace"
+      receiverType: service
 (3)
-    sender: "A;B;C.*"
-    receiver: "x;y.1?3;z"
+    sender: 
+      senderName: "A;B;C.*"
+      senderType: service
+    receiver: 
+      receiverName: "x;y.1?3;z"
+      receiverType: service
 ```
+### Protocol
+Protocol: a string comprised of alphanumeric characters, '-', '/' and '.'  
+for example: HTTP, KAFKA, TCP
 
 ### Resources
-A resource is defined as `<protocol, resource-type, resource-name>`  
+A resource is defined as `<resource-type, resource-name>`  
 
 For example:  
-- `<HTTP, httpPath, http_path_name>`
-- `<KAFKA, kafkaTopic, kafka_topic_name>`
-- `<KAFKA, consumerGroup, consumer_group_name>`
-- `<TCP, port, port number>`  
-
-* Protocol: a string comprised of alphanumeric characters, '-', '/' and '.'  
+- `<httpPath, http_path_name>`
+- `<kafkaTopic, kafka_topic_name>`
+- `<consumerGroup, consumer_group_name>`
+- `<port, port number>`  
+  
 * Resource-Type: a string which is related to the protocol.  
  For example:  
     * for HTTP the resource type should always be "httpPath".
@@ -53,7 +71,7 @@ A verb that defines an operation (resource access method).
 For example:  
 - for HTTP: GET, POST etc…  
 - for KAFKA: PRODUCE, CONSUME  
-- for TCP: always "*" (as TCP is a trasport layer protocol) 
+- for TCP: always "*" (as TCP is a transport layer protocol) 
  
 The language allows lists of resource names separated by ';'
 The language allows for the following two words:  
@@ -89,7 +107,7 @@ For example, one rule may have the following set of conditions:
           method: GE
           value: 14
 ```
-which may be traslated to:
+which may be translated to:
 ```
 (payloadSize>=1024 && payloadSize<=4096) || (payloadSize>=16384 && payloadSize<=20000) || (utcHoursFromMidnight>=14 && utcHoursFromMidnight<=16)
 ```
@@ -125,7 +143,7 @@ The decision is ones of
 
 #### Defaults
 
-The language was develpoed to handle whitelists.  
+The language was developed to handle whitelists.  
 Therefore, in case of several applicable rules, it selects to most restricting decision:  
 - By default, all messages are blocked.
 - An explicit “allow” overrides this default.
@@ -137,10 +155,14 @@ Allow all traffic by adding the following rule:
 
 ```
   - rule_id: default_allow
-    sender: "*"
-    receiver: "*"
+    sender: 
+      senderName: "*"
+      senderType: "*"
+    receiver: 
+      receiverName: "*"
+      receiverType: "*"
+    protocol: "*"
     resource:
-      resourceProtocol: "*"
       resourceType: "*"
       resourceName: "*"
     operation: "*"
@@ -154,10 +176,14 @@ Allow service A.my_namespace to communicate with service B.my_namespace over HTT
 
 ```
   - rule_id: 0
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
+    sender: 
+      senderName: "A.my_namespace"
+      senderType: service
+    receiver: 
+      receiverName: "B.my_namespace"
+      receiverType: service
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -168,10 +194,14 @@ Allow all services of name *.my_namespace to communicate with service B.my_names
 
 ```
   - rule_id: 1
-    sender: "*.my_namespace"
-    receiver: "B.my_namespace"
+    sender: 
+      senderName: "*.my_namespace"
+      senderType: service
+    receiver: 
+      receiverName: "B.my_namespace"
+      receiverType: service
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/books"
     operation: GET
@@ -183,10 +213,14 @@ Allow service A.my_namespace to communicate with service B.my_namespace over HTT
 
 ```
   - rule_id: 2
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
-    resource:
-      resourceProtocol: http
+    sender: 
+      senderName: "A.my_namespace"
+      senderType: service
+    receiver: 
+      receiverName: "B.my_namespace"
+      receiverType: service
+    protocol: http
+    resource: 
       resourceType: httpPath
       resourceName: "/books/*"
     operation: GET
@@ -197,10 +231,14 @@ Allow service A.my_namespace to communicate with service B.my_namespace over HTT
 
 ```
   - rule_id: 3
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
-    resource:
-      resourceProtocol: http
+    sender: 
+      senderName: "A.my_namespace"
+      senderType: service
+    receiver: 
+      receiverName: "B.my_namespace"
+      receiverType: service
+    protocol: http
+    resource: 
       resourceType: httpPath
       resourceName: "/books/*"
     operation: read
@@ -211,10 +249,14 @@ Block service A.my_namespace from communicating with service B.my_namespace over
 
 ```
   - rule_id: 4
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
-    resource:
-      resourceProtocol: http
+    sender: 
+      senderName: "A.my_namespace"
+      senderType: service
+    receiver: 
+      receiverName: "B.my_namespace"
+      receiverType: service
+    protocol: http
+    resource: 
       resourceType: httpPath
       resourceName: "/books"
     operation: write
@@ -232,10 +274,14 @@ or
 
 ```
   - rule_id: 5
-    sender: "A.my_namespace"
-    receiver: "B.my_namespace"
-    resource:
-      resourceProtocol: HTTP
+    sender: 
+      senderName: "A.my_namespace"
+      senderType: service
+    receiver: 
+      receiverName: "B.my_namespace"
+      receiverType: service
+    protocol: http
+    resource: 
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
@@ -264,3 +310,12 @@ or
     decision: block
 
 ```
+
+#MAPL versions
+|fields|version 1|version 2
+|:----:|:----:|:----:|
+|sender|a string that represents the sender name|a structure that contains sender name (as before) and sender type (used to avoid ambiguity, especially when working with wildcards)
+|receiver|a string that represents the receiver name|a structure that contains receiver name (as before) and receiver type (used to avoid ambiguity, especially when working with wildcards)
+|resource and protocol| resource fields is a structure that contains resource protocol, resource type and resource name|protocol is a separate field from the resource field
+
+

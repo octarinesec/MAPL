@@ -1,70 +1,98 @@
 rules:
 
   - rule_id: 0
-    sender: "istio-system.*" # allow everything from istio-system. especially istio-ingressgateway
-    receiver: "*"
+    sender:
+      senderName: "istio-system.*" # allow everything from istio-system. especially istio-ingressgateway
+      senderType: service
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: "*"
     resource:
-      resourceProtocol: "*"
       resourceType: "*"
       resourceName: "*"
     operation: "*"
     decision: allow
 
   - rule_id: 1
-    sender: "default.productpage-v1"
-    receiver: "default.details-v1"
+    sender:
+      senderName: "default.productpage-v1"
+      senderType: service
+    receiver:
+      receiverName:  "default.details-v1"
+      receiverType: service
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
     decision: block
 
   - rule_id: 2
-    sender: "default.productpage-v1"
-    receiver: "default.reviews-*"
+    sender:
+      senderName: "default.productpage-v1"
+      senderType: service
+    receiver:
+      receiverName:  "default.reviews-*"
+      receiverType: service
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
     decision: allow
 
   - rule_id: 3
-    sender: "default.reviews-*"
-    receiver: "default.ratings-v1"
+    sender:
+      senderName: "default.reviews-*"
+      senderType: service
+    receiver:
+      receiverName:  "default.ratings-v1"
+      receiverType: service
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
     decision: allow
 
   - rule_id: 4
-    sender: "default.reviews-v2"
-    receiver: "default.ratings-v1"
+    sender:
+      senderName: "default.reviews-v2"
+      senderType: service
+    receiver:
+      receiverName:  "default.ratings-v1"
+      receiverType: service
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
     decision: block
 
   - rule_id: 5
-    sender: "istio-system.istio-ingressgateway"
-    receiver: "default.productpage-v1"
+    sender:
+      senderName: "istio-system.istio-ingressgateway"
+      senderType: service
+    receiver:
+      receiverName:  "default.productpage-v1"
+      receiverType: service
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/logout"
     operation: GET
     decision: block
 
   - rule_id: 6
-    sender: "istio-system.istio-ingressgateway"
-    receiver: "default.productpage-v1"
+    sender:
+      senderName: "istio-system.istio-ingressgateway"
+      senderType: service
+    receiver:
+      receiverName:  "default.productpage-v1"
+      receiverType: service
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/login"
     operation: POST

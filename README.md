@@ -5,9 +5,9 @@ MAPL makes it easier to declare and maintain access control rules. The language 
 
 The MAPL rules have the following syntax:  
 
-`<sender, receiver, resource, operation> : <conditions> : <decision>`
+`<sender, receiver, protocol, resource, operation> : <conditions> : <decision>`
 
-Essentially, a rule gives a decision wheteher the sender (client) may do the operaion on the resource of the receiver (server) when the conditions apply.  
+Essentially, a rule gives a decision wheteher the sender (client) may do the operaion on the resource of the receiver (server) using the protocol when the conditions apply.  
 The language is described thoroughly in [MAPL Specification](https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md).
 
 # MAPL Engine
@@ -23,9 +23,12 @@ A demonstration of the use of the MAPL engine for service-to-service authorizati
 
 <br>
 
-| istio release | git tag | docker image tag |
-|:-------:|:-----:|:-----:|
-|1.0.0|0.1|octarinesec/mapl_adapter:0.1|
+|MAPL version| istio release | git tag | docker image tag |
+|:-------:|:-------:|:-----:|:-----:|
+1|1.0.0|0.1|octarinesec/mapl_adapter:0.1
+2|1.0.0|0.2|octarinesec/mapl_adapter:0.2
+
+The MAPL versions are described in  [MAPL Specification](https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md).  
 
 # Status of the MAPL Project
 This project is still under active development.  
@@ -43,7 +46,6 @@ If you have any questions about MAPL, or about how to use the MAPL engine, pleas
 # TO-DO:
 
 - handle EX
-- add license
 - add auto-test with full message to see if they follow the syntax
 - fix convertConditionStringToIntFloatRegex. need to avoid putting default values for values that are actually used later
 

@@ -20,71 +20,99 @@ The  rules are:
 ```yaml
 rules:
 
-  - rule_id: 0  # allow istio-ingressgateway
-    sender: "kubernetes://istio-ingressgateway-*-*.istio-system"
-    receiver: "*"
+  - rule_id: 0  # allow everything from istio-system. especially istio-ingressgateway
+    sender: 
+        senderName: "*.istio-system"
+        senderType: "service"
+    receiver: 
+        receiverName: "*"
+        receiverType: "service"
+    protocol: "*"
     resource:
-      resourceProtocol: "*"
       resourceType: "*"
       resourceName: "*"
     operation: "*"
     decision: allow
 
   - rule_id: 1  # block the details service. the review text will be un-available
-    sender: "kubernetes://productpage-v1-*-*.default"
-    receiver: "kubernetes://details-v1-*-*.default"
+    sender: 
+        senderName: "productpage-v1.default"
+        senderType: "service"
+    receiver: 
+        receiverName: "details-v1.default"
+        receiverType: "service"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
     decision: block
 
   - rule_id: 2  # allow productpage-v1 to communicate with all the versions of the reviews service
-    sender: "kubernetes://productpage-v1-*-*.default"
-    receiver: "kubernetes://reviews-*-*-*.default"
+    sender:  
+        senderName: "productpage-v1.default"
+        senderType: "service"
+    receiver: 
+        receiverName: "reviews-*.default"
+        receiverType: "service"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
     decision: allow
 
   - rule_id: 3 # allow all the versions of the reviews service to communicate with the ratings-v1 service
-    sender: "kubernetes://reviews-*-*-*.default"
-    receiver: "kubernetes://ratings-v1-*-*.default"
+    sender: 
+        senderName: "reviews-*.default"
+        senderType: "service"
+    receiver: 
+        receiverName: "ratings-v1.default"
+        receiverType: "service"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
     decision: allow
 
   - rule_id: 4 # all except reviews-v2 ...
-    sender: "kubernetes://reviews-v2-*-*.default"
-    receiver: "kubernetes://ratings-v1-*-*.default"
+    sender: 
+        senderName: "reviews-v2.default"
+        senderType: "service"
+    receiver: 
+        receiverName: "ratings-v1.default"
+        receiverType: "service"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
     decision: block
 
   - rule_id: 5  # allow the "login" path
-    sender: "kubernetes://istio-ingressgateway-*-*.istio-system"
-    receiver: "kubernetes://productpage-v1-*-*.default"
+    sender: 
+        senderName: "*istio-ingressgateway*.istio-system"
+        senderType: "service"
+    receiver: 
+        receiverName: "productpage-v1.default"
+        receiverType: "service"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/login"
     operation: POST
     decision: alert
 
   - rule_id: 6  # but block the "logout" path
-    sender: "kubernetes://istio-ingressgateway-*-*.istio-system"
-    receiver: "kubernetes://productpage-v1-*-*.default"
+    sender: 
+        senderName: "*istio-ingressgateway*.istio-system"
+        senderType: "service"
+    receiver: 
+        receiverName: "productpage-v1.default"
+        receiverType: "service"
+    protocol: http
     resource:
-      resourceProtocol: http
       resourceType: httpPath
       resourceName: "/logout"
     operation: GET
@@ -99,9 +127,12 @@ Installing the adapter in a cluster with Kubernetes, Istio and the bookinfo app 
 
 <br>
 
-| istio release | git tag | docker image tag |
-|:-------:|:-----:|:-----:|
-|1.0.0|0.1|octarinesec/mapl_adapter:0.1
+|MAPL version| istio release | git tag | docker image tag |
+|:-------:|:-------:|:-----:|:-----:|
+1|1.0.0|0.1|octarinesec/mapl_adapter:0.1
+2|1.0.0|0.2|octarinesec/mapl_adapter:0.2
+
+The MAPL versions are described in  [MAPL Specification](https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md).  
 
 ## Adapter Roadmap
 

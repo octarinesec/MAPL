@@ -1,9 +1,13 @@
 rules:
   - rule_id: 0
-    sender: "*"
-    receiver: "*"
+    sender:
+      senderName: "*"
+      senderType: "*"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: "*"
     resource:
-      resourceProtocol: "*"
       resourceType: "*"
       resourceName: "*"
     operation: "*"
