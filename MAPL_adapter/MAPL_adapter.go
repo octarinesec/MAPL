@@ -180,6 +180,8 @@ func convertAuthRequestToMaplMessage(authRequest *authorization.HandleAuthorizat
 	message.RequestMethod = instance.Action.Method
 	message.ContextProtocol = instance.Action.Properties["protocol"].GetStringValue()
 	message.RequestPath = instance.Action.Path
+	message.RequestTime = instance.Action.Properties["timestamp"].GetTimestampValue().GetValue().String()
+	MAPL_engine.AddTimeInfoToMessage(&message) // to parse the timestamp string
 	MAPL_engine.AddResourceType(&message) // to add message.ContextType
 
 	switch Params.IstioToServiceNameConvention{

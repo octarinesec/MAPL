@@ -21,6 +21,14 @@ $ cp -r MAPL_adapter $MIXERLOC/adapter/
 ```
 
 ### Build the adapter
+
+You can use Octarine's image in [MAPL_adapter_dep.yaml](https://github.com/octarinesec/MAPL/tree/master/MAPL_adapter/deployments/MAPL_adapter_dep.yaml) instead:
+```
+  - image: octarinesec/mapl_adapter:{mapl_adapter_version}
+```
+Or do the following in order to create your own docker image.  
+
+##### Compile
 ```bash
 $ cd $MIXERLOC/adapter/MAPL_adapter/
 $ go generate ./...
@@ -29,18 +37,18 @@ $ go build ./...
 $ mv $MIXERLOC/adapter/MAPL_adapter/adapter_main/adapter_main $MIXERLOC/adapter/MAPL_adapter/adapter_main/MAPL_adapter
 ```
 
-### Build the docker image
+##### Build the docker image
 ```bash
 $ cd $MIXERLOC/adapter/MAPL_adapter/adapter_main
 $ docker build . -t $DOCKER_USER/mapl_adapter:{ADAPTER_TAG}
 ```
-### Push to image repository
+##### Push to image repository
 ```bash
 $ docker push $DOCKER_USER/mapl_adapter:{ADAPTER_TAG}
 ```
 Edit [MAPL_adapter_dep.yaml](https://github.com/octarinesec/MAPL/tree/master/MAPL_adapter/deployments/MAPL_adapter_dep.yaml) with the location of the adapter's docker image and imagePullSecrets.
 
-### Create image pull secret
+##### Create image pull secret
 ```bash
 $ kubectl create secret docker-registry docker-secret -n istio-system --docker-username="<username>" --docker-password="<password>" --docker-email="<docker_email>" --docker-server="https://index.docker.io/v1/"
 ```
@@ -99,15 +107,15 @@ The current set of rules [rules.yaml](https://github.com/octarinesec/MAPL/tree/m
 1) Allow ingress
 2) Allow specific services communications
 3) Block the communication of reviews-v2 and ratings-v1 (black stars ratings is not available)
-4) Block the communication of productpage-v1 and details-v1 (the reviews are not available)
+4) Block the communication of productpage-v1 and details-v1 (the reviews are not available) every other minute
 5) Allow login
 6) Block logout (the webpage is not available after signing out)
 
 ## How to Apply New Rules
 
-Create a new rule file (new_rules.yaml). Copy it over rules.yaml and replace the old configmap
+Edit the rules.yaml file or copy another file as rules.yaml.
 ```bash
-$ cat $MIXERLOC/adapter/MAPL_adapter/rules/new_rules.yaml > $MIXERLOC/adapter/MAPL_adapter/rules/rules.yaml
+$ cp $MIXERLOC/adapter/MAPL_adapter/rules/new_rules.yaml $MIXERLOC/adapter/MAPL_adapter/rules/rules.yaml
 ```
 Update the config map
 ```bash
@@ -142,4 +150,28 @@ kubectl logs -n istio-system $(kubectl get pods -n istio-system | grep mapl-adap
 * To get a bash command line in the mapl-adapter pod:
 ```
 $ kubectl exec -n istio-system -ti $(kubectl get pods -n istio-system | grep mapl-adapter-dep | awk -F" " '{print $1}') /bin/bash
+```
+
+* To view the effect of the new rules in the command-line   
+
+Login to the reviews-v1 pod. For example:
+```bash
+$  kubectl exec reviews-v1-7cffb56b4d-ghpns  -i -t -- bash -il
+```
+Connect to the ratings service via HTTP: 
+```bash
+# wget -O temp.txt http://ratings:9080/ratings/0
+# cat temp.txt
+    {"id":0,"ratings":{"Reviewer1":5,"Reviewer2":4}}
+# exit
+``` 
+Now, login to the reviews-v2 pod. For example:
+```bash
+$  kubectl exec reviews-v2-869dcbf5c4-z7xhk  -i -t -- bash -il
+``` 
+But we cannot connect to the ratings services from the reviews-v2 pod as there is a rule that prevents it. 
+```bash
+# wget -O temp.txt http://ratings:9080/ratings/0
+    HTTP request sent, awaiting response... 401 Unauthorized
+    Username/Password Authentication Failed. 
 ```

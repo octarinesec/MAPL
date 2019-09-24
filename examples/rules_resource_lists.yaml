@@ -3,29 +3,45 @@ rules:
   - rule_id: 0
     sender:
       senderName: "A.my_namespace"
-      senderType: "service"
+      senderType: "workload"
     receiver:
       receiverName: "B.my_namespace"
       receiverType: "*"
     protocol: http
     resource:
-      resourceType: httpPath
-      resourceName: "/book/123;/book/321*"
+      resourceType: path
+      resourceName: "/book/123,/book/321*"
     operation: GET
     decision: alert
 
   - rule_id: 1
     sender:
       senderName: "A.my_namespace"
-      senderType: "service"
+      senderType: "workload"
     receiver:
       receiverName: "B.my_namespace"
       receiverType: "*"
     protocol: http
     resource:
-      resourceType: httpPath
+      resourceType: path
       resourceName: "/book/321"
     operation: GET
     decision: block
+
+
+
+  - rule_id: 2
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: tcp
+    resource:
+      resourceType: port
+      resourceName: 123,321
+    operation: GET
+    decision: allow
 
 

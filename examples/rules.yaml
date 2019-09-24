@@ -17,13 +17,13 @@ rules:
   - rule_id: 1
     sender:
       senderName: "ratings.my_namespace"
-      senderType: "service"
+      senderType: "workload"
     receiver:
       receiverName: "reviews.my_namespace"
       receiverType: "*"
     protocol: HTTP
     resource:
-      resourceType: httpPath
+      resourceType: path
       resourceName: "/*"
     operation: GET
     DNFconditions:
@@ -56,10 +56,10 @@ rules:
       senderType: "*"
     receiver:
       receiverName: "reviews.my_namespace"
-      receiverType: "service"
+      receiverType: "workload"
     protocol: http
     resource:
-      resourceType: httpPath
+      resourceType: path
       resourceName: "/*"
     operation: POST
     decision: block
@@ -72,7 +72,7 @@ rules:
       receiverName: "B.my_namespace"
       receiverType: "*"
     protocol: http
-    resource:      resourceType: httpPath
+    resource:      resourceType: path
       resourceName: "/*"
     operation: POST
     decision: block
@@ -86,7 +86,7 @@ rules:
       receiverType: "*"
     protocol: http
     resource:
-      resourceType: httpPath
+      resourceType: path
       resourceName: "/book/123"
     operation: GET
     decision: allow
@@ -100,7 +100,7 @@ rules:
       senderType: "*"
     protocol: http
     resource:
-      resourceType: httpPath
+      resourceType: path
       resourceName: "/book/321"
     operation: GET
     decision: alert
@@ -114,7 +114,7 @@ rules:
       receiverType: "*"
     protocol: http
     resource:
-      resourceType: httpPath
+      resourceType: path
       resourceName: "/book/1?3"
     operation: GET
     decision: block
@@ -128,7 +128,7 @@ rules:
       receiverType: "*"
     protocol: HTTP
     resource:
-      resourceType: httpPath
+      resourceType: path
       resourceName: "/*"
     operation: GET    
     decision: alert

@@ -3,7 +3,7 @@ rules:
   - rule_id: 0
     sender:
       senderName: "istio-system.*" # allow everything from istio-system. especially istio-ingressgateway
-      senderType: "service"
+      senderType: "workload"
     receiver:
       receiverName: "*"
       receiverType: "*"
@@ -17,13 +17,13 @@ rules:
   - rule_id: 1
     sender:
       senderName: "default.productpage-v1"
-      senderType: "service"
+      senderType: "workload"
     receiver:
       receiverName: "default.details-v1"
       receiverType: "*"
     protocol: http
     resource:
-      resourceType: httpPath
+      resourceType: path
       resourceName: "/*"
     operation: GET
     decision: block
@@ -31,13 +31,13 @@ rules:
   - rule_id: 2
     sender:
       senderName: "default.productpage-v1"
-      senderType: "service"
+      senderType: "workload"
     receiver:
       receiverName: "default.reviews-*"
       receiverType: "*"
     protocol: http
     resource:
-      resourceType: httpPath
+      resourceType: path
       resourceName: "/*"
     operation: GET
     decision: allow
@@ -45,13 +45,13 @@ rules:
   - rule_id: 3
     sender:
       senderName: "default.reviews-*"
-      senderType: "service"
+      senderType: "workload"
     receiver:
       receiverName: "default.ratings-v1"
       receiverType: "*"
     protocol: http
     resource:
-      resourceType: httpPath
+      resourceType: path
       resourceName: "/*"
     operation: GET
     decision: allow
@@ -59,13 +59,13 @@ rules:
   - rule_id: 4
     sender:
       senderName: "default.reviews-v2"
-      senderType: "service"
+      senderType: "workload"
     receiver:
       receiverName: "default.ratings-v1"
       receiverType: "*"
     protocol: http
     resource:
-      resourceType: httpPath
+      resourceType: path
       resourceName: "/*"
     operation: GET
     decision: block

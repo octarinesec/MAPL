@@ -4,6 +4,37 @@ messages:
   sender_service: A.my_namespace
   sender_name: A-xxads-asdad
   sender_namespace: my_namespace
+  sender_ip: 192.168.1.1
+  receiver_service: B.my_namespace
+  receiver_name: B-uasdx-asdgs
+  receiver_namespace: my_namespace
+  request_protocol: HTTP
+  request_path: /book/123
+  request_method: GET
+  request_size: 1024
+  request_time: 2018-07-29T14:30:00-07:00
+  request_user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
+  
+- message_id: 1
+  sender_service: C.my_namespace
+  sender_name: C
+  sender_namespace: my_namespace
+  sender_ip: 192.168.2.3
+  receiver_service: B.my_namespace
+  receiver_name: B-uasdx-asdgs
+  receiver_namespace: my_namespace
+  request_protocol: http
+  request_path: /book/123
+  request_method: GET
+  request_size: 1024
+  request_time: 2018-07-29T14:30:00-07:00
+  request_user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
+  
+- message_id: 2
+  sender_service: A.my_namespacex
+  sender_name: A-xxads-asdad
+  sender_namespace: my_namespacex
+  sender_ip: 192.168.10.1
   receiver_service: B.my_namespace
   receiver_name: B-uasdx-asdgs
   receiver_namespace: my_namespace
@@ -14,71 +45,32 @@ messages:
   request_time: 2018-07-29T14:30:00-07:00
   request_user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
 
-- message_id: 1
-  sender_service: A.my_namespace
-  sender_name: A-xxads-asdad
-  sender_namespace: my_namespace
-  receiver_service: B.my_namespace
-  receiver_name: B-uasdx-asdgs
-  receiver_namespace: my_namespace
-  request_protocol: http
-  request_path: /book/3210
-  request_method: GET
-  request_size: 1024
-  request_time: 2018-07-29T14:30:00-07:00
-  request_user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
-
-- message_id: 2
-  sender_service: A.my_namespace
-  sender_name: A-xxads-asdad
-  sender_namespace: my_namespace
-  receiver_service: B.my_namespace
-  receiver_name: B-uasdx-asdgs
-  receiver_namespace: my_namespace
-  request_protocol: http
-  request_path: /book/321
-  request_method: GET
-  request_size: 1024
-  request_time: 2018-07-29T14:30:00-07:00
-  request_user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
-
 - message_id: 3
-  sender_service: A.my_namespace
-  sender_name: A-xxads-asdad
+  sender_service: AA.my_namespace
+  sender_name: AA-oplxv-iioaq
   sender_namespace: my_namespace
+  sender_ip: 192.168.2.5
   receiver_service: B.my_namespace
   receiver_name: B-uasdx-asdgs
   receiver_namespace: my_namespace
-  request_protocol: tcp
-  receiver_port: 5555
+  request_protocol: HTTP
+  request_path: /book/123
   request_method: GET
   request_size: 1024
   request_time: 2018-07-29T14:30:00-07:00
   request_user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
 
 - message_id: 4
-  sender_service: A.my_namespace
-  sender_name: A-xxads-asdad
+  sender_service: AAA.my_namespace
+  sender_name: AA-oplxv-iioaq
   sender_namespace: my_namespace
+  sender_ip: 192.168.2.5
   receiver_service: B.my_namespace
   receiver_name: B-uasdx-asdgs
   receiver_namespace: my_namespace
-  request_protocol: tcp
-  receiver_port: 123
-  request_method: GET
-  request_size: 1024
-  request_time: 2018-07-29T14:30:00-07:00
-  request_user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
-
-- message_id: 5
-  sender_service: A.my_namespace
-  sender_name: A-xxads-asdad
-  sender_namespace: my_namespace
-  receiver_service: B.my_namespace
-  receiver_name: B-uasdx-asdgs
-  receiver_namespace: my_namespace
-  request_protocol: tcp
-  receiver_port: 321
+  receiver_ip: 192.168.4.1
+  request_protocol: HTTP
+  request_path: /book/123
   request_method: GET
   request_size: 1024
   request_time: 2018-07-29T14:30:00-07:00

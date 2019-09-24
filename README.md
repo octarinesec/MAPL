@@ -9,7 +9,7 @@ The MAPL rules have the following syntax:
 
 `<sender, receiver, protocol, resource, operation> : <conditions> : <decision>`
 
-Essentially, a rule gives a decision wheteher the sender (client) may do the operaion on the resource of the receiver (server) using the protocol when the conditions apply.  
+Essentially, a rule gives a decision whether the sender (client) may do the operation on the resource of the receiver (server) when the conditions apply.  
 The language is described thoroughly in [MAPL Specification](https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md).
 
 # MAPL Engine
@@ -47,7 +47,6 @@ If you have any questions about MAPL, or about how to use the MAPL engine, pleas
 
 # TO-DO:
 
-- handle EX
 - add auto-test with full message to see if they follow the syntax
 - fix convertConditionStringToIntFloatRegex. need to avoid putting default values for values that are actually used later
 

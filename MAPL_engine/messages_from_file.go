@@ -46,7 +46,7 @@ func YamlReadMessagesFromString(yamlString string) Messages {
 
 	addResourceTypeToMessages(&messages)
 	addTimeInfoToMessages(&messages)
-	addNetIpToMessages(&messages)
+	AddNetIpToMessages(&messages)
 	parseLabelsJsonOfMessages(&messages)
 
 	// fmt.Println(messages)
@@ -77,7 +77,7 @@ func AddResourceType(message *MessageAttributes){
 	message.ContextType=""
 	switch message.ContextProtocol{ // these are the only protocols we currently support
 	case "HTTP","http":
-		message.ContextType = "httpPath"
+		message.ContextType = "path"
 	case "TCP","tcp":
 		message.ContextType = "port"
 	}
@@ -133,7 +133,7 @@ func AddNetIpToMessage(message *MessageAttributes) {
 }
 
 // addNetIpToMessages function parses string ip data for all messages
-func addNetIpToMessages(messages *Messages) {
+func AddNetIpToMessages(messages *Messages) {
 	for i, _ := range (messages.Messages) {
 		AddNetIpToMessage(&messages.Messages[i])
 	}

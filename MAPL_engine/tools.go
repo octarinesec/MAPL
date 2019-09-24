@@ -19,6 +19,7 @@ func compareJsonAndYaml(jsonString string, yamlString string) (bool, string) {
 	jsonString = strings.Replace(jsonString, "\"", "", -1)    // remove "
 	jsonString = strings.Replace(jsonString, "null", "", -1)  // remove null
 	jsonString = strings.Replace(jsonString, ",\n", "\n", -1) // remove ',' at the end of a line
+	jsonString = strings.Replace(jsonString, "{}\n", "\n", -1) // remove '{}' at the end of a line
 	jsonString = strings.Replace(jsonString, "{\n", "\n", -1) // remove '{' at the end of a line
 	jsonString = strings.Replace(jsonString, "[\n", "\n", -1) // remove '[' at the end of a line
 	jsonString = strings.Replace(jsonString, "}\n", "\n", -1) // remove '}' at the end of a line

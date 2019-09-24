@@ -7,11 +7,18 @@ rules:
     receiver:
       receiverName: "B.my_namespace"
       receiverType: "*"
-    protocol: http
+    protocol: HTTP
     resource:
       resourceType: path
       resourceName: "/*"
     operation: GET
-    decision: allow
-  
+    DNFconditions:
+      - ANDconditions:
+        - attribute: encryptionType
+          method: EQ
+          value: TLS
+        - attribute: encryptionVersion
+          method: GE
+          value: 1.3
 
+    decision: allow

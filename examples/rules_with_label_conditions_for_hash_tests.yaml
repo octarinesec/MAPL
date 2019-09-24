@@ -1,0 +1,196 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "*"
+      senderType: "workload"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: HTTP
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    DNFconditions:
+      - ANDconditions:
+        - attribute: "senderLabel[key1]"
+          method: EQ
+          value: "abc"
+        - attribute: "receiverLabel[key1]"
+          method: EQ
+          value: "abc"
+      - ANDconditions:
+        - attribute: "senderLabel[key2]"
+          method: EQ
+          value: "receiverLabel[key2]"
+    decision: allow
+
+  - rule_id: 1
+    sender:
+      senderName: "*"
+      senderType: "workload"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: HTTP
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    DNFconditions:
+      - ANDconditions:
+        - attribute: "senderLabel[key2]"
+          method: EQ
+          value: "receiverLabel[key2]"
+      - ANDconditions:
+        - attribute: "receiverLabel[key1]"
+          method: EQ
+          value: "abc"
+        - attribute: "senderLabel[key1]"
+          method: EQ
+          value: "abc"
+
+    decision: allow
+
+  - rule_id: 2
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: HTTP
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    DNFconditions:
+      - ANDconditions:
+        - attribute: payloadSize
+          method: LE
+          value: 4096
+        - attribute: payloadSize
+          method: GE
+          value: 1024
+      - ANDconditions:
+        - attribute: payloadSize
+          method: LE
+          value: 20000
+        - attribute: payloadSize
+          method: GE
+          value: 16384
+      - ANDconditions:
+        - attribute: utcHoursFromMidnight
+          method: LE
+          value: 16
+        - attribute: utcHoursFromMidnight
+          method: GE
+          value: 14
+    decision: block
+
+  - rule_id: 3
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: HTTP
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    DNFconditions:
+      - ANDconditions:
+        - attribute: payloadSize
+          method: LE
+          value: 4096
+        - attribute: payloadSize
+          method: GE
+          value: 1024
+      - ANDconditions:
+        - attribute: payloadSize
+          method: LE
+          value: 20000
+      - ANDconditions:
+        - attribute: utcHoursFromMidnight
+          method: LE
+          value: 16
+        - attribute: utcHoursFromMidnight
+          method: GE
+          value: 14
+    decision: block
+
+  - rule_id: 4
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: HTTP
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    DNFconditions:
+      - ANDconditions:
+        - attribute: payloadSize
+          method: GE
+          value: 1024
+        - attribute: payloadSize
+          method: LE
+          value: 4096
+      - ANDconditions:
+        - attribute: payloadSize
+          method: LE
+          value: 20000
+        - attribute: payloadSize
+          method: GE
+          value: 16384
+      - ANDconditions:
+        - attribute: utcHoursFromMidnight
+          method: LE
+          value: 16
+        - attribute: utcHoursFromMidnight
+          method: GE
+          value: 14
+    decision: block
+
+  - rule_id: 5
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: HTTP
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    DNFconditions:
+      - ANDconditions:
+        - attribute: utcHoursFromMidnight
+          method: LE
+          value: 16
+        - attribute: utcHoursFromMidnight
+          method: GE
+          value: 14
+      - ANDconditions:
+        - attribute: payloadSize
+          method: GE
+          value: 1024
+        - attribute: payloadSize
+          method: LE
+          value: 4096
+        - attribute: payloadSize
+          method: GE
+          value: 16384
+      - ANDconditions:
+        - attribute: payloadSize
+          method: LE
+          value: 20000
+
+    decision: block

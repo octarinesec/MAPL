@@ -21,6 +21,12 @@ $ kubectl apply -f $ISTIOLOC/install/kubernetes/helm/helm-service-account.yaml
 $ helm init --service-account tiller
 $ helm install $ISTIOLOC/install/kubernetes/helm/istio --name istio --namespace istio-system
 ```
+
+### Changing the mixer version
+use the following in order to use the latest mixer version 
+```bash
+$ kubectl set image deployment/istio-policy mixer="gcr.io/istio-release/mixer:master-latest-daily" -n istio-system
+```
 ### Install Bookinfo App
 This will add several services to the default namespace.  
 see: https://istio.io/docs/examples/bookinfo/

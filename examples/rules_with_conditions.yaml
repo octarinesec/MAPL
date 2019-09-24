@@ -3,10 +3,10 @@ rules:
   - rule_id: 0
     sender:
       senderName: "*"
-      senderType: "service"
+      senderType: "workload"
     receiver:
       receiverName: "*"
-      receiverType: "service"
+      receiverType: "workload"
     protocol: "*"
     resource:
       resourceType: "*"
@@ -17,13 +17,13 @@ rules:
   - rule_id: 1
     sender:
       senderName: "A.my_namespace"
-      senderType: "service"
+      senderType: "workload"
     receiver:
       receiverName: "B.my_namespace"
       receiverType: "*"
     protocol: HTTP
     resource:
-      resourceType: httpPath
+      resourceType: path
       resourceName: "/*"
     operation: GET
     DNFconditions:

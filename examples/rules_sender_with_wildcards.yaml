@@ -3,13 +3,13 @@ rules:
   - rule_id: 0
     sender:
       senderName: "A.*"
-      senderType: "service"
+      senderType: "workload"
     receiver:
       receiverName: "B.my_namespace"
       receiverType: "*"
     protocol: http
     resource:
-      resourceType: httpPath
+      resourceType: path
       resourceName: "/*"
     operation: GET
     decision: allow
