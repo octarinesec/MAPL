@@ -243,7 +243,7 @@ func test_CheckMessages(rulesFilename string, messagesFilename string) []int {
 
 	for i_message, message := range (messages.Messages) {
 
-		result, msg, relevantRuleIndex, _, appliedRulesIndices := Check(&message, &rules)
+		result, msg, relevantRuleIndex, _, appliedRulesIndices , _:= Check(&message, &rules)
 		if relevantRuleIndex >= 0 {
 			fmt.Printf("message #%v: decision=%v [%v] by rule #%v ; applicable rules =%v \n", i_message, result, msg, rules.Rules[relevantRuleIndex].RuleID, appliedRulesIndices)
 		} else {
@@ -296,7 +296,7 @@ func test_CheckMessagesWithJsonRaw(rulesFilename string, messagesFilename string
 
 		message.RequestJsonRaw = &data
 
-		result, msg, relevantRuleIndex, _, appliedRulesIndices := Check(&message, &rules)
+		result, msg, relevantRuleIndex, _, appliedRulesIndices , _:= Check(&message, &rules)
 		if relevantRuleIndex >= 0 {
 			fmt.Printf("message #%v: decision=%v [%v] by rule #%v ; applicable rules =%v \n", i_message, result, msg, rules.Rules[relevantRuleIndex].RuleID, appliedRulesIndices)
 		} else {
