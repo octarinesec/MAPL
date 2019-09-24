@@ -2,8 +2,7 @@ package extras
 
 import (
 	"fmt"
-	//"github.com/octarinesec/MAPL/MAPL_engine"
-	"golang.octarinesec.com/MAPL/MAPL_engine"
+	"github.com/octarinesec/MAPL/MAPL_engine"
 	"os"
 	"strings"
 )
