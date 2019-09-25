@@ -121,12 +121,12 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) (int, string) {
 		if rule.Protocol == "tcp" {
 
 			log.Println("testing tcp!")
-			log.Println(rule)
-			log.Println(message)
-			log.Println(rule.Resource.ResourceNameRegex)
-			log.Println(message.DestinationPort)
+			log.Printf("%+v",rule)
+			log.Printf("%+v",message)
+			log.Printf("ResourceNameRegex=%v",rule.Resource.ResourceNameRegex)
+			log.Printf("destPort=%v",message.DestinationPort)
 			match = rule.Resource.ResourceNameRegex.Match([]byte(message.DestinationPort))
-			log.Println(match)
+			log.Printf("match=%v",match)
 		} else {
 			match = rule.Resource.ResourceNameRegex.Match([]byte(message.RequestPath)) // supports wildcards
 		}
