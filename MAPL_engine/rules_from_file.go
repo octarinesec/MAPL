@@ -294,8 +294,8 @@ func PrepareRules(rules *Rules) {
 	ConvertConditionStringToIntFloatRegexManyRules(rules) // prepare the label conditions
 }
 
+func RuleToString(rule Rule) string {
 
-func RuleMD5Hash(rule Rule) (md5hash string) {
 	strMainPart := "<" + rule.RuleSetID + ">-<" + strings.ToLower(rule.Decision) + ">-<" + strings.ToLower(rule.Sender.SenderType) + ":" + rule.Sender.SenderName + ">-<" + strings.ToLower(rule.Receiver.ReceiverType) +
 		":" + rule.Receiver.ReceiverName + ">-" + strings.ToLower(rule.Operation) + "-" + strings.ToLower(rule.Protocol) + "-<" + rule.Resource.ResourceType + "-" + rule.Resource.ResourceName + ">"
 
@@ -333,9 +333,23 @@ func RuleMD5Hash(rule Rule) (md5hash string) {
 	}
 
 	ruleStr := strMainPart + "-" + totalDNFstring
+	return ruleStr
+}
 
+func RuleMD5Hash(rule Rule) (md5hash string) {
+
+	ruleStr:=RuleToString(rule)
+	ruleStr = "<" + rule.RuleSetID + ">-" + ruleStr
 	data := []byte(ruleStr)
-	//md5hash = fmt.Sprintf("%x", md5.Sum(data))
+	md5hash = fmt.Sprintf("%x", md5.Sum(data))
+
+	return md5hash
+}
+
+func RuleMD5HashNet(rule Rule) (md5hash string) {
+
+	ruleStr:=RuleToString(rule)
+	data := []byte(ruleStr)
 	md5hash = fmt.Sprintf("%x", md5.Sum(data))
 
 	return md5hash
