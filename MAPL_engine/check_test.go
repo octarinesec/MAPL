@@ -1,16 +1,13 @@
 package MAPL_engine
 
-// TODO: convert to unit tests (i.e. add assertions)
-
 import (
 	"fmt"
 	"os"
 	"log"
 	"io/ioutil"
-
 	"testing"
-	. "github.com/smartystreets/goconvey/convey"
 	"github.com/smartystreets/goconvey/convey/reporting"
+	. "github.com/smartystreets/goconvey/convey"
 	"bufio"
 )
 

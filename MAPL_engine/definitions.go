@@ -77,7 +77,6 @@ type Rule struct {
 	//	<sender, receiver, resource, operation> : <conditions> : <decision>
 	//
 	RuleID        string          `yaml:"rule_id,omitempty" json:"ruleID,omitempty" bson:"RuleID,omitempty" structs:"RuleID,omitempty"`
-	RuleSetID     string          `yaml:"rule_set_id,omitempty" json:"ruleSetID,omitempty" bson:"RuleSetID,omitempty" structs:"RuleSetID,omitempty"`
 	Sender        Sender          `yaml:"sender,omitempty" json:"sender,omitempty" bson:"Sender" structs:"Sender,omitempty"`
 	Receiver      Receiver        `yaml:"receiver,omitempty" json:"receiver,omitempty" bson:"Receiver" structs:"Receiver,omitempty"`
 	Protocol      string          `yaml:"protocol,omitempty" json:"protocol,omitempty" bson:"ResourceProtocol" structs:"Protocol,omitempty"`
@@ -85,9 +84,13 @@ type Rule struct {
 	Operation     string          `yaml:"operation,omitempty" json:"operation,omitempty" bson:"Operation" structs:"Operation,omitempty"`
 	DNFConditions []ANDConditions `yaml:"DNFconditions,omitempty" json:"dnfConditions,omitempty" bson:"DNFConditions,omitempty" structs:"DNFConditions,omitempty"`
 	Decision      string          `yaml:"decision,omitempty" json:"decision,omitempty" bson:"Decision" structs:"Decision,omitempty"`
-	RuleText      string          `yaml:"ruleText,omitempty" json:"ruleText,omitempty" bson:"RuleText" structs:"RuleText,omitempty"`
 
-	OperationRegex                    *regexp.Regexp `yaml:"-" json:"-,omitempty" bson:"OperationRegex,omitempty" structs:"OperationRegex,omitempty"`
+
+	Metadata      map[string]string          `yaml:"metadata,omitempty" json:"metadata,omitempty" bson:"Metadata" structs:"Metadata,omitempty"`
+
+	Hash string `yaml:"hash,omitempty" json:"hash,omitempty" bson:"Hash" structs:"Hash,omitempty"`
+
+	OperationRegex                    *regexp.Regexp `yaml:"o,omitempty" json:"o,omitempty" bson:"OperationRegex,omitempty" structs:"OperationRegex,omitempty"`
 	AlreadyConvertedFieldsToRegexFlag bool           `yaml:"-,omitempty" json:"-,omitempty" bson:"-,omitempty" structs:"-,omitempty"` // default is false
 }
 
@@ -215,7 +218,6 @@ type RuleStrings struct {
 func GetRuleStrings(r *Rule) RuleStrings {
 	output := RuleStrings{}
 
-	output.RuleSetId = r.RuleSetID
 	output.SenderString = r.Sender.String()
 	output.ReceiverString = r.Receiver.String()
 

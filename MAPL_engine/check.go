@@ -17,6 +17,7 @@ const (
 	ALLOW
 	ALERT
 	BLOCK
+	NONE
 )
 
 var DecisionNames = [...]string{
@@ -24,11 +25,12 @@ var DecisionNames = [...]string{
 	ALLOW:   "allow",
 	ALERT:   "alert",
 	BLOCK:   "block",
+	NONE:    "none",
 }
 // Check is the main function to test if any of the rules is applicable for the message and decide according
 // to those rules' decisions.
 
-func Check(message *MessageAttributes, rules *Rules) (decision int, descisionString string, relevantRuleIndex int, results []int, appliedRulesIndices []int, ruleText string) {
+func Check(message *MessageAttributes, rules *Rules) (decision int, descisionString string, relevantRuleIndex int, results []int, appliedRulesIndices []int, ruleDescription string) {
 	//
 	// for each message we check its attributes against all of the rules and return a decision
 	//
@@ -36,13 +38,18 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 	N := len(rules.Rules)
 
 	results = make([]int, N)
-	ruleTexts := make([]string, N)
+	ruleDescriptions := make([]string, N)
 	sem := make(chan int, N) // semaphore pattern
 	if true { // check in parallel
 
 		for i, rule := range (rules.Rules) { // check all the rules in parallel
 			go func(in_i int, in_rule Rule) {
-				results[in_i], ruleTexts[in_i] = CheckOneRule(message, &in_rule)
+				results[in_i] = CheckOneRule(message, &in_rule)
+				if desc, ok := in_rule.Metadata["description"]; ok {
+					ruleDescriptions[in_i] = desc
+				} else {
+					ruleDescriptions[in_i] = ""
+				}
 				sem <- 1 // mark that the one rule check is finished
 			}(i, rule)
 
@@ -56,7 +63,12 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 	} else { // used for debugging
 
 		for in_i, in_rule := range (rules.Rules) {
-			results[in_i], ruleTexts[in_i] = CheckOneRule(message, &in_rule)
+			results[in_i] = CheckOneRule(message, &in_rule)
+			if desc, ok := in_rule.Metadata["description"]; ok {
+				ruleDescriptions[in_i] = desc
+			} else {
+				ruleDescriptions[in_i] = ""
+			}
 		}
 	}
 
@@ -65,25 +77,25 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 	relevantRuleIndex = -1
 
 	max_decision := DEFAULT
-	ruleText = ""
+	ruleDescription = ""
 	for i := 0; i < N; i++ {
 		if results[i] > DEFAULT {
 			appliedRulesIndices = append(appliedRulesIndices, i)
 		}
 		if results[i] > max_decision {
 			max_decision = results[i]
-			ruleText = ruleTexts[i]
+			ruleDescription = ruleDescriptions[i]
 			relevantRuleIndex = i
 		}
 	}
 	decision = max_decision
 	descisionString = DecisionNames[decision]
 
-	return decision, descisionString, relevantRuleIndex, results, appliedRulesIndices, ruleText
+	return decision, descisionString, relevantRuleIndex, results, appliedRulesIndices, ruleDescription
 }
 
 // CheckOneRules gives the result of testing the message attributes with of one rule
-func CheckOneRule(message *MessageAttributes, rule *Rule) (int, string) {
+func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 	// ----------------------
 	// compare basic message attributes:
 
@@ -93,29 +105,29 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) (int, string) {
 
 	match := TestSender(rule, message)
 	if !match {
-		return DEFAULT, ""
+		return DEFAULT
 	}
 
 	match = TestReceiver(rule, message)
 	if !match {
-		return DEFAULT, ""
+		return DEFAULT
 	}
 
 	match = rule.OperationRegex.Match([]byte(message.RequestMethod)) // supports wildcards
 	if !match {
-		return DEFAULT, ""
+		return DEFAULT
 	}
 
 	// ----------------------
 	// compare resource:
 	if rule.Protocol != "*" {
 		if !strings.EqualFold(message.ContextProtocol, rule.Protocol) { // regardless of case // need to support wildcards!
-			return DEFAULT, ""
+			return DEFAULT
 		}
 
 		if rule.Resource.ResourceType != "*" {
 			if message.ContextType != rule.Resource.ResourceType { // need to support wildcards?
-				return DEFAULT, ""
+				return DEFAULT
 			}
 		}
 		if rule.Protocol == "tcp" {
@@ -124,7 +136,7 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) (int, string) {
 			match = rule.Resource.ResourceNameRegex.Match([]byte(message.RequestPath)) // supports wildcards
 		}
 		if !match {
-			return DEFAULT, ""
+			return DEFAULT
 		}
 	}
 
@@ -135,20 +147,20 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) (int, string) {
 		conditionsResult = TestConditions(rule, message)
 	}
 	if conditionsResult == false {
-		return DEFAULT, ""
+		return DEFAULT
 	}
 
 	// ----------------------
 	// if we got here then the rule applies and we use the rule's decision
 	switch rule.Decision {
 	case "allow", "ALLOW", "Allow":
-		return ALLOW, rule.RuleText
+		return ALLOW
 	case "alert", "ALERT", "Alert":
-		return ALERT, rule.RuleText
+		return ALERT
 	case "block", "BLOCK", "Block":
-		return BLOCK, rule.RuleText
+		return BLOCK
 	}
-	return DEFAULT, ""
+	return DEFAULT
 }
 
 func TestSender(rule *Rule, message *MessageAttributes) bool {
@@ -396,7 +408,9 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 				if err != nil {
 					panic("can't parse jsonpath value [float]")
 				}
+
 				result_temp = compareFloatFunc(valueToCompareFloat, c.Method, c.ValueFloat)
+
 			} else {
 
 				if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {

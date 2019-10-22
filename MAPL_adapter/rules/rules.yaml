@@ -1,40 +1,42 @@
 rules:
 
-  - rule_id: 0  # allow everything from istio-system. especially istio-ingressgateway
-    sender: 
-        senderName: "*.istio-system"
-        senderType: "service"
-    receiver: 
-        receiverName: "*"
-        receiverType: "service"
-    protocol: "*"
-    resource:
+  - rule_id: 0  # allow istio-ingressgateway
+    sender: "kubernetes://istio-ingressgateway-*-*.istio-system"
+    receiver: "*"
+    resource:      resourceProtocol: "*"
       resourceType: "*"
       resourceName: "*"
     operation: "*"
     decision: allow
 
-  - rule_id: 1  # block the details service. the review text will be un-available
-    sender: 
-        senderName: "productpage-v1.default"
-        senderType: "service"
-    receiver: 
-        receiverName: "details-v1.default"
-        receiverType: "service"
+  - rule_id: 1  # allow the details service.
+    sender: "kubernetes://productpage-v1-*-*.default"
+    receiver: "kubernetes://details-v1-*-*.default"
     protocol: http
     resource:
       resourceType: httpPath
       resourceName: "/*"
     operation: GET
+    decision: allow
+
+  - rule_id: 1b  # block the details service every other minute. the review text will be un-available
+    sender: "kubernetes://productpage-v1-*-*.default"
+    receiver: "kubernetes://details-v1-*-*.default"
+    protocol: http
+    resource:
+      resourceType: httpPath
+      resourceName: "/*"
+    operation: GET
+    DNFconditions:
+      - ANDconditions:
+        - attribute: minuteParity
+          method: EQ
+          value: 1
     decision: block
 
   - rule_id: 2  # allow productpage-v1 to communicate with all the versions of the reviews service
-    sender:  
-        senderName: "productpage-v1.default"
-        senderType: "service"
-    receiver: 
-        receiverName: "reviews-*.default"
-        receiverType: "service"
+    sender: "kubernetes://productpage-v1-*-*.default"
+    receiver: "kubernetes://reviews-*-*-*.default"
     protocol: http
     resource:
       resourceType: httpPath
@@ -43,12 +45,8 @@ rules:
     decision: allow
 
   - rule_id: 3 # allow all the versions of the reviews service to communicate with the ratings-v1 service
-    sender: 
-        senderName: "reviews-*.default"
-        senderType: "service"
-    receiver: 
-        receiverName: "ratings-v1.default"
-        receiverType: "service"
+    sender: "kubernetes://reviews-*-*-*.default"
+    receiver: "kubernetes://ratings-v1-*-*.default"
     protocol: http
     resource:
       resourceType: httpPath
@@ -57,12 +55,8 @@ rules:
     decision: allow
 
   - rule_id: 4 # all except reviews-v2 ...
-    sender: 
-        senderName: "reviews-v2.default"
-        senderType: "service"
-    receiver: 
-        receiverName: "ratings-v1.default"
-        receiverType: "service"
+    sender: "kubernetes://reviews-v2-*-*.default"
+    receiver: "kubernetes://ratings-v1-*-*.default"
     protocol: http
     resource:
       resourceType: httpPath
@@ -71,12 +65,8 @@ rules:
     decision: block
 
   - rule_id: 5  # allow the "login" path
-    sender: 
-        senderName: "*istio-ingressgateway*.istio-system"
-        senderType: "service"
-    receiver: 
-        receiverName: "productpage-v1.default"
-        receiverType: "service"
+    sender: "kubernetes://istio-ingressgateway-*-*.istio-system"
+    receiver: "kubernetes://productpage-v1-*-*.default"
     protocol: http
     resource:
       resourceType: httpPath
@@ -85,12 +75,8 @@ rules:
     decision: alert
 
   - rule_id: 6  # but block the "logout" path
-    sender: 
-        senderName: "*istio-ingressgateway*.istio-system"
-        senderType: "service"
-    receiver: 
-        receiverName: "productpage-v1.default"
-        receiverType: "service"
+    sender: "kubernetes://istio-ingressgateway-*-*.istio-system"
+    receiver: "kubernetes://productpage-v1-*-*.default"
     protocol: http
     resource:
       resourceType: httpPath

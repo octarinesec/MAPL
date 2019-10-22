@@ -35,6 +35,9 @@ func YamlReadRulesFromString(yamlString string) Rules {
 
 // YamlReadRulesFromFile function reads rules from a file
 func YamlReadRulesFromFile(filename string) Rules {
+
+	filename=strings.Replace(filename,"\\","/",-1)
+
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		panic(err)
@@ -279,6 +282,9 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) {
 				i1 := strings.Index(condition.Attribute, ":") + 1
 				i2 := len(condition.Attribute)
 				netConditionAttribute := condition.Attribute[i1:i2]
+				if netConditionAttribute[0] == '.' {
+					netConditionAttribute = "$" + netConditionAttribute
+				}
 				netConditionAttribute = strings.Replace(netConditionAttribute, "\"", "'", -1)
 				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeJsonpathQuery = netConditionAttribute
 				r.DNFConditions[i_dnf].ANDConditions[i_and].Attribute = "jsonpath"
@@ -294,11 +300,7 @@ func PrepareRules(rules *Rules) {
 	ConvertConditionStringToIntFloatRegexManyRules(rules) // prepare the label conditions
 }
 
-func RuleToString(rule Rule) string {
-
-	strMainPart := "<" + rule.RuleSetID + ">-<" + strings.ToLower(rule.Decision) + ">-<" + strings.ToLower(rule.Sender.SenderType) + ":" + rule.Sender.SenderName + ">-<" + strings.ToLower(rule.Receiver.ReceiverType) +
-		":" + rule.Receiver.ReceiverName + ">-" + strings.ToLower(rule.Operation) + "-" + strings.ToLower(rule.Protocol) + "-<" + rule.Resource.ResourceType + "-" + rule.Resource.ResourceName + ">"
-
+func RuleConditionsToString(rule Rule) string {
 	dnfStrings := []string{}
 	for _, andConditions := range rule.DNFConditions {
 		andStrings := []string{}
@@ -331,6 +333,15 @@ func RuleToString(rule Rule) string {
 	} else {
 		totalDNFstring = "no conditions"
 	}
+	return totalDNFstring
+}
+
+func RuleToString(rule Rule) string {
+
+	strMainPart := "<" + strings.ToLower(rule.Decision) + ">-<" + strings.ToLower(rule.Sender.SenderType) + ":" + rule.Sender.SenderName + ">-<" + strings.ToLower(rule.Receiver.ReceiverType) +
+		":" + rule.Receiver.ReceiverName + ">-" + strings.ToLower(rule.Operation) + "-" + strings.ToLower(rule.Protocol) + "-<" + rule.Resource.ResourceType + "-" + rule.Resource.ResourceName + ">"
+
+	totalDNFstring := RuleConditionsToString(rule)
 
 	ruleStr := strMainPart + "-" + totalDNFstring
 	return ruleStr
@@ -338,18 +349,17 @@ func RuleToString(rule Rule) string {
 
 func RuleMD5Hash(rule Rule) (md5hash string) {
 
-	ruleStr:=RuleToString(rule)
-	ruleStr = "<" + rule.RuleSetID + ">-" + ruleStr
+	ruleStr := RuleToString(rule)
 	data := []byte(ruleStr)
 	md5hash = fmt.Sprintf("%x", md5.Sum(data))
 
 	return md5hash
 }
 
-func RuleMD5HashNet(rule Rule) (md5hash string) {
+func RuleMD5HashConditions(rule Rule) (md5hash string) {
 
-	ruleStr:=RuleToString(rule)
-	data := []byte(ruleStr)
+	totalDNFstring := RuleConditionsToString(rule)
+	data := []byte(totalDNFstring)
 	md5hash = fmt.Sprintf("%x", md5.Sum(data))
 
 	return md5hash

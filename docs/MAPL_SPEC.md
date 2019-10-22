@@ -18,6 +18,7 @@ Sender services (clients) and Receiver services (servers) name structures.
 Sender is comprised of sender name and sender type.  
 Receiver is comprised of receiver name and receiver type.
 
+- The language allows IPs and CIDRs. 
 - The names are case sensitive strings, comprised of alphanumeric characters, '-', '/' and '.' and must not contain spaces or tabs.
 - The language allows wildcards (* and ?).
 - The language allows lists of names for multiple sender of receiver services, separated by ';'. Pay attention that all of the services in the list are of the same type as specified in the type.
@@ -84,7 +85,7 @@ The verb "write" corresponds to any of POST, PUT, DELETE, PRODUCE
 MAPL conditions part is a DNF (OR of ANDs) of one-attribute-conditions.  
 This allows for rich and expressive enough testing of message attributes while keeping the rule simple and tractable.  
 For example, one rule may have the following set of conditions:
-```
+```yaml
     DNFconditions:
       - ANDconditions:
         - attribute: payloadSize
@@ -112,6 +113,23 @@ which may be translated to:
 ```
 (payloadSize>=1024 && payloadSize<=4096) || (payloadSize>=16384 && payloadSize<=20000) || (utcHoursFromMidnight>=14 && utcHoursFromMidnight<=16)
 ```
+another rule may have the following set of conditions:
+```yaml
+    DNFconditions:
+      - ANDconditions:
+        - attribute: "senderLabel[key1]"
+          method: EQ
+          value: "abc"
+       - ANDconditions:
+        - attribute: "senderLabel[key2]"
+          method: EQ
+          value: "receiverLabel[key2]"
+```      
+which may be translated to: 
+```
+sender service has a label "abc" (for "key1") and the labels of the sender and receiver services for "key2" are equal.
+```
+for an extended spec for conditions on sender/receiver labels please see [Supported Attributes](https://github.com/octarinesec/MAPL/tree/master/docs/SUPPORTED_ATTRIBUTES.md) doc.
 
 #### one-attribute-condition
 A condition is defined as `<attribute, method, value>`  
