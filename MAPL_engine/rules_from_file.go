@@ -6,6 +6,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
+	"math"
 	"net"
 	"regexp"
 	"sort"
@@ -36,7 +37,7 @@ func YamlReadRulesFromString(yamlString string) Rules {
 // YamlReadRulesFromFile function reads rules from a file
 func YamlReadRulesFromFile(filename string) Rules {
 
-	filename=strings.Replace(filename,"\\","/",-1)
+	filename = strings.Replace(filename, "\\", "/", -1)
 
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -201,21 +202,34 @@ func ConvertConditionStringToIntFloatRegexManyRules(rules *Rules) {
 	}
 }
 
+
+func convertStringWithUnits(inputString string) (string, float64) {
+	// see: https://en.wikipedia.org/wiki/Binary_prefix
+	// also: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/#meaning-of-memory
+
+	factorVec := []float64{1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 1024, math.Pow(1024,2),  math.Pow(1024,3),  math.Pow(1024,4),  math.Pow(1024,5),  math.Pow(1024,6), 1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 0.001}
+	strVec := []string{"e3", "e6", "e9", "e12", "e15", "e18", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "K", "M", "G", "T", "P", "E", "m"}
+
+	for i_unit, unit := range strVec {
+		if strings.Contains(inputString, unit) {
+			outputString := strings.Replace(inputString, unit, "", -1)
+			factor := factorVec[i_unit]
+			return outputString, factor
+		}
+	}
+	return inputString, 1.0
+
+}
+
 // ConvertConditionStringToIntFloatRegexManyRules convert values in strings in the conditions to integers, floats and regex
 // (or keep them default in case of failure)
 func ConvertConditionStringToIntFloatRegex(r *Rule) {
+
 	for i_dnf, andConditions := range (r.DNFConditions) {
 		for i_and, condition := range (andConditions.ANDConditions) {
 
-			tempString := condition.Value
-			factor := 1.0
-			if strings.Contains(tempString, "Mi") {
-				tempString = strings.Replace(condition.Value, "Mi", "", -1)
-			}
-			if strings.Contains(tempString, "Gi") {
-				factor = 1000.0
-				tempString = strings.Replace(tempString, "Gi", "", -1)
-			}
+			tempString, factor := convertStringWithUnits(condition.Value)
+
 			valFloat, err := strconv.ParseFloat(tempString, 64)
 			valFloat = valFloat * factor
 			if err == nil {

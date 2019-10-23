@@ -394,14 +394,7 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 
 			if c.Method == "GE" || c.Method == "GT" || c.Method == "LE" || c.Method == "LT" {
 
-				factor := 1.0
-				if strings.Contains(valueToCompareString, "Mi") {
-					valueToCompareString = strings.Replace(valueToCompareString, "Mi", "", -1)
-				}
-				if strings.Contains(valueToCompareString, "Gi") {
-					factor = 1000.0
-					valueToCompareString = strings.Replace(valueToCompareString, "Gi", "", -1)
-				}
+				valueToCompareString, factor := convertStringWithUnits(valueToCompareString)
 
 				valueToCompareFloat, err = strconv.ParseFloat(valueToCompareString, 64)
 				valueToCompareFloat = valueToCompareFloat * factor

@@ -61,7 +61,7 @@ messages:
   request_user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
 
 - message_id: 4
-  sender_service: AAA.my_namespace
+  sender_service: AAA.my_namespaceMi
   sender_name: AA-oplxv-iioaq
   sender_namespace: my_namespace
   sender_ip: 192.168.2.5
