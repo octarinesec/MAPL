@@ -373,6 +373,18 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 
 		valueToCompareString = string(valueToCompareBytes)
 		log.Printf("valueToCompareString=%+v",valueToCompareString)
+
+		if len(valueToCompareString)==0 {
+			if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
+				return true
+			}
+			if c.Method == "EX" || c.Method == "ex" { // just test the existence of the key
+				return false
+			}
+			return false
+			//panic("jsonpath query failed")
+		}
+
 		var valueToCompareStringArray []string
 		err = json.Unmarshal([]byte(valueToCompareString), &valueToCompareStringArray)
 		if err != nil {
