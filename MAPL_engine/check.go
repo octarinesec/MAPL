@@ -357,6 +357,8 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			panic("jsonpath without the correct format")
 		}
 
+		log.Printf("c=%+v",c)
+
 		valueToCompareBytes, err := jsonslice.Get(*message.RequestJsonRaw, c.AttributeJsonpathQuery)
 		if err != nil {
 			if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
@@ -370,7 +372,7 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		}
 
 		valueToCompareString = string(valueToCompareBytes)
-
+		log.Printf("valueToCompareString=%+v",valueToCompareString)
 		var valueToCompareStringArray []string
 		err = json.Unmarshal([]byte(valueToCompareString), &valueToCompareStringArray)
 		if err != nil {
