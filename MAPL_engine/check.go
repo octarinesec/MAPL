@@ -358,7 +358,7 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		}
 
 		log.Printf("c=%+v",c)
-
+		log.Printf("*message.RequestJsonRaw=%v",string(*message.RequestJsonRaw))
 		valueToCompareBytes, err := jsonslice.Get(*message.RequestJsonRaw, c.AttributeJsonpathQuery)
 		if err != nil {
 			if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
