@@ -358,14 +358,8 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			panic("jsonpath without the correct format")
 		}
 
-		if len(*message.RequestJsonRaw)==0{
-			log.Printf("len(*message.RequestJsonRaw)==0")
-			log.Printf("c==%+v",c)
-			if c.Method == "NEX" || c.Method == "nex" {
-				log.Printf("returning true")
-				return true
-			}
-			return false
+		if len(*message.RequestJsonRaw) == 0 {
+			return false // this will create a change if something is true in the a new deployment
 		}
 
 		valueToCompareBytes, err := jsonslice.Get(*message.RequestJsonRaw, c.AttributeJsonpathQuery)
