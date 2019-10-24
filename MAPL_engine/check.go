@@ -359,6 +359,8 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		}
 
 		if len(*message.RequestJsonRaw)==0{
+			log.Printf("len(*message.RequestJsonRaw)==0")
+			log.Printf("c==%+v",c)
 			if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
 				return true
 			}
