@@ -403,9 +403,6 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		}
 
 		if len(valueToCompareStringArray) != expectedArrayLength {
-
-			log.Printf("len(valueToCompareStringArray) != expectedArrayLength [%v]",expectedArrayLength)
-
 			if c.Method == "NEX" || c.Method == "nex" {
 				return true
 			} else {
