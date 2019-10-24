@@ -373,7 +373,7 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		if strings.Contains(c.AttributeJsonpathQuery, "[:]") {
 			ind:=strings.Index(c.AttributeJsonpathQuery, "[:]")
 			jsonpathQueryTemp:=c.AttributeJsonpathQuery[0:ind]
-			valueToCompareBytes2, err := jsonslice.Get(*message.RequestJsonRaw, jsonpathQueryTemp)
+			valueToCompareBytes2, _ := jsonslice.Get(*message.RequestJsonRaw, jsonpathQueryTemp)
 			log.Printf("valueToCompareBytes2=%+v",string(valueToCompareBytes2))
 		}
 
