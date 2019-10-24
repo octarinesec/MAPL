@@ -27,6 +27,7 @@ var DecisionNames = [...]string{
 	BLOCK:   "block",
 	NONE:    "none",
 }
+
 // Check is the main function to test if any of the rules is applicable for the message and decide according
 // to those rules' decisions.
 
@@ -40,7 +41,7 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 	results = make([]int, N)
 	ruleDescriptions := make([]string, N)
 	sem := make(chan int, N) // semaphore pattern
-	if true { // check in parallel
+	if true {                // check in parallel
 
 		for i, rule := range (rules.Rules) { // check all the rules in parallel
 			go func(in_i int, in_rule Rule) {
@@ -369,9 +370,16 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			//panic("jsonpath query failed")
 		}
 
+		if strings.Contains(c.AttributeJsonpathQuery, "[:]") {
+			ind:=strings.Index(c.AttributeJsonpathQuery, "[:]")
+			jsonpathQueryTemp:=c.AttributeJsonpathQuery[0:ind]
+			valueToCompareBytes2, err := jsonslice.Get(*message.RequestJsonRaw, jsonpathQueryTemp)
+			log.Printf("valueToCompareBytes2=%+v",string(valueToCompareBytes2))
+		}
+
 		valueToCompareString = string(valueToCompareBytes)
 
-		if len(valueToCompareString)==0 {
+		if len(valueToCompareString) == 0 {
 			if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
 				return true
 			}
@@ -452,7 +460,7 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 
 // compareIntFunc compares one int value according the method string.
 func compareIntFunc(value1 int64, method string, value2 int64) bool { //value2 is the reference value from the rule
-	switch(method) {
+	switch (method) {
 	case "EQ", "eq":
 		return (value1 == value2)
 	case "NEQ", "neq":
@@ -471,7 +479,7 @@ func compareIntFunc(value1 int64, method string, value2 int64) bool { //value2 i
 
 // compareFloatFunc compares one float value according the method string.
 func compareFloatFunc(value1 float64, method string, value2 float64) bool { //value2 is the reference value from the rule
-	switch(method) {
+	switch (method) {
 	case "EQ", "eq":
 		return (value1 == value2)
 	case "NEQ", "neq":
@@ -490,7 +498,7 @@ func compareFloatFunc(value1 float64, method string, value2 float64) bool { //va
 
 // compareStringFunc compares one string value according the method string
 func compareStringFunc(value1 string, method string, value2 string) bool {
-	switch(method) {
+	switch (method) {
 	case "EQ", "eq":
 		return (value1 == value2)
 	case "NEQ", "neq":
@@ -502,7 +510,7 @@ func compareStringFunc(value1 string, method string, value2 string) bool {
 // compareStringWithWildcardsFunc compares one string value according the method string (supports wildcards)
 func compareStringWithWildcardsFunc(value1 string, method string, value2 *regexp.Regexp) bool {
 	//log.Printf("%v ?%v? %v",value1,method,value2)
-	switch(method) {
+	switch (method) {
 	case "EQ", "eq":
 		return (value2.MatchString(value1))
 	case "NEQ", "neq":
@@ -514,7 +522,7 @@ func compareStringWithWildcardsFunc(value1 string, method string, value2 *regexp
 
 // compareRegexFunc compares one string value according the regular expression string.
 func compareRegexFunc(value1 string, method string, value2 *regexp.Regexp) bool { //value2 is the reference value from the rule
-	switch(method) {
+	switch (method) {
 	case "RE", "re":
 		return (value2.MatchString(value1))
 	case "NRE", "nre":
