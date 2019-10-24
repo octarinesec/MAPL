@@ -192,6 +192,20 @@ func TestMaplEngine(t *testing.T) {
 		So(results[2], ShouldEqual, ALLOW)
 		fmt.Println("----------------------")
 
+
+		str = "test IN and NIN methods"
+		fmt.Println(str)
+		results = test_CheckMessages("../examples/rules_with_IN_conditions.yaml", "../examples/messages_test_with_IN_conditions.yaml")
+		So(results[0], ShouldEqual, DEFAULT)
+		So(results[1], ShouldEqual, ALLOW)
+		So(results[2], ShouldEqual, DEFAULT)
+		results = test_CheckMessages("../examples/rules_with_NIN_conditions.yaml", "../examples/messages_test_with_IN_conditions.yaml")
+		So(results[0], ShouldEqual, ALLOW)
+		So(results[1], ShouldEqual, DEFAULT)
+		So(results[2], ShouldEqual, ALLOW)
+		fmt.Println("----------------------")
+
+
 		str = "test jsonpath conditions: "
 		fmt.Println(str)
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_conditions.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data1.json")

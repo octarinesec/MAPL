@@ -228,6 +228,26 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) {
 	for i_dnf, andConditions := range (r.DNFConditions) {
 		for i_and, condition := range (andConditions.ANDConditions) {
 
+			if condition.Method == "IN" || condition.Method == "NIN"{
+				L:=len(condition.Value)
+				if L==-0{
+					panic("test membership in empty array")
+				}
+				tempString:=strings.Replace(condition.Value,"[","",-1)
+				tempString = strings.Replace(tempString,"]","",-1)
+				tempString = strings.Replace(tempString,",","|",-1)
+
+				if condition.Method == "IN"{
+					r.DNFConditions[i_dnf].ANDConditions[i_and].Method="RE"
+				}
+				if condition.Method == "NIN"{
+					r.DNFConditions[i_dnf].ANDConditions[i_and].Method="NRE"
+				}
+				r.DNFConditions[i_dnf].ANDConditions[i_and].Value = tempString
+				condition.Value = tempString
+			}
+
+
 			tempString, factor := convertStringWithUnits(condition.Value)
 
 			valFloat, err := strconv.ParseFloat(tempString, 64)
@@ -255,6 +275,7 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) {
 			if err == nil{
 				rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueTime = t
 			}*/
+
 
 			if strings.Index(condition.Attribute, "senderLabel[") == 0 { // test if ATTRIBUTE is of type senderLabel
 				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeIsSenderLabel = true

@@ -370,7 +370,7 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		}
 
 		valueToCompareString = string(valueToCompareBytes)
-		log.Printf("valueToCompareString=%+v",valueToCompareString)
+
 		if len(valueToCompareString)==0 {
 			if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
 				return true
@@ -389,9 +389,6 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		}
 
 		result = true
-
-		log.Printf("valueToCompareStringArray=%+v",valueToCompareStringArray)
-
 
 		for _, valueToCompareString := range (valueToCompareStringArray) { // in case of an array we require all of the values to pass the condition
 			result_temp := false
