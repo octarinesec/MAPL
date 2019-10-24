@@ -376,11 +376,15 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			valueToCompareBytes2, err := jsonslice.Get(*message.RequestJsonRaw, jsonpathQueryTemp)
 			log.Printf("valueToCompareBytes2=%+v",string(valueToCompareBytes2))
 			if err != nil {
+				log.Printf("here")
 				var valueToCompareStringArray2 []string
 				err = json.Unmarshal(valueToCompareBytes2, &valueToCompareStringArray2)
 				log.Printf("len(valueToCompareStringArray2)=%+v",len(valueToCompareStringArray2))
 				log.Printf("valueToCompareStringArray2=%+v",valueToCompareStringArray2)
+			} else{
+				log.Printf("err=%+v",err)
 			}
+
 		}
 
 		valueToCompareString = string(valueToCompareBytes)
