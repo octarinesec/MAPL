@@ -2,13 +2,13 @@
 package MAPL_engine
 
 import (
-	"log"
-	"strings"
-	"regexp"
+	"encoding/json"
 	"fmt"
 	"github.com/bhmj/jsonslice"
+	"log"
+	"regexp"
 	"strconv"
-	"encoding/json"
+	"strings"
 )
 
 // general action codes
@@ -370,21 +370,17 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			//panic("jsonpath query failed")
 		}
 
+		expectedArrayLength := 1
 		if strings.Contains(c.AttributeJsonpathQuery, "[:]") {
-			ind:=strings.Index(c.AttributeJsonpathQuery, "[:]")
-			jsonpathQueryTemp:=c.AttributeJsonpathQuery[0:ind]
+			ind := strings.Index(c.AttributeJsonpathQuery, "[:]")
+			jsonpathQueryTemp := c.AttributeJsonpathQuery[0:ind]
 			valueToCompareBytes2, err := jsonslice.Get(*message.RequestJsonRaw, jsonpathQueryTemp)
-			log.Printf("valueToCompareBytes2=%+v",string(valueToCompareBytes2))
-			if err == nil {
-				log.Printf("here")
-				var valueToCompareStringArray2 []string
-				err = json.Unmarshal(valueToCompareBytes2, &valueToCompareStringArray2)
-				log.Printf("len(valueToCompareStringArray2)=%+v",len(valueToCompareStringArray2))
-				log.Printf("valueToCompareStringArray2=%+v",valueToCompareStringArray2)
-			} else{
-				log.Printf("err=%+v",err)
-			}
 
+			if err == nil {
+				var valueToCompareStringArray2 []string
+				_ = json.Unmarshal(valueToCompareBytes2, &valueToCompareStringArray2)
+				expectedArrayLength = len(valueToCompareStringArray2)
+			}
 		}
 
 		valueToCompareString = string(valueToCompareBytes)
@@ -404,6 +400,17 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		err = json.Unmarshal([]byte(valueToCompareString), &valueToCompareStringArray)
 		if err != nil {
 			valueToCompareStringArray = []string{valueToCompareString}
+		}
+
+		if len(valueToCompareStringArray) != expectedArrayLength {
+
+			log.Printf("len(valueToCompareStringArray) != expectedArrayLength [%v]",expectedArrayLength)
+
+			if c.Method == "NEX" || c.Method == "nex" {
+				return true
+			} else {
+				return false
+			}
 		}
 
 		result = true
