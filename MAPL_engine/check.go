@@ -420,11 +420,25 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 				if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
 					result_temp = compareRegexFunc(valueToCompareString, c.Method, c.ValueRegex)
 				} else {
-					if c.Method == "EX" || c.Method == "ex" { // just test the existence of the key
-						result_temp = true
+
+					if len(valueToCompareString) == 0 {
+						if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
+							return true
+						}
+						if c.Method == "EX" || c.Method == "ex" { // just test the existence of the key
+							return false
+						}
 					} else {
-						result_temp = compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex) // compare strings with wildcards
+						if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
+							return false
+						}
+						if c.Method == "EX" || c.Method == "ex" { // just test the existence of the key
+							return true
+						}
 					}
+
+					result_temp = compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex) // compare strings with wildcards
+
 				}
 			}
 			result = result && result_temp
