@@ -2,6 +2,7 @@ package MAPL_engine
 
 import (
 	"crypto/md5"
+	"encoding/json"
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -26,6 +27,26 @@ func YamlReadRulesFromString(yamlString string) Rules {
 	flag, outputString := IsNumberOfFieldsEqual(rules, yamlString)
 	if flag == false {
 		panic("number of fields in rules does not match number of fields in yaml file:\n" + outputString)
+	}
+	ConvertFieldsToRegexManyRules(&rules)
+	//testFieldsForIP(&rules)
+	ConvertConditionStringToIntFloatRegexManyRules(&rules)
+
+	return rules
+}
+
+// JsonReadRulesFromString function reads rules from a json string
+func JsonReadRulesFromString(jsonString string) Rules {
+
+	var rules Rules
+	err := json.Unmarshal([]byte(jsonString), &rules)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	flag, outputString := IsNumberOfFieldsEqual(rules, jsonString)
+	if flag == false {
+		panic("number of fields in rules does not match number of fields in json file:\n" + outputString)
 	}
 	ConvertFieldsToRegexManyRules(&rules)
 	//testFieldsForIP(&rules)
