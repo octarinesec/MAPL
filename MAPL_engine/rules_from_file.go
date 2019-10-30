@@ -40,15 +40,10 @@ func JsonReadRulesFromString(jsonString string) Rules {
 
 	var rules Rules
 	err := json.Unmarshal([]byte(jsonString), &rules)
-	log.Println("Parsing Rules, err: %v", err)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	// flag, outputString := IsNumberOfFieldsEqual(rules, jsonString)
-	// if flag == false {
-	// 	panic("number of fields in rules does not match number of fields in json file:\n" + outputString)
-	// }
 	ConvertFieldsToRegexManyRules(&rules)
 	//testFieldsForIP(&rules)
 	ConvertConditionStringToIntFloatRegexManyRules(&rules)
