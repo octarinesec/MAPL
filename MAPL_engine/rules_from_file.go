@@ -39,6 +39,7 @@ func YamlReadRulesFromString(yamlString string) Rules {
 func JsonReadRulesFromString(jsonString string) Rules {
 
 	var rules Rules
+	log.Println("Parsing Rules")
 	err := json.Unmarshal([]byte(jsonString), &rules)
 	if err != nil {
 		log.Fatalf("error: %v", err)
