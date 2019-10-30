@@ -96,7 +96,7 @@ type Rule struct {
 
 // Rules structure contains a list of rules
 type Rules struct {
-	Rules []Rule `yaml:"rules,omitempty"`
+	Rules []Rule `yaml:"rules,omitempty" json:"rules,omitempty"`
 }
 
 //
