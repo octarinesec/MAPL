@@ -408,10 +408,11 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 
 		if len(valueToCompareStringArray) != expectedArrayLength {
 			if c.Method == "NEX" || c.Method == "nex" {
-				return true
-			} else {
-				return false
+				if len(valueToCompareStringArray) == 0 {
+					return true
+				}
 			}
+			return false
 		}
 
 		result = true
@@ -529,6 +530,11 @@ func compareStringFunc(value1 string, method string, value2 string) bool {
 func compareStringWithWildcardsFunc(value1 string, method string, value2 *regexp.Regexp) bool {
 	//log.Printf("%v ?%v? %v",value1,method,value2)
 	switch (method) {
+
+	case "EX","ex":
+		return len(value1)>0
+	case "NEX","nex":
+		return len(value1)==0
 	case "EQ", "eq":
 		return (value2.MatchString(value1))
 	case "NEQ", "neq":
