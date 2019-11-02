@@ -482,7 +482,7 @@ func compareIntFunc(value1 int64, method string, value2 int64) bool { //value2 i
 	switch (method) {
 	case "EQ", "eq":
 		return (value1 == value2)
-	case "NEQ", "neq":
+	case "NEQ", "neq", "ne", "NE":
 		return (value1 != value2)
 	case "LE", "le":
 		return (value1 <= value2)
@@ -501,7 +501,7 @@ func compareFloatFunc(value1 float64, method string, value2 float64) bool { //va
 	switch (method) {
 	case "EQ", "eq":
 		return (value1 == value2)
-	case "NEQ", "neq":
+	case "NEQ", "neq", "ne", "NE":
 		return (value1 != value2)
 	case "LE", "le":
 		return (value1 <= value2)
@@ -520,7 +520,7 @@ func compareStringFunc(value1 string, method string, value2 string) bool {
 	switch (method) {
 	case "EQ", "eq":
 		return (value1 == value2)
-	case "NEQ", "neq":
+	case "NEQ", "neq", "ne", "NE":
 		return (value1 != value2)
 	}
 	return false
@@ -531,13 +531,13 @@ func compareStringWithWildcardsFunc(value1 string, method string, value2 *regexp
 	//log.Printf("%v ?%v? %v",value1,method,value2)
 	switch (method) {
 
-	case "EX","ex":
-		return len(value1)>0
-	case "NEX","nex":
-		return len(value1)==0
+	case "EX", "ex":
+		return len(value1) > 0
+	case "NEX", "nex":
+		return len(value1) == 0
 	case "EQ", "eq":
 		return (value2.MatchString(value1))
-	case "NEQ", "neq":
+	case "NEQ", "neq", "ne", "NE":
 		return !(value2.MatchString(value1))
 	}
 	return false
