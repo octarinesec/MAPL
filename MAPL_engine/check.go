@@ -381,9 +381,11 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			valueToCompareBytes2, err := jsonslice.Get(*message.RequestJsonRaw, jsonpathQueryTemp)
 
 			if err == nil {
-				var valueToCompareStringArray2 []string
-				_ = json.Unmarshal(valueToCompareBytes2, &valueToCompareStringArray2)
-				expectedArrayLength = len(valueToCompareStringArray2)
+
+				keys := make([]interface{},0)
+				json.Unmarshal(valueToCompareBytes2, &keys)
+				expectedArrayLength = len(keys)
+
 			}
 		}
 
@@ -393,11 +395,8 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
 				return true
 			}
-			if c.Method == "EX" || c.Method == "ex" { // just test the existence of the key
-				return false
-			}
-			return false
-			//panic("jsonpath query failed")
+			return false // default test result is false on an empty jsonpath result
+
 		}
 
 		var valueToCompareStringArray []string

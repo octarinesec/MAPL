@@ -14,7 +14,7 @@ rules:
     operation: "*"
     DNFconditions:
       - ANDconditions:
-        - attribute: jsonpath:$.metadata.labels['bar']
-          method: EX
+        - attribute: jsonpath:$.metadata.labels['foo.foo']
+          method: NEX
 
     decision: allow
