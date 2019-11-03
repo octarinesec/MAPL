@@ -36,19 +36,21 @@ func YamlReadRulesFromString(yamlString string) Rules {
 }
 
 // JsonReadRulesFromString function reads rules from a json string
-func JsonReadRulesFromString(jsonString string) Rules {
+func JsonReadRulesFromString(jsonString string) (error_ret bool, rules Rules) {
 
-	var rules Rules
+	// var rules Rules
+	error_ret = false
 	err := json.Unmarshal([]byte(jsonString), &rules)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Println("Error parsing rules JSON: %v", err)
+		error_ret = true
 	}
 
 	ConvertFieldsToRegexManyRules(&rules)
 	//testFieldsForIP(&rules)
 	ConvertConditionStringToIntFloatRegexManyRules(&rules)
 
-	return rules
+	return error_ret, rules
 }
 
 // YamlReadRulesFromFile function reads rules from a file
