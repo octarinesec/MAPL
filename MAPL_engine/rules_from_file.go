@@ -38,7 +38,6 @@ func YamlReadRulesFromString(yamlString string) Rules {
 // JsonReadRulesFromString function reads rules from a json string
 func JsonReadRulesFromString(jsonString string) (error_ret bool, rules Rules) {
 
-	// var rules Rules
 	error_ret = false
 	err := json.Unmarshal([]byte(jsonString), &rules)
 	if err != nil {
