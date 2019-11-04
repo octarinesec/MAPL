@@ -17,4 +17,4 @@ rules:
         - attribute: encryptionType
           method: EX
 
-    decision: allow
+    decision: block

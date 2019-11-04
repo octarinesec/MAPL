@@ -17,4 +17,4 @@ rules:
         - attribute: encryptionType
           method: NEX
 
-    decision: allow
+    decision: block

@@ -20,4 +20,4 @@ rules:
         - attribute: jsonpath:$.spec.template.spec.containers[:].resources.limits.memory
           method: EX
 
-    decision: allow
+    decision: block

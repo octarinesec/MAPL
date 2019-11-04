@@ -17,4 +17,4 @@ rules:
           - attribute: jsonpath:$.spec.containers[:].resources.limits.cpu
             method: EX
 
-    decision: allow
+    decision: block

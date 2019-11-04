@@ -18,4 +18,4 @@ rules:
           method: EQ
           value: localhost/k8s-apparmor-example-deny-write
 
-    decision: allow
+    decision: block

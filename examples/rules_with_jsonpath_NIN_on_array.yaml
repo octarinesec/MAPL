@@ -18,4 +18,4 @@ rules:
             method: NIN
             value: "[A,B,C]"
 
-    decision: allow
+    decision: block

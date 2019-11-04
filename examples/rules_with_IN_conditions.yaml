@@ -18,4 +18,4 @@ rules:
           method: IN
           value: "[a,b,c]"
 
-    decision: allow
+    decision: block

@@ -21,4 +21,4 @@ rules:
           method: LT
           value: 1.2Gi
 
-    decision: allow
+    decision: block

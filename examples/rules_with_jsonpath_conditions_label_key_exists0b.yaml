@@ -17,4 +17,4 @@ rules:
         - attribute: jsonpath:$.metadata.labels.foo
           method: NEX
 
-    decision: allow
+    decision: block

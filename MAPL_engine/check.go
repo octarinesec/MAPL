@@ -407,9 +407,9 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 
 		if len(valueToCompareStringArray) != expectedArrayLength {
 			if c.Method == "NEX" || c.Method == "nex" {
-				if len(valueToCompareStringArray) == 0 {
+				//if len(valueToCompareStringArray) == 0 {
 					return true
-				}
+				//}
 			}
 			return false
 		}
