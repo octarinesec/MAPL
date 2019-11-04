@@ -262,9 +262,11 @@ func TestMaplEngine(t *testing.T) {
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_conditions_LT_and_LT_spec_containers.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_1container.json")
 		So(results[0], ShouldEqual, BLOCK)
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_conditions_LT_and_LT_spec_containers.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_cpu2_mem2000.json")
-		So(results[0], ShouldEqual, DEFAULT)
+		So(results[0], ShouldEqual, BLOCK)
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_conditions_LT_and_LT_spec_containers.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_cpu2_mem2000b.json")
 		So(results[0], ShouldEqual, DEFAULT)
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_conditions_LT_and_LT_spec_containers.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_cpu2_mem2000c.json")
+		So(results[0], ShouldEqual, BLOCK)
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_conditions_LT_and_LT_spec_containers.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_cpu3_mem1100.json")
 		So(results[0], ShouldEqual, BLOCK)
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_conditions_LT_and_LT_spec_containers.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_cpu5_mem1000.json")
@@ -279,28 +281,28 @@ func TestMaplEngine(t *testing.T) {
 		fmt.Println("----------------------")
 
 		//test on arrays with IN, NIN
-		str = "test jsonpath conditions on arrays with IN/NIN"
+		str = "test jsonpath conditions on arrays with IN/NIN (the test returns true if one of the array value passes)"
 		fmt.Println(str)
 
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_IN_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_labels_a1.json")
 		So(results[0], ShouldEqual, BLOCK)
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_IN_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_labels_a2.json")
-		So(results[0], ShouldEqual, DEFAULT)
+		So(results[0], ShouldEqual, BLOCK)
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_IN_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_labels_a3.json")
 		So(results[0], ShouldEqual, DEFAULT)
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_IN_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_labels_a4.json")
-		So(results[0], ShouldEqual, DEFAULT)
+		So(results[0], ShouldEqual, BLOCK)
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_IN_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_labels_a5.json")
 		So(results[0], ShouldEqual, DEFAULT)
 
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NIN_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_labels_a1.json")
 		So(results[0], ShouldEqual, DEFAULT)
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NIN_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_labels_a2.json")
-		So(results[0], ShouldEqual, DEFAULT)
+		So(results[0], ShouldEqual, BLOCK)
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NIN_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_labels_a3.json")
-		So(results[0], ShouldEqual, DEFAULT)
+		So(results[0], ShouldEqual, BLOCK)
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NIN_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_labels_a4.json")
-		So(results[0], ShouldEqual, DEFAULT)
+		So(results[0], ShouldEqual, BLOCK)
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NIN_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_labels_a5.json")
 		So(results[0], ShouldEqual, BLOCK)
 
@@ -317,7 +319,7 @@ func TestMaplEngine(t *testing.T) {
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_IN_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_labels_a_some_b.json")
 		So(results[0], ShouldEqual, BLOCK)
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_IN_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_labels_some_a_some_b.json")
-		So(results[0], ShouldEqual, DEFAULT)
+		So(results[0], ShouldEqual, BLOCK)
 
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NIN_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_labels_no_a_no_b1.json")
 		So(results[0], ShouldEqual, DEFAULT) // test on empty jsonpath result is false by default
@@ -335,7 +337,41 @@ func TestMaplEngine(t *testing.T) {
 		So(results[0], ShouldEqual, DEFAULT)
 
 		fmt.Println("----------------------")
+		//test on arrays with RE, NRE
+		str = "test jsonpath conditions on arrays with RE/NRE (the test returns true if one of the array value passes)"
+		fmt.Println(str)
 
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_RE_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data0.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_RE_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_no_images.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_RE_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_one_image_no_abc.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_RE_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_one_image_abc.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_RE_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_two_images_no_abc.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_RE_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_two_images_one_abc.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_RE_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_two_images_two_abc.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NRE_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data0.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NRE_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_no_images.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NRE_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_one_image_no_abc.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NRE_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_one_image_abc.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NRE_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_two_images_no_abc.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NRE_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_two_images_one_abc.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NRE_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_two_images_two_abc.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+		fmt.Println("----------------------")
 		// more tests on EX/NEX
 		str = "test jsonpath conditions EX/NEX"
 		fmt.Println(str)
@@ -356,7 +392,7 @@ func TestMaplEngine(t *testing.T) {
 		So(results[0], ShouldEqual, BLOCK)
 
 		// test on EX/NEX with arrays
-		str = "test jsonpath conditions EX/NEX with arrays"
+		str = "test jsonpath conditions EX/NEX with arrays (the test returns true if one of the array value passes)"
 		fmt.Println(str)
 		//// empty raw data
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_EX_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data0.json")
@@ -370,7 +406,7 @@ func TestMaplEngine(t *testing.T) {
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NEX_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_cpu_not_missing.json")
 		So(results[0], ShouldEqual, DEFAULT)
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_EX_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_cpu_missing_from_one.json")
-		So(results[0], ShouldEqual, DEFAULT)
+		So(results[0], ShouldEqual, BLOCK)
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NEX_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_cpu_missing_from_one.json")
 		So(results[0], ShouldEqual, BLOCK)
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_EX_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_cpu_missing_from_both.json")

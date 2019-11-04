@@ -19,8 +19,8 @@
         ],
         "resources": {
           "limits": {
-            "cpu": "5",
-            "memory": "5000Mi"
+            "cpu": "2",
+            "memory": "1000Mi"
           }
         }
       },
@@ -34,7 +34,8 @@
         ],
         "resources": {
           "limits": {
-            "memory": "2000Mi"
+            "cpu": "5",
+            "memory": "5000Mi"
           }
         }
       }

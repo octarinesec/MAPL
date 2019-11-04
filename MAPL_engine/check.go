@@ -411,10 +411,10 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 					return true
 				//}
 			}
-			return false
+			//return false
 		}
 
-		result = true
+		result = false // OR on values in the array
 
 		for _, valueToCompareString := range (valueToCompareStringArray) { // in case of an array we require all of the values to pass the condition
 			result_temp := false
@@ -467,7 +467,7 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 
 				}
 			}
-			result = result && result_temp
+			result = result || result_temp
 		}
 
 	default:

@@ -19,8 +19,8 @@
         ],
         "resources": {
           "limits": {
-            "cpu": "2",
-            "memory": "2000Mi"
+            "cpu": "5",
+            "memory": "5000Mi"
           }
         }
       },

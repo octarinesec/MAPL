@@ -41,7 +41,7 @@ func JsonReadRulesFromString(jsonString string) (error_ret bool, rules Rules) {
 	error_ret = false
 	err := json.Unmarshal([]byte(jsonString), &rules)
 	if err != nil {
-		log.Println("Error parsing rules JSON: %v", err)
+		log.Printf("Error parsing rules JSON: %v", err)
 		error_ret = true
 	}
 
