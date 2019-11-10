@@ -215,7 +215,7 @@ func TestReceiver(rule *Rule, message *MessageAttributes) bool {
 			}
 		case "hostname":
 			match_temp = expandedReceiver.Regexp.Match([]byte(message.RequestHost)) // supports wildcards
-		case "*", "workload", "hostname":
+		case "*", "workload":
 			match_temp = expandedReceiver.Regexp.Match([]byte(message.DestinationService)) // supports wildcards
 		default:
 			log.Printf("%+v\n", rule)
