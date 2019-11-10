@@ -213,6 +213,8 @@ func TestReceiver(rule *Rule, message *MessageAttributes) bool {
 			if expandedReceiver.IsCIDR {
 				match_temp = expandedReceiver.CIDR.Contains(message.DestinationNetIp)
 			}
+		case "hostname":
+			match_temp = expandedReceiver.Regexp.Match([]byte(message.RequestHost)) // supports wildcards
 		case "*", "workload", "hostname":
 			match_temp = expandedReceiver.Regexp.Match([]byte(message.DestinationService)) // supports wildcards
 		default:
