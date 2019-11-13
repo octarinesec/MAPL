@@ -105,16 +105,19 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 	}
 
 	match := TestSender(rule, message)
+	log.Printf("TestSender MATCH: %v", match)
 	if !match {
 		return DEFAULT
 	}
 
 	match = TestReceiver(rule, message)
+	log.Printf("TestReceiver MATCH: %v", match)
 	if !match {
 		return DEFAULT
 	}
 
 	match = rule.OperationRegex.Match([]byte(message.RequestMethod)) // supports wildcards
+	log.Printf("OperationRegex MATCH: %v", match)
 	if !match {
 		return DEFAULT
 	}
@@ -122,6 +125,7 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 	// ----------------------
 	// compare resource:
 	if rule.Protocol != "*" {
+		log.Printf("Check protocol")
 		if !strings.EqualFold(message.ContextProtocol, rule.Protocol) { // regardless of case // need to support wildcards!
 			return DEFAULT
 		}
@@ -147,6 +151,7 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 	if len(rule.DNFConditions) > 0 {
 		conditionsResult = TestConditions(rule, message)
 	}
+	log.Printf("conditionsResult MATCH: %v", conditionsResult)
 	if conditionsResult == false {
 		return DEFAULT
 	}
@@ -155,10 +160,13 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 	// if we got here then the rule applies and we use the rule's decision
 	switch rule.Decision {
 	case "allow", "ALLOW", "Allow":
+		log.Printf("ALLOW RULE")
 		return ALLOW
 	case "alert", "ALERT", "Alert":
+		log.Printf("ALERT RULE")
 		return ALERT
 	case "block", "BLOCK", "Block":
+		log.Printf("BLOCK RULE")
 		return BLOCK
 	}
 	return DEFAULT
@@ -181,6 +189,7 @@ func TestSender(rule *Rule, message *MessageAttributes) bool {
 			}
 			if expandedSender.IsCIDR {
 				match_temp = expandedSender.CIDR.Contains(message.SourceNetIp)
+				log.Printf("checking CIDR, MATCH: %v", match_temp)
 			}
 		case "*", "workload":
 			match_temp = expandedSender.Regexp.Match([]byte(message.SourceService)) // supports wildcards
