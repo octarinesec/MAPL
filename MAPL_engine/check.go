@@ -139,6 +139,8 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 			match = rule.Resource.ResourceNameRegex.Match([]byte(message.DestinationPort))
 		} else {
 			match = rule.Resource.ResourceNameRegex.Match([]byte(message.RequestPath)) // supports wildcards
+			log.Printf("Check protocol HTTP REGEX: %v", rule.Resource.ResourceNameRegex.String())
+			log.Printf("Check protocol HTTP MATCH: %v", match)
 		}
 		if !match {
 			return DEFAULT
@@ -169,6 +171,7 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 		log.Printf("BLOCK RULE")
 		return BLOCK
 	}
+	log.Printf("DEFAULT RULE")
 	return DEFAULT
 }
 
