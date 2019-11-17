@@ -126,6 +126,9 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 	// compare resource:
 	if rule.Protocol == "tcp" {
 		match = rule.Resource.ResourceNameRegex.Match([]byte(message.DestinationPort))
+		if !match {
+			return DEFAULT
+		}
 	} else {
 		if rule.Protocol != "*" {
 			log.Printf("Check protocol")
