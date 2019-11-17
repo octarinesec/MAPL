@@ -121,23 +121,26 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 
 	// ----------------------
 	// compare resource:
-	if rule.Protocol != "*" {
-		if !strings.EqualFold(message.ContextProtocol, rule.Protocol) { // regardless of case // need to support wildcards!
-			return DEFAULT
-		}
-
-		if rule.Resource.ResourceType != "*" {
-			if message.ContextType != rule.Resource.ResourceType { // need to support wildcards?
-				return DEFAULT
-			}
-		}
-		if rule.Protocol == "tcp" {
-			match = rule.Resource.ResourceNameRegex.Match([]byte(message.DestinationPort))
-		} else {
-			match = rule.Resource.ResourceNameRegex.Match([]byte(message.RequestPath)) // supports wildcards
-		}
+	if rule.Protocol == "tcp" {
+		match = rule.Resource.ResourceNameRegex.Match([]byte(message.DestinationPort))
 		if !match {
 			return DEFAULT
+		}
+	} else {
+		if rule.Protocol != "*" {
+			if !strings.EqualFold(message.ContextProtocol, rule.Protocol) { // regardless of case // need to support wildcards!
+				return DEFAULT
+			}
+
+			if rule.Resource.ResourceType != "*" {
+				if message.ContextType != rule.Resource.ResourceType { // need to support wildcards?
+					return DEFAULT
+				}
+			}
+			match = rule.Resource.ResourceNameRegex.Match([]byte(message.RequestPath)) // supports wildcards
+			if !match {
+				return DEFAULT
+			}
 		}
 	}
 
