@@ -419,9 +419,9 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			//return false
 		}
 
-		result = false // OR on values in the array
+		result = false // OR on values in the array. if one value in the array passes the condition then we return true
 
-		for _, valueToCompareString := range (valueToCompareStringArray) { // in case of an array we require all of the values to pass the condition
+		for _, valueToCompareString := range (valueToCompareStringArray) {
 			result_temp := false
 			L := len(valueToCompareString) - 1
 			if valueToCompareString[0] == '"' && valueToCompareString[L] != '"' {
