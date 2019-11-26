@@ -251,9 +251,9 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) {
 				if L==-0{
 					panic("test membership in empty array")
 				}
-				tempString:=strings.Replace(condition.Value,"[","",-1)
-				tempString = strings.Replace(tempString,"]","",-1)
-				tempString = strings.Replace(tempString,",","|",-1)
+				tempString:=strings.Replace(condition.Value,"[","^",-1)
+				tempString = strings.Replace(tempString,"]","$",-1)
+				tempString = strings.Replace(tempString,",","$|^",-1)
 
 				if condition.Method == "IN"{
 					r.DNFConditions[i_dnf].ANDConditions[i_and].Method="RE"
