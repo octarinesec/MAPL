@@ -419,6 +419,16 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			//return false
 		}
 
+		/*
+		if we have two jsonpath conditions that have array results then we test each one separately.
+		(for example cpu limit and memory limit).
+		so we don't test that ONE container has problem with the limits,
+		but we do test that at least one container has problem with cpu limits
+		and at least one container has problem with the memory limits.
+		they don't have to be the same container.
+		 */
+
+
 		result = false // OR on values in the array. if one value in the array passes the condition then we return true
 
 		for _, valueToCompareString := range (valueToCompareStringArray) {
