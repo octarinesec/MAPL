@@ -188,7 +188,8 @@ func TestSender(rule *Rule, message *MessageAttributes) bool {
 		case "*", "workload":
 			match_temp = expandedSender.Regexp.Match([]byte(message.SourceService)) // supports wildcards
 		default:
-			panic("type not supported")
+			log.Println("type not supported")
+			return false
 		}
 		if match_temp == true {
 			match = true
@@ -222,7 +223,9 @@ func TestReceiver(rule *Rule, message *MessageAttributes) bool {
 			match_temp = expandedReceiver.Regexp.Match([]byte(message.DestinationService)) // supports wildcards
 		default:
 			log.Printf("%+v\n", rule)
-			panic("type not supported")
+			log.Printf("type not supported")
+			return false
+
 		}
 
 		if match_temp == true {
@@ -311,13 +314,15 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 
 	case ("senderLabel"):
 		if c.AttributeIsSenderLabel == false {
-			panic("senderLabel without the correct format")
+			log.Println("senderLabel without the correct format")
+			return false
 		}
 		if valueToCompareString1, ok := message.SourceLabels[c.AttributeSenderLabelKey]; ok { // enter the block only if the key exists
 			if c.ValueIsReceiverLabel {
 				if valueToCompareString2, ok2 := message.DestinationLabels[c.ValueReceiverLabelKey]; ok2 {
 					if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
-						panic("wrong method with comparison of two labels")
+						log.Println("wrong method with comparison of two labels")
+						return false
 					}
 					result = compareStringFunc(valueToCompareString1, c.Method, valueToCompareString2) // string comparison without wildcards
 				}
@@ -335,7 +340,8 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		}
 	case ("receiverLabel"):
 		if c.AttributeIsReceiverLabel == false {
-			panic("receiverLabel without the correct format")
+			log.Println("receiverLabel without the correct format")
+			return false
 		}
 		if valueToCompareString1, ok := message.DestinationLabels[c.AttributeReceiverLabelKey]; ok { // enter the block only if the key exists
 			if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
@@ -360,7 +366,8 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 	case ("jsonpath"):
 
 		if c.AttributeIsJsonpath == false {
-			panic("jsonpath without the correct format")
+			log.Println("jsonpath without the correct format")
+			return false
 		}
 
 		if len(*message.RequestJsonRaw) == 0 {
@@ -387,7 +394,7 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 
 			if err == nil {
 
-				keys := make([]interface{},0)
+				keys := make([]interface{}, 0)
 				json.Unmarshal(valueToCompareBytes2, &keys)
 				expectedArrayLength = len(keys)
 
@@ -413,21 +420,20 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		if len(valueToCompareStringArray) != expectedArrayLength {
 			if c.Method == "NEX" || c.Method == "nex" {
 				//if len(valueToCompareStringArray) == 0 {
-					return true
+				return true
 				//}
 			}
 			//return false
 		}
 
 		/*
-		if we have two jsonpath conditions that have array results then we test each one separately.
-		(for example cpu limit and memory limit).
-		so we don't test that ONE container has problem with the limits,
-		but we do test that at least one container has problem with cpu limits
-		and at least one container has problem with the memory limits.
-		they don't have to be the same container.
-		 */
-
+			if we have two jsonpath conditions that have array results then we test each one separately.
+			(for example cpu limit and memory limit).
+			so we don't test that ONE container has problem with the limits,
+			but we do test that at least one container has problem with cpu limits
+			and at least one container has problem with the memory limits.
+			they don't have to be the same container.
+		*/
 
 		result = false // OR on values in the array. if one value in the array passes the condition then we return true
 
@@ -435,10 +441,12 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			result_temp := false
 			L := len(valueToCompareString) - 1
 			if valueToCompareString[0] == '"' && valueToCompareString[L] != '"' {
-				panic("quotation marks not aligned")
+				log.Println("quotation marks not aligned")
+				return false
 			}
 			if valueToCompareString[L] == '"' && valueToCompareString[0] != '"' {
-				panic("quotation marks not aligned")
+				log.Println("quotation marks not aligned")
+				return false
 			}
 			if valueToCompareString[L] == '"' && valueToCompareString[0] == '"' {
 				valueToCompareString = valueToCompareString[1:L]
@@ -451,7 +459,8 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 				valueToCompareFloat, err = strconv.ParseFloat(valueToCompareString, 64)
 				valueToCompareFloat = valueToCompareFloat * factor
 				if err != nil {
-					panic("can't parse jsonpath value [float]")
+					log.Println("can't parse jsonpath value [float]")
+					return false
 				}
 
 				result_temp = compareFloatFunc(valueToCompareFloat, c.Method, c.ValueFloat)
