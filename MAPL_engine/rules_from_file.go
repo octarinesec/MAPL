@@ -220,12 +220,11 @@ func ConvertConditionStringToIntFloatRegexManyRules(rules *Rules) {
 	}
 }
 
-
 func convertStringWithUnits(inputString string) (string, float64) {
 	// see: https://en.wikipedia.org/wiki/Binary_prefix
 	// also: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/#meaning-of-memory
 
-	factorVec := []float64{1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 1024, math.Pow(1024,2),  math.Pow(1024,3),  math.Pow(1024,4),  math.Pow(1024,5),  math.Pow(1024,6), 1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 0.001}
+	factorVec := []float64{1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 1024, math.Pow(1024, 2), math.Pow(1024, 3), math.Pow(1024, 4), math.Pow(1024, 5), math.Pow(1024, 6), 1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 0.001}
 	strVec := []string{"e3", "e6", "e9", "e12", "e15", "e18", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "K", "M", "G", "T", "P", "E", "m"}
 
 	for i_unit, unit := range strVec {
@@ -246,25 +245,24 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) {
 	for i_dnf, andConditions := range (r.DNFConditions) {
 		for i_and, condition := range (andConditions.ANDConditions) {
 
-			if condition.Method == "IN" || condition.Method == "NIN"{
-				L:=len(condition.Value)
-				if L==-0{
+			if condition.Method == "IN" || condition.Method == "NIN" {
+				L := len(condition.Value)
+				if L == -0 {
 					panic("test membership in empty array")
 				}
-				tempString:=strings.Replace(condition.Value,"[","",-1)
-				tempString = strings.Replace(tempString,"]","",-1)
-				tempString = strings.Replace(tempString,",","|",-1)
-
-				if condition.Method == "IN"{
-					r.DNFConditions[i_dnf].ANDConditions[i_and].Method="RE"
+				tempString := strings.Replace(condition.Value, "[", "", -1)
+				tempString = strings.Replace(tempString, "]", "", -1)
+				tempString = strings.Replace(tempString, ",", "$|^", -1)
+				tempString = "^" + tempString + "$"
+				if condition.Method == "IN" {
+					r.DNFConditions[i_dnf].ANDConditions[i_and].Method = "RE"
 				}
-				if condition.Method == "NIN"{
-					r.DNFConditions[i_dnf].ANDConditions[i_and].Method="NRE"
+				if condition.Method == "NIN" {
+					r.DNFConditions[i_dnf].ANDConditions[i_and].Method = "NRE"
 				}
 				r.DNFConditions[i_dnf].ANDConditions[i_and].Value = tempString
 				condition.Value = tempString
 			}
-
 
 			tempString, factor := convertStringWithUnits(condition.Value)
 
@@ -293,7 +291,6 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) {
 			if err == nil{
 				rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueTime = t
 			}*/
-
 
 			if strings.Index(condition.Attribute, "senderLabel[") == 0 { // test if ATTRIBUTE is of type senderLabel
 				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeIsSenderLabel = true

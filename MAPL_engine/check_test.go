@@ -212,10 +212,14 @@ func TestMaplEngine(t *testing.T) {
 		So(results[0], ShouldEqual, DEFAULT)
 		So(results[1], ShouldEqual, BLOCK)
 		So(results[2], ShouldEqual, DEFAULT)
+		So(results[3], ShouldEqual, DEFAULT)
+		So(results[4], ShouldEqual, DEFAULT)
 		results = test_CheckMessages("../examples/rules_with_NIN_conditions.yaml", "../examples/messages_test_with_IN_conditions.yaml")
 		So(results[0], ShouldEqual, BLOCK)
 		So(results[1], ShouldEqual, DEFAULT)
 		So(results[2], ShouldEqual, BLOCK)
+		So(results[3], ShouldEqual, BLOCK)
+		So(results[4], ShouldEqual, BLOCK)
 		fmt.Println("----------------------")
 
 
