@@ -376,10 +376,6 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 
 		valueToCompareBytes, err := jsonslice.Get(*message.RequestJsonRaw, c.AttributeJsonpathQuery)
 		if err != nil {
-
-			log.Printf("jsonslice.Get err=%+v",err)
-			log.Printf("c.AttributeJsonpathQuery=%+v",c.AttributeJsonpathQuery)
-
 			if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
 				return true
 			}
@@ -389,8 +385,6 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			return false
 			//panic("jsonpath query failed")
 		}
-
-		log.Printf("valueToCompareBytes=%+v",string(valueToCompareBytes))
 
 		expectedArrayLength := 1
 		if strings.Contains(c.AttributeJsonpathQuery, "[:]") {
@@ -453,8 +447,6 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		*/
 
 		result = false // OR on values in the array. if one value in the array passes the condition then we return true
-
-		log.Printf("valueToCompareStringArray=%+v",valueToCompareStringArray)
 
 		for _, valueToCompareString := range (valueToCompareStringArray) {
 			result_temp := false
