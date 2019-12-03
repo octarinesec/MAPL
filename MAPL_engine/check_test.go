@@ -284,6 +284,26 @@ func TestMaplEngine(t *testing.T) {
 
 		fmt.Println("----------------------")
 
+		//test on arrays with EQ, NEQ
+		str = "test jsonpath conditions on arrays with EQ/NEQ (the test returns true if one of the array value passes)"
+		fmt.Println(str)
+
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_EQ_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_EQ1.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_EQ_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_EQ2.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_EQ_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_EQ3.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NEQ_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_EQ1.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NEQ_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_EQ2.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NEQ_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_EQ3.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		fmt.Println("----------------------")
+
 		//test on arrays with IN, NIN
 		str = "test jsonpath conditions on arrays with IN/NIN (the test returns true if one of the array value passes)"
 		fmt.Println(str)

@@ -228,7 +228,11 @@ func convertStringWithUnits(inputString string) (string, float64) {
 	strVec := []string{"e3", "e6", "e9", "e12", "e15", "e18", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "K", "M", "G", "T", "P", "E", "m"}
 
 	for i_unit, unit := range strVec {
-		if strings.Contains(inputString, unit) {
+
+		flag1:=strings.HasSuffix(inputString, unit)
+		flag2:=strings.Count(inputString, unit)==1
+
+		if flag1 && flag2 {
 			outputString := strings.Replace(inputString, unit, "", -1)
 			factor := factorVec[i_unit]
 			return outputString, factor
