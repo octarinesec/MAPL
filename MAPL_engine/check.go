@@ -378,6 +378,7 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		if err != nil {
 
 			log.Printf("jsonslice.Get err=%+v",err)
+			log.Printf("c.AttributeJsonpathQuery=%+v",c.AttributeJsonpathQuery)
 
 			if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
 				return true
