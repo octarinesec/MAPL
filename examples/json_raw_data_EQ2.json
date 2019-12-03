@@ -1,0 +1,450 @@
+{
+  "kind": "Pod",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "cart7-c8f645859-5hb7z",
+    "generateName": "cart7-c8f645859-",
+    "namespace": "robot",
+    "uid": "30e57992-1500-11ea-b66f-da60b026dde4",
+    "creationTimestamp": "2019-12-02T12:35:15Z",
+    "labels": {
+      "io.kompose.service": "cart7",
+      "pod-template-hash": "c8f645859"
+    },
+    "annotations": {
+      "sidecar.octarinesec.com/status": "{\"version\":\"e7c735c7aa23eda1a5ff252ff5d23397a8ca73c5e862a30faf03e4b83c94e056\",\"initContainers\":[\"idclient\",\"iptables-redirect\"],\"containers\":[\"proxy\"],\"volumes\":[\"idclient-files\",\"octarine-sockets\"],\"imagePullSecrets\":[\"docker-registry-secret\"],\"env\":[\"OCTARINE_ACCOUNT=o-robot\",\"OCTARINE_WORKLOAD_ARTIFACT=robot:cart7\",\"OCTARINE_WORKLOAD_DOMAIN=aks:edo\"]}"
+    },
+    "ownerReferences": [
+      {
+        "apiVersion": "apps/v1",
+        "kind": "ReplicaSet",
+        "name": "cart7-c8f645859",
+        "uid": "30d31c65-1500-11ea-b66f-da60b026dde4",
+        "controller": true,
+        "blockOwnerDeletion": true
+      }
+    ]
+  },
+  "spec": {
+    "volumes": [
+      {
+        "name": "default-token-dn78g",
+        "secret": {
+          "secretName": "default-token-dn78g",
+          "defaultMode": 420
+        }
+      },
+      {
+        "name": "idclient-files",
+        "emptyDir": {
+
+        }
+      },
+      {
+        "name": "octarine-sockets",
+        "hostPath": {
+          "path": "/var/run/octarine/o-robot",
+          "type": "Directory"
+        }
+      }
+    ],
+    "initContainers": [
+      {
+        "name": "idclient",
+        "image": "octarinesec/idclient:develop",
+        "env": [
+          {
+            "name": "OCTARINE_ID_CLIENT_ACCOUNT",
+            "value": "o-robot"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_ARTIFACT_ID",
+            "value": "robot:cart7"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_DOMAIN_ID",
+            "value": "aks:edo"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_BACKEND_HOSTNAME",
+            "value": "40.79.43.98"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_BACKEND_PORT",
+            "value": "443"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_MESSAGEPROXY_HOSTNAME",
+            "value": "52.254.82.17"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_MESSAGEPROXY_PORT",
+            "value": "50051"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_WORKLOAD_VERSION",
+            "value": "1"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_INSTRUMENTATION_LOG_LEVEL",
+            "value": "0"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_RESTFUL_REPORT",
+            "value": "false"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_AGENT_REGISTER_ONLY",
+            "value": "false"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_EMBED_IP",
+            "value": "true"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_GFLAGS_FILE",
+            "value": "/octarine_id/gflags"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_CERTIFICATE_FILE",
+            "value": "/octarine_id/certificate"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_PRIVATE_KEY_FILE",
+            "value": "/octarine_id/private_key"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_KEYSTORE_FILE",
+            "value": "/octarine_id/keystore"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_KEYSTORE_PASSWORD_FILE",
+            "value": "/octarine_id/keystore_password"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_TRUST_CHAIN_FILE",
+            "value": "/octarine_id/trust_chain"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_TRUSTSTORE_FILE",
+            "value": "/octarine_id/truststore"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_TRUSTSTORE_PASSWORD_FILE",
+            "value": "/octarine_id/truststore_password"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_BLACKLIST_UNIX_SOCKET_PATH",
+            "value": "/var/run/octarine/o-robot/blacklist_controller_o-robot.sock"
+          },
+          {
+            "name": "OCTARINE_CERTAUTH_SERVICE_HOST",
+            "value": "40.79.43.98"
+          },
+          {
+            "name": "OCTARINE_CERTAUTH_SERVICE_PORT",
+            "value": "443"
+          },
+          {
+            "name": "OCTARINE_CERTAUTH_SERVICE_SCHEME",
+            "value": "https"
+          },
+          {
+            "name": "OCTARINE_SECRETS_SERVICE_HOST",
+            "value": "40.79.43.98"
+          },
+          {
+            "name": "OCTARINE_SECRETS_SERVICE_PORT",
+            "value": "443"
+          },
+          {
+            "name": "OCTARINE_SECRETS_SERVICE_SCHEME",
+            "value": "https"
+          },
+          {
+            "name": "OCTARINE_ID_CONTROLLER_HOST",
+            "value": "idcontroller.octarine-dataplane.svc.cluster.local"
+          },
+          {
+            "name": "OCTARINE_ID_CONTROLLER_PORT",
+            "value": "8080"
+          },
+          {
+            "name": "OCTARINE_ID_CONTROLLER_SCHEME",
+            "value": "http"
+          }
+        ],
+        "resources": {
+          "limits": {
+            "cpu": "500m",
+            "memory": "512Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "memory": "128Mi"
+          }
+        },
+        "volumeMounts": [
+          {
+            "name": "idclient-files",
+            "mountPath": "/octarine_id"
+          }
+        ],
+        "terminationMessagePath": "/dev/termination-log",
+        "terminationMessagePolicy": "File",
+        "imagePullPolicy": "IfNotPresent",
+        "securityContext": {
+          "allowPrivilegeEscalation": false
+        }
+      },
+      {
+        "name": "iptables-redirect",
+        "image": "octarinesec/microservice-proxy-iptables-init:develop",
+        "command": [
+          "/proxy-iptables-init.sh",
+          "-u",
+          "1500",
+          "-i",
+          "",
+          "-o",
+          ""
+        ],
+        "resources": {
+          "limits": {
+            "cpu": "500m",
+            "memory": "512Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "memory": "128Mi"
+          }
+        },
+        "terminationMessagePath": "/dev/termination-log",
+        "terminationMessagePolicy": "File",
+        "imagePullPolicy": "IfNotPresent",
+        "securityContext": {
+          "capabilities": {
+            "add": [
+              "NET_ADMIN",
+              "NET_RAW"
+            ]
+          },
+          "runAsUser": 0,
+          "allowPrivilegeEscalation": false
+        }
+      }
+    ],
+    "containers": [
+      {
+        "name": "cart7",
+        "image": "robotshop/rs-cart:latest",
+        "ports": [
+          {
+            "containerPort": 8080,
+            "protocol": "TCP"
+          }
+        ],
+        "env": [
+          {
+            "name": "INSTANA_AGENT_HOST",
+            "valueFrom": {
+              "fieldRef": {
+                "apiVersion": "v1",
+                "fieldPath": "status.hostIP"
+              }
+            }
+          },
+          {
+            "name": "OCTARINE_ACCOUNT",
+            "value": "o-robot"
+          },
+          {
+            "name": "OCTARINE_WORKLOAD_ARTIFACT",
+            "value": "robot:cart7"
+          },
+          {
+            "name": "OCTARINE_WORKLOAD_DOMAIN",
+            "value": "aks:edo"
+          }
+        ],
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "memory": "1000Mi"
+          },
+          "requests": {
+            "cpu": "1",
+            "memory": "500Mi"
+          }
+        },
+        "volumeMounts": [
+          {
+            "name": "default-token-dn78g",
+            "readOnly": true,
+            "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
+          }
+        ],
+        "terminationMessagePath": "/dev/termination-log",
+        "terminationMessagePolicy": "File",
+        "imagePullPolicy": "Always"
+      },
+      {
+        "name": "cart7b",
+        "image": "robotshop/rs-cart:latest",
+        "ports": [
+          {
+            "containerPort": 8081,
+            "protocol": "TCP"
+          }
+        ],
+        "env": [
+          {
+            "name": "INSTANA_AGENT_HOST",
+            "valueFrom": {
+              "fieldRef": {
+                "apiVersion": "v1",
+                "fieldPath": "status.hostIP"
+              }
+            }
+          },
+          {
+            "name": "OCTARINE_ACCOUNT",
+            "value": "o-robot"
+          },
+          {
+            "name": "OCTARINE_WORKLOAD_ARTIFACT",
+            "value": "robot:cart7"
+          },
+          {
+            "name": "OCTARINE_WORKLOAD_DOMAIN",
+            "value": "aks:edo"
+          }
+        ],
+        "resources": {
+          "limits": {
+            "cpu": "500m",
+            "memory": "1400Mi"
+          },
+          "requests": {
+            "cpu": "500m",
+            "memory": "500Mi"
+          }
+        },
+        "volumeMounts": [
+          {
+            "name": "default-token-dn78g",
+            "readOnly": true,
+            "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
+          }
+        ],
+        "terminationMessagePath": "/dev/termination-log",
+        "terminationMessagePolicy": "File",
+        "imagePullPolicy": "Always"
+      },
+      {
+        "name": "proxy",
+        "image": "octarinesec/microservice-proxy:develop",
+        "env": [
+          {
+            "name": "GRPC_DEFAULT_SSL_ROOTS_FILE_PATH",
+            "value": "/octarine_id/trust_chain"
+          },
+          {
+            "name": "OCTARINE_UID",
+            "value": "1500"
+          },
+          {
+            "name": "OCTARINE_GFLAGS_PATH",
+            "value": "/octarine_id/gflags"
+          },
+          {
+            "name": "OCTARINE_USE_ENCRYPTION",
+            "value": "true"
+          },
+          {
+            "name": "loglevel",
+            "value": "info"
+          },
+          {
+            "name": "OCTARINE_IDS_UNIX_SOCKET_PATH",
+            "value": "/var/run/octarine/o-robot/ids_o-robot.sock"
+          },
+          {
+            "name": "OCTARINE_DISCOVERY_HOST",
+            "value": "octarine-discovery.octarine-dataplane.svc.cluster.local"
+          },
+          {
+            "name": "OCTARINE_DISCOVERY_PORT",
+            "value": "50051"
+          }
+        ],
+        "resources": {
+          "limits": {
+            "cpu": "500m",
+            "memory": "512Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "memory": "128Mi"
+          }
+        },
+        "volumeMounts": [
+          {
+            "name": "idclient-files",
+            "mountPath": "/octarine_id"
+          },
+          {
+            "name": "octarine-sockets",
+            "mountPath": "/var/run/octarine/o-robot"
+          }
+        ],
+        "terminationMessagePath": "/dev/termination-log",
+        "terminationMessagePolicy": "File",
+        "imagePullPolicy": "IfNotPresent",
+        "securityContext": {
+          "capabilities": {
+            "add": [
+              "SYS_PTRACE"
+            ]
+          },
+          "runAsUser": "abc",
+          "allowPrivilegeEscalation": false
+        }
+      }
+    ],
+    "restartPolicy": "Always",
+    "terminationGracePeriodSeconds": 30,
+    "dnsPolicy": "ClusterFirst",
+    "serviceAccountName": "default",
+    "serviceAccount": "default",
+    "securityContext": {
+
+    },
+    "imagePullSecrets": [
+      {
+        "name": "docker-registry-secret"
+      }
+    ],
+    "schedulerName": "default-scheduler",
+    "tolerations": [
+      {
+        "key": "node.kubernetes.io/not-ready",
+        "operator": "Exists",
+        "effect": "NoExecute",
+        "tolerationSeconds": 300
+      },
+      {
+        "key": "node.kubernetes.io/unreachable",
+        "operator": "Exists",
+        "effect": "NoExecute",
+        "tolerationSeconds": 300
+      }
+    ],
+    "priority": 0,
+    "enableServiceLinks": true
+  },
+  "status": {
+    "phase": "Pending",
+    "qosClass": "Burstable"
+  }
+}

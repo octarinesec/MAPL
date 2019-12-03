@@ -366,7 +366,7 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 	case ("jsonpath"):
 
 		if c.AttributeIsJsonpath == false {
-			log.Println("jsonpath without the correct format")
+			log.Println("jsonpath without the correct format") // was panic
 			return false
 		}
 
@@ -411,11 +411,22 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 
 		}
 
+		//var valueToCompareStringArray []string
+		//err = json.Unmarshal([]byte(valueToCompareString), &valueToCompareStringArray)
+		//if err != nil {
+		//	valueToCompareStringArray = []string{valueToCompareString}
+		//}
+
 		var valueToCompareStringArray []string
-		err = json.Unmarshal([]byte(valueToCompareString), &valueToCompareStringArray)
-		if err != nil {
-			valueToCompareStringArray = []string{valueToCompareString}
+		L := len(valueToCompareString) - 1
+		if valueToCompareString[0] == '[' && valueToCompareString[L] == ']' {
+			valueToCompareString = valueToCompareString[1:L]
+			valueToCompareStringArray=strings.Split(valueToCompareString,",")
+		}else{
+			valueToCompareStringArray=[]string{valueToCompareString}
 		}
+
+
 
 		if len(valueToCompareStringArray) != expectedArrayLength {
 			if c.Method == "NEX" || c.Method == "nex" {
@@ -441,61 +452,65 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			result_temp := false
 			L := len(valueToCompareString) - 1
 			if valueToCompareString[0] == '"' && valueToCompareString[L] != '"' {
-				log.Println("quotation marks not aligned")
+				log.Println("quotation marks not aligned") // was panic
 				return false
 			}
 			if valueToCompareString[L] == '"' && valueToCompareString[0] != '"' {
-				log.Println("quotation marks not aligned")
+				log.Println("quotation marks not aligned") // was panic
 				return false
 			}
 			if valueToCompareString[L] == '"' && valueToCompareString[0] == '"' {
 				valueToCompareString = valueToCompareString[1:L]
 			}
 
-			if c.Method == "GE" || c.Method == "GT" || c.Method == "LE" || c.Method == "LT" {
-
-				valueToCompareString, factor := convertStringWithUnits(valueToCompareString)
-
-				valueToCompareFloat, err = strconv.ParseFloat(valueToCompareString, 64)
+			method:=strings.ToUpper(c.Method)
+			switch method{
+			case "GE","GT","LE","LT","EQ","NEQ","NE":
+				valueToCompareString2, factor := convertStringWithUnits(valueToCompareString) // if the conversion to float doesn't work we still want to use the original string so we use a temporary one
+				valueToCompareFloat, err = strconv.ParseFloat(valueToCompareString2, 64)
 				valueToCompareFloat = valueToCompareFloat * factor
+
 				if err != nil {
-					log.Println("can't parse jsonpath value [float]")
-					return false
-				}
 
-				result_temp = compareFloatFunc(valueToCompareFloat, c.Method, c.ValueFloat)
-
-			} else {
-
-				if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
-					result_temp = compareRegexFunc(valueToCompareString, c.Method, c.ValueRegex)
-				} else {
-
-					if len(valueToCompareString) == 0 {
-						if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
-							return true
-						}
-						if c.Method == "EX" || c.Method == "ex" { // just test the existence of the key
-							return false
-						}
-					} else {
-						if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
-							return false
-						}
-						if c.Method == "EX" || c.Method == "ex" { // just test the existence of the key
-							return true
-						}
+					if method=="EQ" || method=="NEQ"{
+						result_temp = compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex) // compare strings with wildcards
+					}else {
+						log.Println("can't parse jsonpath value [float]") // was panic
+						return false
 					}
-
-					result_temp = compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex) // compare strings with wildcards
-
+				}else {
+					result_temp = compareFloatFunc(valueToCompareFloat, c.Method, c.ValueFloat)
 				}
+			case  "RE","NRE":
+				result_temp = compareRegexFunc(valueToCompareString, c.Method, c.ValueRegex)
+			case "EX", "NEX":
+				if len(valueToCompareString) == 0 {
+					if method == "NEX"  { // just test the existence of the key
+						return true
+					}
+					if method == "EX"  { // just test the existence of the key
+						return false
+					}
+				} else {
+					if method == "NEX" { // just test the existence of the key
+						return false
+					}
+					if method == "EX" { // just test the existence of the key
+						return true
+					}
+				}
+
+			default:
+				log.Printf("method not supported: %v", method) // was panic
+				return false
 			}
+
 			result = result || result_temp
 		}
 
 	default:
-		log.Fatalf("condition keyword not supported: %+v", c)
+		log.Printf("condition keyword not supported: %+v", c) // was log.Fatalf
+		return false
 	}
 	return result
 }
