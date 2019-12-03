@@ -448,6 +448,8 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 
 		result = false // OR on values in the array. if one value in the array passes the condition then we return true
 
+		log.Printf("valueToCompareStringArray=%+v",valueToCompareStringArray)
+
 		for _, valueToCompareString := range (valueToCompareStringArray) {
 			result_temp := false
 			L := len(valueToCompareString) - 1
