@@ -365,6 +365,8 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 
 	case ("jsonpath"):
 
+		log.Printf("c=%+v",c)
+
 		if c.AttributeIsJsonpath == false {
 			log.Println("jsonpath without the correct format") // was panic
 			return false
