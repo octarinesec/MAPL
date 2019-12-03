@@ -402,7 +402,10 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		}
 
 		valueToCompareString = string(valueToCompareBytes)
-
+		if valueToCompareString=="[]"{
+			valueToCompareString=""
+		}
+				
 		if len(valueToCompareString) == 0 {
 			if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
 				return true
@@ -425,8 +428,6 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		}else{
 			valueToCompareStringArray=[]string{valueToCompareString}
 		}
-
-
 
 		if len(valueToCompareStringArray) != expectedArrayLength {
 			if c.Method == "NEX" || c.Method == "nex" {
@@ -451,18 +452,19 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		for _, valueToCompareString := range (valueToCompareStringArray) {
 			result_temp := false
 			L := len(valueToCompareString) - 1
-			if valueToCompareString[0] == '"' && valueToCompareString[L] != '"' {
-				log.Println("quotation marks not aligned") // was panic
-				return false
+			if L>0 {
+				if valueToCompareString[0] == '"' && valueToCompareString[L] != '"' {
+					log.Println("quotation marks not aligned") // was panic
+					return false
+				}
+				if valueToCompareString[L] == '"' && valueToCompareString[0] != '"' {
+					log.Println("quotation marks not aligned") // was panic
+					return false
+				}
+				if valueToCompareString[L] == '"' && valueToCompareString[0] == '"' {
+					valueToCompareString = valueToCompareString[1:L]
+				}
 			}
-			if valueToCompareString[L] == '"' && valueToCompareString[0] != '"' {
-				log.Println("quotation marks not aligned") // was panic
-				return false
-			}
-			if valueToCompareString[L] == '"' && valueToCompareString[0] == '"' {
-				valueToCompareString = valueToCompareString[1:L]
-			}
-
 			method:=strings.ToUpper(c.Method)
 			switch method{
 			case "GE","GT","LE","LT","EQ","NEQ","NE":
