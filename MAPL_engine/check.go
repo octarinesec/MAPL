@@ -365,8 +365,6 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 
 	case ("jsonpath"):
 
-		log.Printf("c=%+v",c)
-
 		if c.AttributeIsJsonpath == false {
 			log.Println("jsonpath without the correct format") // was panic
 			return false
@@ -378,6 +376,9 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 
 		valueToCompareBytes, err := jsonslice.Get(*message.RequestJsonRaw, c.AttributeJsonpathQuery)
 		if err != nil {
+
+			log.Printf("jsonslice.Get err=%+v",err)
+
 			if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
 				return true
 			}
@@ -387,6 +388,8 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			return false
 			//panic("jsonpath query failed")
 		}
+
+		log.Printf("valueToCompareBytes=%+v",string(valueToCompareBytes))
 
 		expectedArrayLength := 1
 		if strings.Contains(c.AttributeJsonpathQuery, "[:]") {
