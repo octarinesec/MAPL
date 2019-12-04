@@ -168,6 +168,16 @@ func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[str
 // the equivalent Sender/Receiver names
 func RemoveLabelConditionsFromRules(rules *MAPL_engine.Rules, service_labels, service_labels_explicit map[string]map[string]string) (newRules MAPL_engine.Rules) {
 
+	RemoveLabelConditionsFromRulesInner(rules,service_labels, service_labels_explicit)
+	// recreate regular expressions and convert condition values:
+	MAPL_engine.ConvertFieldsToRegexManyRules(&newRules)
+	MAPL_engine.ConvertConditionStringToIntFloatRegexManyRules(&newRules)
+
+	return newRules
+}
+
+func RemoveLabelConditionsFromRulesInner(rules *MAPL_engine.Rules, service_labels, service_labels_explicit map[string]map[string]string) (newRules MAPL_engine.Rules) {
+
 	MAPL_engine.ConvertConditionStringToIntFloatRegexManyRules(rules)
 
 	for _, rule := range (rules.Rules) { // go over all of the rules
@@ -179,12 +189,10 @@ func RemoveLabelConditionsFromRules(rules *MAPL_engine.Rules, service_labels, se
 		}
 	}
 
-	// recreate regular expressions and convert condition values:
-	MAPL_engine.ConvertFieldsToRegexManyRules(&newRules)
-	MAPL_engine.ConvertConditionStringToIntFloatRegexManyRules(&newRules)
-
 	return newRules
 }
+
+
 
 // getSendersFromRule translate the conditions on the labels into services that satisfy them
 func getServicesFromRule(rule *MAPL_engine.Rule, service_labels map[string]map[string]string, sender_receiver int) (services_list []string) {

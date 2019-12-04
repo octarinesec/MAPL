@@ -405,7 +405,7 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		if valueToCompareString=="[]"{
 			valueToCompareString=""
 		}
-				
+
 		if len(valueToCompareString) == 0 {
 			if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
 				return true
