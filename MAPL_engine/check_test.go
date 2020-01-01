@@ -179,6 +179,17 @@ func TestMaplEngine(t *testing.T) {
 		So(results[4], ShouldEqual, DEFAULT)
 		fmt.Println("----------------------")
 
+		str = "test whitelist: conditions with sender and receiver namespaces"
+		fmt.Println(str)
+		results = test_CheckMessages("../examples/rules_with_namespace_conditions.yaml", "../examples/messages_test_with_namespace_conditions.yaml")
+		So(results[0], ShouldEqual, ALLOW) // by rule 2
+		So(results[1], ShouldEqual, DEFAULT)
+		So(results[2], ShouldEqual, ALLOW) // by rule 0
+		So(results[3], ShouldEqual, ALLOW) // by rule 1
+		So(results[4], ShouldEqual, DEFAULT)
+		fmt.Println("----------------------")
+
+
 		// test whitelist: conditions on encryption. Expected results:
 		// messages 0: block by default
 		// messages 1: block by default

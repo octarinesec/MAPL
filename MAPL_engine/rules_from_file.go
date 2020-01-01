@@ -331,6 +331,31 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) {
 				r.DNFConditions[i_dnf].ANDConditions[i_and].OriginalValue = condition.Value // used in hash
 			}
 
+			if strings.HasPrefix(condition.Attribute, "$sender.") { // test if ATTRIBUTE is of type sender object
+				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeIsSenderObject = true
+				i1 := strings.Index(condition.Attribute, ".") + 1
+				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeSenderObjectAttribute = condition.Attribute[i1:]
+				r.DNFConditions[i_dnf].ANDConditions[i_and].Attribute = "$sender"
+				r.DNFConditions[i_dnf].ANDConditions[i_and].OriginalAttribute = condition.Attribute // used in hash
+			}
+
+			if strings.HasPrefix(condition.Attribute, "$receiver.") { // test if ATTRIBUTE is of type receiver object
+				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeIsReceiverObject = true
+				i1 := strings.Index(condition.Attribute, ".") + 1
+				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeReceiverObjectAttribute = condition.Attribute[i1:]
+				r.DNFConditions[i_dnf].ANDConditions[i_and].Attribute = "$receiver"
+				r.DNFConditions[i_dnf].ANDConditions[i_and].OriginalAttribute = condition.Attribute // used in hash
+			}
+
+			if strings.HasPrefix(condition.Value, "$receiver.") { // test if VALUE is of type receiver object (used to compare attribute of sender object to value of receiver object)
+				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueIsReceiverObject = true
+				i1 := strings.Index(condition.Value, ".") + 1
+				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueReceiverObject = condition.Value[i1:]
+				r.DNFConditions[i_dnf].ANDConditions[i_and].Value = "$receiver"
+				r.DNFConditions[i_dnf].ANDConditions[i_and].OriginalValue = condition.Value // used in hash
+
+			}
+
 			if strings.Index(condition.Attribute, "jsonpath:") == 0 { // test if ATTRIBUTE is of type jsonpath
 				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeIsJsonpath = true
 				i1 := strings.Index(condition.Attribute, ":") + 1

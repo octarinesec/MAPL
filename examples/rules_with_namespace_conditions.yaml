@@ -1,0 +1,59 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "*"
+      senderType: "workload"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: HTTP
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    DNFconditions:
+      - ANDconditions:
+        - attribute: "$sender.namespace"
+          method: EQ
+          value: "abc"
+    decision: allow
+
+  - rule_id: 1
+    sender:
+      senderName: "*"
+      senderType: "workload"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: HTTP
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    DNFconditions:
+      - ANDconditions:
+          - attribute: "$receiver.namespace"
+            method: EQ
+            value: "ABC"
+    decision: allow
+
+
+  - rule_id: 2
+    sender:
+      senderName: "*"
+      senderType: "workload"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: HTTP
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    DNFconditions:
+      - ANDconditions:
+          - attribute: "$sender.namespace"
+            method: EQ
+            value: "$receiver.namespace"
+    decision: allow

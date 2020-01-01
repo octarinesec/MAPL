@@ -312,6 +312,34 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		valueToCompareFloat = *message.EncryptionVersion
 		result = compareFloatFunc(valueToCompareFloat, c.Method, c.ValueFloat)
 
+	case ("$sender"):
+
+		attributeSender := getAttribute("$sender", c.AttributeSenderObjectAttribute, *message)
+
+		if c.ValueIsReceiverObject {
+			valReceiver := getAttribute("$receiver", c.ValueReceiverObject, *message)
+			if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
+				log.Println("wrong method with comparison of sender and receiver objects")
+				return false
+			}
+			result = compareStringFunc(attributeSender, c.Method, valReceiver) // string comparison without wildcards
+		} else {
+			if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
+				result = compareRegexFunc(attributeSender, c.Method, c.ValueRegex)
+			} else {
+				result = compareStringWithWildcardsFunc(attributeSender, c.Method, c.ValueStringRegex) // string comparison with wildcards
+			}
+		}
+
+	case ("$receiver"):
+		attributeReceiver := getAttribute("$receiver", c.AttributeReceiverObjectAttribute, *message)
+
+		if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
+			result = compareRegexFunc(attributeReceiver, c.Method, c.ValueRegex)
+		} else {
+			result = compareStringWithWildcardsFunc(attributeReceiver, c.Method, c.ValueStringRegex) // string comparison with wildcards
+		}
+
 	case ("senderLabel"):
 		if c.AttributeIsSenderLabel == false {
 			log.Println("senderLabel without the correct format")
@@ -402,8 +430,8 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		}
 
 		valueToCompareString = string(valueToCompareBytes)
-		if valueToCompareString=="[]"{
-			valueToCompareString=""
+		if valueToCompareString == "[]" {
+			valueToCompareString = ""
 		}
 
 		if len(valueToCompareString) == 0 {
@@ -424,9 +452,9 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		L := len(valueToCompareString) - 1
 		if valueToCompareString[0] == '[' && valueToCompareString[L] == ']' {
 			valueToCompareString = valueToCompareString[1:L]
-			valueToCompareStringArray=strings.Split(valueToCompareString,",")
-		}else{
-			valueToCompareStringArray=[]string{valueToCompareString}
+			valueToCompareStringArray = strings.Split(valueToCompareString, ",")
+		} else {
+			valueToCompareStringArray = []string{valueToCompareString}
 		}
 
 		if len(valueToCompareStringArray) != expectedArrayLength {
@@ -452,7 +480,7 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		for _, valueToCompareString := range (valueToCompareStringArray) {
 			result_temp := false
 			L := len(valueToCompareString) - 1
-			if L>0 {
+			if L > 0 {
 				if valueToCompareString[0] == '"' && valueToCompareString[L] != '"' {
 					log.Println("quotation marks not aligned") // was panic
 					return false
@@ -465,32 +493,32 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 					valueToCompareString = valueToCompareString[1:L]
 				}
 			}
-			method:=strings.ToUpper(c.Method)
-			switch method{
-			case "GE","GT","LE","LT","EQ","NEQ","NE":
+			method := strings.ToUpper(c.Method)
+			switch method {
+			case "GE", "GT", "LE", "LT", "EQ", "NEQ", "NE":
 				valueToCompareString2, factor := convertStringWithUnits(valueToCompareString) // if the conversion to float doesn't work we still want to use the original string so we use a temporary one
 				valueToCompareFloat, err = strconv.ParseFloat(valueToCompareString2, 64)
 				valueToCompareFloat = valueToCompareFloat * factor
 
 				if err != nil {
 
-					if method=="EQ" || method=="NEQ"{
+					if method == "EQ" || method == "NEQ" {
 						result_temp = compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex) // compare strings with wildcards
-					}else {
+					} else {
 						log.Println("can't parse jsonpath value [float]") // was panic
 						return false
 					}
-				}else {
+				} else {
 					result_temp = compareFloatFunc(valueToCompareFloat, c.Method, c.ValueFloat)
 				}
-			case  "RE","NRE":
+			case "RE", "NRE":
 				result_temp = compareRegexFunc(valueToCompareString, c.Method, c.ValueRegex)
 			case "EX", "NEX":
 				if len(valueToCompareString) == 0 {
-					if method == "NEX"  { // just test the existence of the key
+					if method == "NEX" { // just test the existence of the key
 						return true
 					}
-					if method == "EX"  { // just test the existence of the key
+					if method == "EX" { // just test the existence of the key
 						return false
 					}
 				} else {
@@ -515,6 +543,26 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		return false
 	}
 	return result
+}
+
+func getAttribute(sender_receiver, attribute string, message MessageAttributes) string {
+	switch attribute {
+	case "namespace":
+		if sender_receiver == "$sender" {
+			return message.SourceNamespace
+		} else {
+			return message.DestinationNamespace
+		}
+	case "cluster":
+		if sender_receiver == "$sender" {
+			return message.SourceCluster
+		} else {
+			return message.DestinationCluster
+		}
+	}
+
+	return ""
+
 }
 
 // compareIntFunc compares one int value according the method string.

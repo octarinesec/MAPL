@@ -59,6 +59,13 @@ type Condition struct {
 	ValueIsReceiverLabel      bool   `yaml:"-" json:"ValueIsReceiverLabel,omitempty" bson:"ValueIsReceiverLabel,omitempty" structs:"ValueIsReceiverLabel,omitempty"`
 	ValueReceiverLabelKey     string `yaml:"-" json:"ValueReceiverLabelKey,omitempty" bson:"ValueReceiverLabelKey,omitempty" structs:"ValueReceiverLabelKey,omitempty"`
 
+	AttributeIsSenderObject      bool   `yaml:"-" json:"AttributeIsSenderObject,omitempty" bson:"AttributeIsSenderObject,omitempty" structs:"AttributeIsSenderObject,omitempty"`
+	AttributeIsReceiverObject    bool   `yaml:"-" json:"AttributeIsReceiverObject,omitempty" bson:"AttributeIsReceiverObject,omitempty" structs:"AttributeIsReceiverObject,omitempty"`
+	ValueIsReceiverObject      bool   `yaml:"-" json:"ValueIsReceiverObject,omitempty" bson:"ValueIsReceiverObject,omitempty" structs:"ValueIsReceiverObject,omitempty"`
+	AttributeSenderObjectAttribute string `yaml:"-" json:"AttributeSenderObjectAttribute,omitempty" bson:"AttributeSenderObjectAttribute,omitempty" structs:"AttributeSenderObjectAttribute,omitempty"`
+	AttributeReceiverObjectAttribute string `yaml:"-" json:"AttributeReceiverObjectAttribute,omitempty" bson:"AttributeReceiverObjectAttribute,omitempty" structs:"AttributeReceiverObjectAttribute,omitempty"`
+	ValueReceiverObject string `yaml:"-" json:"ValueReceiverObject,omitempty" bson:"ValueReceiverObject,omitempty" structs:"ValueReceiverObject,omitempty"`
+
 	AttributeIsJsonpath    bool   `yaml:"-" json:"AttributeIsJsonpath,omitempty" bson:"AttributeIsJsonpath,omitempty" structs:"AttributeIsJsonpath,omitempty"`
 	AttributeJsonpathQuery string `yaml:"-" json:"AttributeJsonpathQuery,omitempty" bson:"AttributeJsonpathQuery,omitempty" structs:"AttributeJsonpathQuery,omitempty"`
 
@@ -259,6 +266,7 @@ type MessageAttributes struct {
 	SourceType              string `yaml:"sender_type,omitempty"`               //  Source workload instance type. example: redis-master-2353460263-1ecey is a "service" and "10.0.0.2" is "subnet"
 	SourceName              string `yaml:"sender_name,omitempty"`               //  Source workload instance name. example: redis-master-2353460263-1ecey
 	SourceNamespace         string `yaml:"sender_namespace,omitempty"`          //  Source workload instance namespace. example: my-namespace
+	SourceCluster           string `yaml:"sender_cluster,omitempty"`            //  Source workload instance cluster. example: aws:edo
 	SourcePrincipal         string `yaml:"sender_principal,omitempty"`          //  Authority under which the source workload instance is running. example: service-account-foo
 	SourceOwner             string `yaml:"sender_owner,omitempty"`              //  Reference to the workload controlling the source workload instance.	example: kubernetes://apis/extensions/v1beta1/namespaces/istio-system/deployments/istio-policy
 	SourceWorkloadUid       string `yaml:"sender_workload_uid,omitempty"`       //  Unique identifier of the source workload.  example: istio://istio-system/workloads/istio-policy
@@ -274,6 +282,7 @@ type MessageAttributes struct {
 	DestinationType              string `yaml:"receiver_type,omitempty"`               //  Destination workload instance type. example: redis-master-2353460263-1ecey is a "service" and "10.0.0.2" is "subnet"
 	DestinationName              string `yaml:"receiver_name,omitempty"`               //  Destination workload instance name. example: istio-telemetry-2359333
 	DestinationNamespace         string `yaml:"receiver_namespace,omitempty"`          //  Destination workload instance namespace. example: istio-system
+	DestinationCluster           string `yaml:"receiver_cluster,omitempty"`            //  Destination workload instance cluster. example: aws:edo
 	DestinationPrincipal         string `yaml:"receiver_principal,omitempty"`          //  Authority under which the destination workload instance is running. example: service-account
 	DestinationOwner             string `yaml:"receiver_owner,omitempty"`              //  Reference to the workload controlling the destination workload instance. example: kubernetes://apis/extensions/v1beta1/namespaces/istio-system/deployments/istio-telemetry
 	DestinationWorkloadUid       string `yaml:"receiver_workload_uid,omitempty"`       //  Unique identifier of the destination workload. example: istio://istio-system/workloads/istio-telemetry
