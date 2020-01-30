@@ -406,6 +406,11 @@ func TestMaplEngine(t *testing.T) {
 		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_NRE_on_array.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers_two_images_two_abc.json")
 		So(results[0], ShouldEqual, DEFAULT)
 
+		results = test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_RE_on_array2.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_password_in_env.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+
+
 		fmt.Println("----------------------")
 		// more tests on EX/NEX
 		str = "test jsonpath conditions EX/NEX"

@@ -429,17 +429,21 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			}
 		}
 
-		valueToCompareString = string(valueToCompareBytes)
-		if valueToCompareString == "[]" {
-			valueToCompareString = ""
-		}
+		valueToCompareString0 := string(valueToCompareBytes)
 
-		if len(valueToCompareString) == 0 {
+		if len(valueToCompareString0) == 0 {
 			if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
 				return true
 			}
 			return false // default test result is false on an empty jsonpath result
 
+		}
+
+		valueToCompareString0 = strings.Replace(valueToCompareString0, "[[", "[",-1)
+		valueToCompareString0 = strings.Replace(valueToCompareString0, "]]", "]",-1)
+
+		if valueToCompareString0 == "[]" {
+			valueToCompareString0 = ""
 		}
 
 		//var valueToCompareStringArray []string
@@ -449,12 +453,12 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		//}
 
 		var valueToCompareStringArray []string
-		L := len(valueToCompareString) - 1
-		if valueToCompareString[0] == '[' && valueToCompareString[L] == ']' {
-			valueToCompareString = valueToCompareString[1:L]
-			valueToCompareStringArray = strings.Split(valueToCompareString, ",")
+		L := len(valueToCompareString0) - 1
+		if valueToCompareString0[0] == '[' && valueToCompareString0[L] == ']' {
+			valueToCompareString0 = valueToCompareString0[1:L]
+			valueToCompareStringArray = strings.Split(valueToCompareString0, ",")
 		} else {
-			valueToCompareStringArray = []string{valueToCompareString}
+			valueToCompareStringArray = []string{valueToCompareString0}
 		}
 
 		if len(valueToCompareStringArray) != expectedArrayLength {
