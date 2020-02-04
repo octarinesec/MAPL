@@ -446,11 +446,12 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			valueToCompareString0 = ""
 		}
 
-		//var valueToCompareStringArray []string
-		//err = json.Unmarshal([]byte(valueToCompareString), &valueToCompareStringArray)
-		//if err != nil {
-		//	valueToCompareStringArray = []string{valueToCompareString}
-		//}
+		if len(valueToCompareString0) == 0 {
+			if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
+				return true
+			}
+			return false // default test result is false on an empty jsonpath result
+		}
 
 		var valueToCompareStringArray []string
 		L := len(valueToCompareString0) - 1

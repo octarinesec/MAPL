@@ -31,6 +31,11 @@ func TestMaplEngine(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
+		//results := test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_on_array_debug.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_debug.json")
+		//So(results[0], ShouldEqual, BLOCK)
+
+
+
 		str := "test hash function. expected result: although the conditions are ordered differently, rule 0 and rule 1 should have the same hash\n and also rule 2 and rule 4"
 		fmt.Println(str)
 		hashes := test_MD5Hash("../examples/rules_with_label_conditions_for_hash_tests.yaml")
