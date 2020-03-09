@@ -11,7 +11,7 @@ import (
 
 type GeneralStruct interface {
 	// a general interface to structures.
-	ToJson() string // This function is used when comparing structures read from yaml files to the resulting fields in the structure.
+	ToJson() (string,error) // This function is used when comparing structures read from yaml files to the resulting fields in the structure.
 }
 
 //-------------------rules-------------------------------------

@@ -394,7 +394,7 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 	case ("jsonpath"):
 
 		if c.AttributeIsJsonpath == false {
-			log.Println("jsonpath without the correct format") // was panic
+			log.Println("jsonpath without the correct format")
 			return false
 		}
 
@@ -487,11 +487,11 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			L := len(valueToCompareString) - 1
 			if L > 0 {
 				if valueToCompareString[0] == '"' && valueToCompareString[L] != '"' {
-					log.Println("quotation marks not aligned") // was panic
+					log.Println("quotation marks not aligned")
 					return false
 				}
 				if valueToCompareString[L] == '"' && valueToCompareString[0] != '"' {
-					log.Println("quotation marks not aligned") // was panic
+					log.Println("quotation marks not aligned")
 					return false
 				}
 				if valueToCompareString[L] == '"' && valueToCompareString[0] == '"' {
@@ -510,7 +510,7 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 					if method == "EQ" || method == "NEQ" {
 						result_temp = compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex) // compare strings with wildcards
 					} else {
-						log.Println("can't parse jsonpath value [float]") // was panic
+						log.Println("can't parse jsonpath value [float]")
 						return false
 					}
 				} else {
@@ -536,7 +536,7 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 				}
 
 			default:
-				log.Printf("method not supported: %v", method) // was panic
+				log.Printf("method not supported: %v", method)
 				return false
 			}
 

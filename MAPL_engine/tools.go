@@ -9,8 +9,13 @@ import (
 // IsNumberOfFieldsEqual is used to compare the structures read from files (mostly while debugging).
 // We convert the structure into a string and count the number of non-empty "fields". Then we compare to the number of non empty fields in the original yaml string.
 // It will not work with structure fields with default values (for example ints or floats) so we remove them.
-func IsNumberOfFieldsEqual(generalStruct GeneralStruct, yamlString string) (bool, string) {
-	return compareJsonAndYaml(generalStruct.ToJson(), yamlString)
+func IsNumberOfFieldsEqual(generalStruct GeneralStruct, yamlString string) (bool, string, error) {
+	json_str, err := generalStruct.ToJson()
+	if err != nil {
+		return false, "", err
+	}
+	flag, output_string := compareJsonAndYaml(json_str, yamlString)
+	return flag, output_string, nil
 }
 
 // compareJsonAndYaml counts the number of non-empty, non-integer, non-float fields in the jsonString.

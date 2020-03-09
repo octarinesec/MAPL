@@ -476,7 +476,10 @@ func test_CheckMessages(rulesFilename string, messagesFilename string) ([]int, e
 	if err != nil {
 		return []int{}, err
 	}
-	messages := YamlReadMessagesFromFile(messagesFilename)
+	messages, err := YamlReadMessagesFromFile(messagesFilename)
+	if err != nil {
+		return []int{}, err
+	}
 
 	var outputResults []int
 
@@ -527,7 +530,10 @@ func test_CheckMessagesWithJsonRaw(rulesFilename string, messagesFilename string
 		log.Printf("error: =%v", err)
 		return []int{}, err
 	}
-	messages := YamlReadMessagesFromFile(messagesFilename)
+	messages, err := YamlReadMessagesFromFile(messagesFilename)
+	if err != nil {
+		return []int{}, err
+	}
 	data, err := read_binary_file(jsonRawFilename)
 	if err != nil {
 		log.Printf("can't read json raw file")
@@ -559,7 +565,10 @@ func test_ConditionsWithJsonRaw(rulesFilename string, messagesFilename string, j
 		log.Printf("error: =%v", err)
 		return [][]bool{}, err
 	}
-	messages := YamlReadMessagesFromFile(messagesFilename)
+	messages, err := YamlReadMessagesFromFile(messagesFilename)
+	if err != nil {
+		return [][]bool{}, err
+	}
 	data, err := read_binary_file(jsonRawFilename)
 	if err != nil {
 		log.Printf("can't read json raw file")

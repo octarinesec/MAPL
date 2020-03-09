@@ -2,6 +2,7 @@ package MAPL_engine
 
 import (
 	"crypto/md5"
+	"encoding/json"
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -24,7 +25,10 @@ func YamlReadRulesFromString(yamlString string) (Rules, error) {
 		return Rules{}, err
 	}
 
-	flag, outputString := IsNumberOfFieldsEqual(rules, yamlString)
+	flag, outputString,err := IsNumberOfFieldsEqual(rules, yamlString)
+	if err!=nil{
+		return Rules{},err
+	}
 	if flag == false {
 		return Rules{}, fmt.Errorf("number of fields in rules does not match number of fields in yaml file:\n" + outputString)
 	}
@@ -208,7 +212,7 @@ func ConvertStringToExpandedSenderReceiver(str_in string, type_in string) ([]Exp
 			}
 			e.IsIP, e.IsCIDR, e.IP, e.CIDR = isIpCIDR(str)
 			if !e.IsIP && !e.IsCIDR {
-				return []ExpandedSenderReceiver, fmt.Errorf("Type is 'subnet' but value is not an IP or CIDR")
+				return []ExpandedSenderReceiver{}, fmt.Errorf("Type is 'subnet' but value is not an IP or CIDR")
 			}
 		}
 		str = strings.Replace(str, " ", "", -1)    // remove spaces
