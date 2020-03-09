@@ -19,7 +19,7 @@ var message_attributes MAPL_engine.MessageAttributes
 
 // function RemoveLabelConditionsFromRule is the main function for translation of conditions on Sender and Receiver Labels to
 // the equivalent Sender/Receiver names
-func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[string]map[string]string, service_labels_explicit map[string]map[string]string) (new_rules MAPL_engine.Rules,error) {
+func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[string]map[string]string, service_labels_explicit map[string]map[string]string) (new_rules MAPL_engine.Rules,err error) {
 
 	translateSenderLabelsFlag := 0
 	translateReceiverLabelsFlag := 0
