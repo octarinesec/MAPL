@@ -13,60 +13,67 @@ import (
 )
 
 // YamlReadMessageAttributes function reads message attributes from a yaml string
-func YamlReadMessageAttributes(yamlString string) MessageAttributes {
+func YamlReadMessageAttributes(yamlString string) (MessageAttributes,error) {
 
 	var messageAttributes MessageAttributes
 	err := yaml.Unmarshal([]byte(yamlString), &messageAttributes)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Printf("error: %v", err)
+		return MessageAttributes{},err
 	}
 	//fmt.Printf("---values found:\n%+v\n\n", rule)
 
 	flag, outputString := IsNumberOfFieldsEqual(messageAttributes, yamlString)
 
 	if flag == false {
-		panic("number of fields in rules does not match number of fields in yaml file:\n" + outputString)
+		return MessageAttributes{},fmt.Errorf("number of fields in rules does not match number of fields in yaml file:\n" + outputString)
 	}
 
 	AddResourceType(&messageAttributes)
 
-	return messageAttributes
+	return messageAttributes, nil
 }
 
 // YamlReadMessagesFromString function reads messages from a yaml string
-func YamlReadMessagesFromString(yamlString string) Messages {
+func YamlReadMessagesFromString(yamlString string) (Messages,error) {
 
 	var messages Messages
 	err := yaml.Unmarshal([]byte(yamlString), &messages)
 	if err != nil {
-		temp_str,_:=fmt.Printf("error: %v", err)
-		panic(temp_str)
+		log.Printf("error: %v", err)
+		return Messages{},err
 	}
-	//fmt.Printf("---values found:\n%+v\n\n", rule)
 
 	addResourceTypeToMessages(&messages)
-	addTimeInfoToMessages(&messages)
+	err=addTimeInfoToMessages(&messages)
+	if err != nil {
+		return Messages{},err
+	}
 	AddNetIpToMessages(&messages)
 	parseLabelsJsonOfMessages(&messages)
 
-	// fmt.Println(messages)
-
 	flag, outputString := IsNumberOfFieldsEqual(messages, yamlString)
 	if flag == false {
-		panic("number of fields in rules does not match number of fields in yaml file:\n" + outputString)
+		err_str:="number of fields in rules does not match number of fields in yaml file:\n" + outputString
+		log.Printf("error: %s",err_str)
+		return Messages{},fmt.Errorf(err_str)
 	}
-
-	return messages
+	return messages,nil
 }
 
 // YamlReadMessagesFromFile function reads messages from file
-func YamlReadMessagesFromFile(filename string) Messages {
+func YamlReadMessagesFromFile(filename string) (Messages,error) {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		panic(err)
+		log.Printf("error: %v", err)
+		return Messages{},err
 	}
-	messages := YamlReadMessagesFromString(string(data))
-	return messages
+	messages,err := YamlReadMessagesFromString(string(data))
+	if err != nil {
+		log.Printf("error: %v", err)
+		return Messages{},err
+	}
+	return messages,nil
 }
 
 // AddResourceType function adds resource type to one message by the resource protocol for HTTP and TCP. For KAFKA the resource_type need to be filled in the message attributes.
@@ -95,16 +102,19 @@ func addResourceTypeToMessages(messages *Messages) {
 
 
 // AddTimeInfoToMessage function parses timestamp data in one message and extract the second, minutes and hours since midnight.
-func AddTimeInfoToMessage(message *MessageAttributes) {
+func AddTimeInfoToMessage(message *MessageAttributes) error {
 	//
 	// extract timestamp info
 	//
 
 	//t, err := time.Parse(time.RFC3339,"2018-07-29T14:30:00-07:00")
 	t, err := time.Parse(time.RFC3339,message.RequestTime)
-	if err!=nil{
-		panic("error in parsing message time")
+
+	if err != nil {
+		log.Printf("error: %v", err)
+		return err
 	}
+
 
 	nanosecondsFromMidnight := float64(((t.Hour()*60+t.Minute())*60+t.Second())*1e9+t.Nanosecond())
 
@@ -114,16 +124,21 @@ func AddTimeInfoToMessage(message *MessageAttributes) {
 
 	message.RequestTimeMinutesParity = (int64(message.RequestTimeMinutesFromMidnightUTC)%60)%2
 
+	return nil
 }
 
 // addTimeInfoToMessages function parses timestamp data for all messages
-func addTimeInfoToMessages(messages *Messages) {
+func addTimeInfoToMessages(messages *Messages) error {
 	// add resource_type by the resource_protocol
 	// we have resource_type to allow for several types per one protocol.
 
 	for i, _ := range(messages.Messages) {
-		AddTimeInfoToMessage(&messages.Messages[i])
+		err := AddTimeInfoToMessage(&messages.Messages[i])
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // AddNetIpToMessage converts string ips to type net.IP

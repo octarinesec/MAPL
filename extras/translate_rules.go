@@ -19,7 +19,7 @@ var message_attributes MAPL_engine.MessageAttributes
 
 // function RemoveLabelConditionsFromRule is the main function for translation of conditions on Sender and Receiver Labels to
 // the equivalent Sender/Receiver names
-func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[string]map[string]string, service_labels_explicit map[string]map[string]string) (new_rules MAPL_engine.Rules) {
+func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[string]map[string]string, service_labels_explicit map[string]map[string]string) (new_rules MAPL_engine.Rules,error) {
 
 	translateSenderLabelsFlag := 0
 	translateReceiverLabelsFlag := 0
@@ -36,19 +36,19 @@ func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[str
 			if condition.AttributeIsSenderLabel {
 				//sanity: if we translate sender labels to sender names then the sender name must be "*"
 				if (rule_temp.Sender.SenderName != "*" && rule_temp.Sender.SenderName != "*:*") || (rule_temp.Sender.SenderType != "workload" && rule_temp.Sender.SenderType != "*") {
-					panic("when translating rules: sender!=\"*\"")
+					return MAPL_engine.Rules{}, fmt.Errorf("when translating rules: sender!=\"*\"")
 				}
 				translateSenderLabelsFlag++
 			}
 			if condition.AttributeIsReceiverLabel {
 				//sanity: if we translate receiver labels to receiver names then the receiver name must be "*"
 				if (rule_temp.Receiver.ReceiverName != "*" && rule_temp.Receiver.ReceiverName != "*:*") || (rule_temp.Receiver.ReceiverType != "workload" && rule_temp.Receiver.ReceiverType != "*") {
-					panic("when translating rules: receiver!=\"*\"")
+					return MAPL_engine.Rules{}, fmt.Errorf("when translating rules: receiver!=\"*\"")
 				}
 				translateReceiverLabelsFlag++
 			}
 			if condition.ValueIsReceiverLabel {
-				panic("when translating rules: labels as values are not supported")
+				return MAPL_engine.Rules{}, fmt.Errorf("when translating rules: labels as values are not supported")
 			}
 		}
 	}
@@ -84,7 +84,7 @@ func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[str
 		receivers_map = getServicesFromRuleWithSenderReceiverLists(&rule_temp, service_labels_sender, service_labels_receiver, senders, receivers) // now go over all the pairs and test which are satisfied together
 
 		if len(receivers_map) == 0 {
-			return new_rules
+			return new_rules, nil
 		}
 
 		useRulePerReceiverFlag := false // test if all the receivers are satisfied by the same sender list:
@@ -104,7 +104,7 @@ func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[str
 		if !useRulePerReceiverFlag { // all the receivers are satisfied by the same sender list. then we can make it one rule
 			//sanity:
 			if !testSliceEquality(senders, value0) {
-				panic("somethings is wrong: in \"translateSenderLabelsFlag && translateReceiverLabelsFlag == true\" part")
+				return MAPL_engine.Rules{}, fmt.Errorf("somethings is wrong: in \"translateSenderLabelsFlag && translateReceiverLabelsFlag == true\" part")
 			}
 			new_rule.DNFConditions = removeLabelConditions(&new_rule)
 			new_rule.Sender.SenderName = strings.Join(senders, ",")
@@ -135,7 +135,6 @@ func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[str
 			}
 			if len(senders) == 0 {
 				senders = []string{NoComplyingSender}
-				//panic("failed to translate sender labels")
 			}
 			new_rule.DNFConditions = removeLabelConditions(&new_rule)
 			new_rule.Sender.SenderName = strings.Join(senders, ",")
@@ -150,7 +149,6 @@ func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[str
 			}
 			if len(receivers) == 0 {
 				receivers = []string{NoComplyingReceiver}
-				//panic("failed to translate receiver labels")
 			}
 			new_rule.DNFConditions = removeLabelConditions(&new_rule)
 			new_rule.Receiver.ReceiverName = strings.Join(receivers, ",")
@@ -161,7 +159,7 @@ func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[str
 			new_rules.Rules = append(new_rules.Rules, new_rule)
 		}
 	}
-	return new_rules
+	return new_rules, nil
 }
 
 // function RemoveLabelConditionsFromRules calls RemoveLabelConditionsFromRule which is the main function for translation of conditions on Sender and Receiver Labels to
@@ -296,10 +294,10 @@ func removeLabelConditions(rule *MAPL_engine.Rule) (new_DNFConditions []MAPL_eng
 }
 
 // OutputRulesToFile: create a new yaml file of the new translated rules
-func OutputRulesToFile(rules *MAPL_engine.Rules, filename string) {
+func OutputRulesToFile(rules *MAPL_engine.Rules, filename string) error {
 	f, err := os.Create(filename)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("can't create file")
 	}
 	defer f.Close()
 
@@ -326,6 +324,7 @@ func OutputRulesToFile(rules *MAPL_engine.Rules, filename string) {
 		}
 		fmt.Fprintf(f, "    decision: %v\n", rule.Decision)
 	}
+	return nil
 }
 
 // printDNFConditions: prints the conditions to the console (used for debugging)

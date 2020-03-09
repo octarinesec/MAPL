@@ -2,7 +2,6 @@ package MAPL_engine
 
 import (
 	"crypto/md5"
-	"encoding/json"
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -16,23 +15,33 @@ import (
 )
 
 // YamlReadRulesFromString function reads rules from a yaml string
-func YamlReadRulesFromString(yamlString string) Rules {
+func YamlReadRulesFromString(yamlString string) (Rules, error) {
 
 	var rules Rules
 	err := yaml.Unmarshal([]byte(yamlString), &rules)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Printf("error: %v", err)
+		return Rules{}, err
 	}
 
 	flag, outputString := IsNumberOfFieldsEqual(rules, yamlString)
 	if flag == false {
-		panic("number of fields in rules does not match number of fields in yaml file:\n" + outputString)
+		return Rules{}, fmt.Errorf("number of fields in rules does not match number of fields in yaml file:\n" + outputString)
 	}
-	ConvertFieldsToRegexManyRules(&rules)
-	//testFieldsForIP(&rules)
-	ConvertConditionStringToIntFloatRegexManyRules(&rules)
 
-	return rules
+	err = ConvertFieldsToRegexManyRules(&rules)
+	if err != nil {
+		log.Printf("error: %v", err)
+		return Rules{}, err
+	}
+
+	err = ConvertConditionStringToIntFloatRegexManyRules(&rules)
+	if err != nil {
+		log.Printf("error: %v", err)
+		return Rules{}, err
+	}
+
+	return rules, nil
 }
 
 // JsonReadRulesFromString function reads rules from a json string
@@ -45,26 +54,33 @@ func JsonReadRulesFromString(jsonString string) (error_ret bool, rules Rules) {
 		error_ret = true
 	}
 
-	ConvertFieldsToRegexManyRules(&rules)
-	//testFieldsForIP(&rules)
-	ConvertConditionStringToIntFloatRegexManyRules(&rules)
+	err = ConvertFieldsToRegexManyRules(&rules)
+	if err != nil {
+		log.Printf("error: %v", err)
+		error_ret = true
+	}
 
+	err = ConvertConditionStringToIntFloatRegexManyRules(&rules)
+	if err != nil {
+		error_ret = true
+	}
 	return error_ret, rules
 }
 
 // YamlReadRulesFromFile function reads rules from a file
-func YamlReadRulesFromFile(filename string) Rules {
+func YamlReadRulesFromFile(filename string) (Rules, error) {
 
 	filename = strings.Replace(filename, "\\", "/", -1)
 
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		panic(err)
+		return Rules{}, err
 	}
-	rules := YamlReadRulesFromString(string(data))
-	return rules
+	rules, err := YamlReadRulesFromString(string(data))
+	return rules, err
 }
 
+/*
 //YamlReadOneRule function reads one rule from yaml string
 func YamlReadOneRule(yamlString string) Rule {
 
@@ -82,6 +98,7 @@ func YamlReadOneRule(yamlString string) Rule {
 	}
 	return rule
 }
+*/
 
 func isIpCIDR(str string) (isIP, isCIDR bool, IP_out net.IP, IPNet_out net.IPNet) {
 
@@ -105,31 +122,48 @@ func isIpCIDR(str string) (isIP, isCIDR bool, IP_out net.IP, IPNet_out net.IPNet
 
 // convertFieldsToRegex converts some rule fields into regular expressions to be used later.
 // This enables use of wildcards in the sender, receiver names, etc... for array of rules
-func ConvertFieldsToRegexManyRules(rules *Rules) {
+func ConvertFieldsToRegexManyRules(rules *Rules) error {
 	// we replace wildcards with the corresponding regex
 
 	for i, _ := range (rules.Rules) {
-		ConvertFieldsToRegex(&rules.Rules[i])
+		err := ConvertFieldsToRegex(&rules.Rules[i])
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // convertFieldsToRegex converts some rule fields into regular expressions to be used later.
 // This enables use of wildcards in the sender, receiver names, etc...
-func ConvertFieldsToRegex(rule *Rule) {
+func ConvertFieldsToRegex(rule *Rule) error {
 
 	if rule.AlreadyConvertedFieldsToRegexFlag == true { // convert once
-		return
+		return nil
 	}
 
-	rule.Sender.SenderList = ConvertStringToExpandedSenderReceiver(rule.Sender.SenderName, rule.Sender.SenderType)
-	rule.Receiver.ReceiverList = ConvertStringToExpandedSenderReceiver(rule.Receiver.ReceiverName, rule.Receiver.ReceiverType)
+	var err error
+
+	rule.Sender.SenderList, err = ConvertStringToExpandedSenderReceiver(rule.Sender.SenderName, rule.Sender.SenderType)
+	if err != nil {
+		return err
+	}
+	rule.Receiver.ReceiverList, err = ConvertStringToExpandedSenderReceiver(rule.Receiver.ReceiverName, rule.Receiver.ReceiverType)
+	if err != nil {
+		return err
+	}
 
 	rule.OperationRegex = regexp.MustCompile(ConvertOperationStringToRegex(rule.Operation)).Copy() // a special case of regex for operations to support CRUD
 
-	re := regexp.MustCompile(ConvertStringToRegex(rule.Resource.ResourceName))
-	rule.Resource.ResourceNameRegex = re.Copy()
+	re, err := regexp.Compile(ConvertStringToRegex(rule.Resource.ResourceName))
+	if err != nil {
+		return err
+	}
 
+	rule.Resource.ResourceNameRegex = re.Copy()
 	rule.AlreadyConvertedFieldsToRegexFlag = true
+
+	return nil
 
 }
 
@@ -159,7 +193,7 @@ func ConvertStringToRegex(str_in string) string {
 	return str_out
 }
 
-func ConvertStringToExpandedSenderReceiver(str_in string, type_in string) []ExpandedSenderReceiver {
+func ConvertStringToExpandedSenderReceiver(str_in string, type_in string) ([]ExpandedSenderReceiver, error) {
 	var output []ExpandedSenderReceiver
 
 	str_list := strings.Split(str_in, ",")
@@ -174,7 +208,7 @@ func ConvertStringToExpandedSenderReceiver(str_in string, type_in string) []Expa
 			}
 			e.IsIP, e.IsCIDR, e.IP, e.CIDR = isIpCIDR(str)
 			if !e.IsIP && !e.IsCIDR {
-				panic("Type is 'subnet' but value is not an IP or CIDR")
+				return []ExpandedSenderReceiver, fmt.Errorf("Type is 'subnet' but value is not an IP or CIDR")
 			}
 		}
 		str = strings.Replace(str, " ", "", -1)    // remove spaces
@@ -190,7 +224,7 @@ func ConvertStringToExpandedSenderReceiver(str_in string, type_in string) []Expa
 
 		output = append(output, e)
 	}
-	return output
+	return output, nil
 }
 
 // convertOperationStringToRegex function converts the operations string to regex.
@@ -213,11 +247,15 @@ func ConvertOperationStringToRegex(str_in string) string {
 
 // ConvertConditionStringToIntFloatRegexManyRules convert values in strings in the conditions to integers, floats and regex
 // (or keep them default in case of failure) for array of rules
-func ConvertConditionStringToIntFloatRegexManyRules(rules *Rules) {
+func ConvertConditionStringToIntFloatRegexManyRules(rules *Rules) (err error) {
 
 	for i_rule, _ := range (rules.Rules) {
-		ConvertConditionStringToIntFloatRegex(&rules.Rules[i_rule])
+		err := ConvertConditionStringToIntFloatRegex(&rules.Rules[i_rule])
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func convertStringWithUnits(inputString string) (string, float64) {
@@ -229,8 +267,8 @@ func convertStringWithUnits(inputString string) (string, float64) {
 
 	for i_unit, unit := range strVec {
 
-		flag1:=strings.HasSuffix(inputString, unit)
-		flag2:=strings.Count(inputString, unit)==1
+		flag1 := strings.HasSuffix(inputString, unit)
+		flag2 := strings.Count(inputString, unit) == 1
 
 		if flag1 && flag2 {
 			outputString := strings.Replace(inputString, unit, "", -1)
@@ -244,7 +282,7 @@ func convertStringWithUnits(inputString string) (string, float64) {
 
 // ConvertConditionStringToIntFloatRegexManyRules convert values in strings in the conditions to integers, floats and regex
 // (or keep them default in case of failure)
-func ConvertConditionStringToIntFloatRegex(r *Rule) {
+func ConvertConditionStringToIntFloatRegex(r *Rule) (err error) {
 
 	for i_dnf, andConditions := range (r.DNFConditions) {
 		for i_and, condition := range (andConditions.ANDConditions) {
@@ -252,7 +290,7 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) {
 			if condition.Method == "IN" || condition.Method == "NIN" {
 				L := len(condition.Value)
 				if L == -0 {
-					panic("test membership in empty array")
+					return fmt.Errorf("test membership in empty array")
 				}
 				tempString := strings.Replace(condition.Value, "[", "", -1)
 				tempString = strings.Replace(tempString, "]", "", -1)
@@ -283,12 +321,15 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) {
 			if err == nil {
 				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueRegex = re.Copy() // this is used in RE,NRE
 			}
+			if err != nil && (condition.Method == "re" || condition.Method == "RE" || condition.Method == "nre" || condition.Method == "NRE") {
+				return fmt.Errorf("invalid regex string")
+			}
 
 			re, err = regexp.Compile(ConvertStringToRegex(condition.Value))
 			if err == nil {
 				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueStringRegex = re.Copy() // this is used in EQ,NEQ
 			} else {
-				panic("condition.Value could not be converted to regex")
+				return fmt.Errorf("condition.Value could not be converted to regex")
 			}
 
 			/*t, err := time.Parse(time.RFC3339,condition.Value)
@@ -301,7 +342,7 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) {
 				i1 := strings.Index(condition.Attribute, "[") + 1
 				i2 := strings.Index(condition.Attribute, "]")
 				if i2 < len(condition.Attribute)-1 {
-					panic("senderLabel has a wrong format")
+					return fmt.Errorf("senderLabel has a wrong format")
 				}
 				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeSenderLabelKey = condition.Attribute[i1:i2]
 				r.DNFConditions[i_dnf].ANDConditions[i_and].Attribute = "senderLabel"
@@ -312,7 +353,7 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) {
 				i1 := strings.Index(condition.Attribute, "[") + 1
 				i2 := strings.Index(condition.Attribute, "]")
 				if i2 < len(condition.Attribute)-1 {
-					panic("receiverLabel has a wrong format")
+					return fmt.Errorf("receiverLabel has a wrong format")
 				}
 				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeReceiverLabelKey = condition.Attribute[i1:i2]
 				r.DNFConditions[i_dnf].ANDConditions[i_and].Attribute = "receiverLabel"
@@ -324,7 +365,7 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) {
 				i1 := strings.Index(condition.Value, "[") + 1
 				i2 := strings.Index(condition.Value, "]")
 				if i2 < len(condition.Value)-1 {
-					panic("value receiverLabel has a wrong format")
+					return fmt.Errorf("value receiverLabel has a wrong format")
 				}
 				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueReceiverLabelKey = condition.Value[i1:i2]
 				r.DNFConditions[i_dnf].ANDConditions[i_and].Value = "receiverLabel"
@@ -371,12 +412,14 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) {
 			}
 		}
 	}
+	return nil
 }
 
-func PrepareRules(rules *Rules) {
+func PrepareRules(rules *Rules) error {
 	// prepare the rules for use (when loading from json not all the fields are ready...)
-	ConvertFieldsToRegexManyRules(rules)                  // prepare the regex etc...
-	ConvertConditionStringToIntFloatRegexManyRules(rules) // prepare the label conditions
+	ConvertFieldsToRegexManyRules(rules)                         // prepare the regex etc...
+	err := ConvertConditionStringToIntFloatRegexManyRules(rules) // prepare the label conditions
+	return err
 }
 
 func RuleConditionsToString(rule Rule) string {

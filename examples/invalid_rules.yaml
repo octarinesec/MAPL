@@ -1,0 +1,24 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    decision: allow
+    metadata:
+      name: "xxx"
+      description: "yyy"
+
+    DNFconditions:
+      - ANDconditions:
+          - attribute: jsonpath:$.kind
+            method: RE
+            value: "[gcr.io/loveholidays-ci-cd|eu.gcr.io/loveholidays-ci-cd]/.*"

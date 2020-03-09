@@ -59,12 +59,12 @@ type Condition struct {
 	ValueIsReceiverLabel      bool   `yaml:"-" json:"ValueIsReceiverLabel,omitempty" bson:"ValueIsReceiverLabel,omitempty" structs:"ValueIsReceiverLabel,omitempty"`
 	ValueReceiverLabelKey     string `yaml:"-" json:"ValueReceiverLabelKey,omitempty" bson:"ValueReceiverLabelKey,omitempty" structs:"ValueReceiverLabelKey,omitempty"`
 
-	AttributeIsSenderObject      bool   `yaml:"-" json:"AttributeIsSenderObject,omitempty" bson:"AttributeIsSenderObject,omitempty" structs:"AttributeIsSenderObject,omitempty"`
-	AttributeIsReceiverObject    bool   `yaml:"-" json:"AttributeIsReceiverObject,omitempty" bson:"AttributeIsReceiverObject,omitempty" structs:"AttributeIsReceiverObject,omitempty"`
-	ValueIsReceiverObject      bool   `yaml:"-" json:"ValueIsReceiverObject,omitempty" bson:"ValueIsReceiverObject,omitempty" structs:"ValueIsReceiverObject,omitempty"`
-	AttributeSenderObjectAttribute string `yaml:"-" json:"AttributeSenderObjectAttribute,omitempty" bson:"AttributeSenderObjectAttribute,omitempty" structs:"AttributeSenderObjectAttribute,omitempty"`
+	AttributeIsSenderObject          bool   `yaml:"-" json:"AttributeIsSenderObject,omitempty" bson:"AttributeIsSenderObject,omitempty" structs:"AttributeIsSenderObject,omitempty"`
+	AttributeIsReceiverObject        bool   `yaml:"-" json:"AttributeIsReceiverObject,omitempty" bson:"AttributeIsReceiverObject,omitempty" structs:"AttributeIsReceiverObject,omitempty"`
+	ValueIsReceiverObject            bool   `yaml:"-" json:"ValueIsReceiverObject,omitempty" bson:"ValueIsReceiverObject,omitempty" structs:"ValueIsReceiverObject,omitempty"`
+	AttributeSenderObjectAttribute   string `yaml:"-" json:"AttributeSenderObjectAttribute,omitempty" bson:"AttributeSenderObjectAttribute,omitempty" structs:"AttributeSenderObjectAttribute,omitempty"`
 	AttributeReceiverObjectAttribute string `yaml:"-" json:"AttributeReceiverObjectAttribute,omitempty" bson:"AttributeReceiverObjectAttribute,omitempty" structs:"AttributeReceiverObjectAttribute,omitempty"`
-	ValueReceiverObject string `yaml:"-" json:"ValueReceiverObject,omitempty" bson:"ValueReceiverObject,omitempty" structs:"ValueReceiverObject,omitempty"`
+	ValueReceiverObject              string `yaml:"-" json:"ValueReceiverObject,omitempty" bson:"ValueReceiverObject,omitempty" structs:"ValueReceiverObject,omitempty"`
 
 	AttributeIsJsonpath    bool   `yaml:"-" json:"AttributeIsJsonpath,omitempty" bson:"AttributeIsJsonpath,omitempty" structs:"AttributeIsJsonpath,omitempty"`
 	AttributeJsonpathQuery string `yaml:"-" json:"AttributeJsonpathQuery,omitempty" bson:"AttributeJsonpathQuery,omitempty" structs:"AttributeJsonpathQuery,omitempty"`
@@ -92,8 +92,7 @@ type Rule struct {
 	DNFConditions []ANDConditions `yaml:"DNFconditions,omitempty" json:"dnfConditions,omitempty" bson:"DNFConditions,omitempty" structs:"DNFConditions,omitempty"`
 	Decision      string          `yaml:"decision,omitempty" json:"decision,omitempty" bson:"Decision" structs:"Decision,omitempty"`
 
-
-	Metadata      map[string]string          `yaml:"metadata,omitempty" json:"metadata,omitempty" bson:"Metadata" structs:"Metadata,omitempty"`
+	Metadata map[string]string `yaml:"metadata,omitempty" json:"metadata,omitempty" bson:"Metadata" structs:"Metadata,omitempty"`
 
 	Hash string `yaml:"hash,omitempty" json:"hash,omitempty" bson:"Hash" structs:"Hash,omitempty"`
 
@@ -140,39 +139,39 @@ type RulesAndExtrasAndDeprecated struct {
 
 type MAPLDb struct {
 	//bongo.DocumentBase `bson:",inline"`
-	Id           string `json:"id" `
-	Created      string `json:"created"`
-	RuleAndExtras       `bson:",inline" bson:"RuleAndExtras"`
-	MaplRuleHash string `json:"-" bson:"MaplRuleHash"`
+	Id            string `json:"id" `
+	Created       string `json:"created"`
+	RuleAndExtras `bson:",inline" bson:"RuleAndExtras"`
+	MaplRuleHash  string `json:"-" bson:"MaplRuleHash"`
 }
 
 //-------------------------------------------
 
 // ToJson converts a structure into a json string
-func (rule Rule) ToJson() string { // method of GeneralStruct interface
+func (rule Rule) ToJson() (string, error) { // method of GeneralStruct interface
 	jsonBytes, err := json.MarshalIndent(rule, "", "  ")
 	if err != nil {
-		panic("error converting to json")
+		return "", err
 	}
-	return (string(jsonBytes))
+	return string(jsonBytes), nil
 }
 
 // ToJson converts a structure into a json string
-func (rule Rule) ToJsonNoIndent() string { // method of GeneralStruct interface
+func (rule Rule) ToJsonNoIndent() (string, error) { // method of GeneralStruct interface
 	jsonBytes, err := json.Marshal(rule)
 	if err != nil {
-		panic("error converting to json")
+		return "", err
 	}
-	return (string(jsonBytes))
+	return string(jsonBytes), nil
 }
 
 // ToJson converts a structure into a json string
-func (rules Rules) ToJson() string { // method of GeneralStruct interface
+func (rules Rules) ToJson() (string, error) { // method of GeneralStruct interface
 	jsonBytes, err := json.MarshalIndent(rules, "", "  ")
 	if err != nil {
-		panic("error converting to json")
+		return "", err
 	}
-	return (string(jsonBytes))
+	return string(jsonBytes), nil
 }
 
 func (s *Sender) String() string {
@@ -349,19 +348,19 @@ type Messages struct {
 }
 
 // ToJson converts a structure into a json string
-func (messageAttributes MessageAttributes) ToJson() string { // method of GeneralStruct interface
+func (messageAttributes MessageAttributes) ToJson() (string, error) { // method of GeneralStruct interface
 	jsonBytes, err := json.MarshalIndent(messageAttributes, "", "  ")
 	if err != nil {
-		panic("error converting to json in isNumberOfFieldsEqual")
+		return "", err
 	}
-	return (string(jsonBytes))
+	return string(jsonBytes), nil
 }
 
 // ToJson converts a structure into a json string
-func (messages Messages) ToJson() string { // method of GeneralStruct interface
+func (messages Messages) ToJson() (string, error) { // method of GeneralStruct interface
 	jsonBytes, err := json.MarshalIndent(messages, "", "  ")
 	if err != nil {
-		panic("error converting to json in isNumberOfFieldsEqual")
+		return "", err
 	}
-	return (string(jsonBytes))
+	return string(jsonBytes), nil
 }
