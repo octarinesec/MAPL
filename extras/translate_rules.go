@@ -19,7 +19,7 @@ var message_attributes MAPL_engine.MessageAttributes
 
 // function RemoveLabelConditionsFromRule is the main function for translation of conditions on Sender and Receiver Labels to
 // the equivalent Sender/Receiver names
-func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[string]map[string]string, service_labels_explicit map[string]map[string]string) (new_rules MAPL_engine.Rules,err error) {
+func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[string]map[string]string, service_labels_explicit map[string]map[string]string) (new_rules MAPL_engine.Rules, err error) {
 
 	translateSenderLabelsFlag := 0
 	translateReceiverLabelsFlag := 0
@@ -164,33 +164,42 @@ func RemoveLabelConditionsFromRule(rule MAPL_engine.Rule, service_labels map[str
 
 // function RemoveLabelConditionsFromRules calls RemoveLabelConditionsFromRule which is the main function for translation of conditions on Sender and Receiver Labels to
 // the equivalent Sender/Receiver names
-func RemoveLabelConditionsFromRules(rules *MAPL_engine.Rules, service_labels, service_labels_explicit map[string]map[string]string) (newRules MAPL_engine.Rules) {
+func RemoveLabelConditionsFromRules(rules *MAPL_engine.Rules, service_labels, service_labels_explicit map[string]map[string]string) (newRules MAPL_engine.Rules, err error) {
 
-	newRules=RemoveLabelConditionsFromRulesInner(rules,service_labels, service_labels_explicit)
+	newRules, err = RemoveLabelConditionsFromRulesInner(rules, service_labels, service_labels_explicit)
+	if err != nil {
+		return MAPL_engine.Rules{}, err
+	}
 	// recreate regular expressions and convert condition values:
-	MAPL_engine.ConvertFieldsToRegexManyRules(&newRules)
-	MAPL_engine.ConvertConditionStringToIntFloatRegexManyRules(&newRules)
-
-	return newRules
+	err = MAPL_engine.ConvertFieldsToRegexManyRules(&newRules)
+	if err != nil {
+		return MAPL_engine.Rules{}, err
+	}
+	err = MAPL_engine.ConvertConditionStringToIntFloatRegexManyRules(&newRules)
+	if err != nil {
+		return MAPL_engine.Rules{}, err
+	}
+	return newRules, nil
 }
 
-func RemoveLabelConditionsFromRulesInner(rules *MAPL_engine.Rules, service_labels, service_labels_explicit map[string]map[string]string) (newRules MAPL_engine.Rules) {
+func RemoveLabelConditionsFromRulesInner(rules *MAPL_engine.Rules, service_labels, service_labels_explicit map[string]map[string]string) (newRules MAPL_engine.Rules, err error) {
 
 	MAPL_engine.ConvertConditionStringToIntFloatRegexManyRules(rules)
 
 	for _, rule := range (rules.Rules) { // go over all of the rules
 
-		new_rules := RemoveLabelConditionsFromRule(rule, service_labels, service_labels_explicit)
+		new_rules, err := RemoveLabelConditionsFromRule(rule, service_labels, service_labels_explicit)
+		if err != nil {
+			return MAPL_engine.Rules{}, err
+		}
 		for _, new_rule := range (new_rules.Rules) {
 			new_rule.AlreadyConvertedFieldsToRegexFlag = false
 			newRules.Rules = append(newRules.Rules, new_rule)
 		}
 	}
 
-	return newRules
+	return newRules, nil
 }
-
-
 
 // getSendersFromRule translate the conditions on the labels into services that satisfy them
 func getServicesFromRule(rule *MAPL_engine.Rule, service_labels map[string]map[string]string, sender_receiver int) (services_list []string) {

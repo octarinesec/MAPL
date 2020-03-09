@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/octarinesec/MAPL/MAPL_engine"
 	"github.com/octarinesec/MAPL/extras"
 )
@@ -25,8 +26,9 @@ func main() {
 	var messages = MAPL_engine.YamlReadMessagesFromFile(messagesFilename)
 	message_attributes := messages.Messages[0]
 	*/
-
-	extras.RemoveLabelConditionsFromRules(rules,service_labels)
+	service_labels_explicit:=map[string]map[string]string{}
+	err:=extras.RemoveLabelConditionsFromRules(&rules,service_labels,service_labels_explicit)
+	fmt.Println(err)
 	filename := "outputs/translated_rules.yaml"
 	extras.OutputRulesToFile(&rules,filename)
 }
