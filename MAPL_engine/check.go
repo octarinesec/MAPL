@@ -622,6 +622,16 @@ func compareStringFunc(value1 string, method string, value2 string) bool {
 // compareStringWithWildcardsFunc compares one string value according the method string (supports wildcards)
 func compareStringWithWildcardsFunc(value1 string, method string, value2 *regexp.Regexp) bool {
 	//log.Printf("%v ?%v? %v",value1,method,value2)
+
+	if value2==nil{
+		switch (method) {
+		case "EQ", "eq":
+			return false
+		case "NEQ", "neq", "ne", "NE":
+			return true
+		}
+	}
+
 	switch (method) {
 
 	case "EX", "ex":
@@ -639,6 +649,16 @@ func compareStringWithWildcardsFunc(value1 string, method string, value2 *regexp
 
 // compareRegexFunc compares one string value according the regular expression string.
 func compareRegexFunc(value1 string, method string, value2 *regexp.Regexp) bool { //value2 is the reference value from the rule
+
+	if value2 == nil{
+		switch (method) {
+		case "RE", "re":
+			return false
+		case "NRE", "nre":
+			return true
+		}
+	}
+
 	switch (method) {
 	case "RE", "re":
 		return (value2.MatchString(value1))

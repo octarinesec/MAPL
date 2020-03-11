@@ -223,9 +223,9 @@ func ConvertStringToExpandedSenderReceiver(str_in string, type_in string) ([]Exp
 		str = strings.Replace(str, "/", "\\/", -1)
 		str = "^" + str + "$" // force full string
 
-		re,err:=regexp.Compile(str)
+		re, err := regexp.Compile(str)
 		if err != nil {
-			return []ExpandedSenderReceiver{}, fmt.Errorf("can't create regex of value in list: %v",err)
+			return []ExpandedSenderReceiver{}, fmt.Errorf("can't create regex of value in list: %v", err)
 		}
 		e.Regexp = re.Copy()
 		output = append(output, e)
@@ -251,7 +251,6 @@ func ConvertOperationStringToRegex(str_in string) string {
 	return str_out
 }
 
-
 // ConvertConditionStringToIntFloatRegexManyRules convert values in strings in the conditions to integers, floats and regex
 // (or keep them default in case of failure) for array of rules
 func ConvertConditionStringToIntFloatRegexManyRules(rules *Rules) (err error) {
@@ -264,7 +263,6 @@ func ConvertConditionStringToIntFloatRegexManyRules(rules *Rules) (err error) {
 	}
 	return nil
 }
-
 
 func convertStringWithUnits(inputString string) (string, float64) {
 	// see: https://en.wikipedia.org/wiki/Binary_prefix
@@ -426,7 +424,7 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) (err error) {
 // ValidateRuleConditions as much as possible
 func ValidateRuleConditions(r Rule) (bool, error) {
 
-	supportedMethodsSlice := []string{"ge", "GE", "gt", "GT", "le", "LE", "lt", "LT", "re", "RE", "nre", "NRE", "in", "IN", "nin", "NIN", "eq", "EQ", "neq", "NEQ", "ex", "EX", "nex", "NEX"}
+	supportedMethodsSlice := []string{"ge", "GE", "gt", "GT", "le", "LE", "lt", "LT", "re", "RE", "nre", "NRE", "in", "IN", "nin", "NIN", "eq", "EQ", "neq", "NEQ", "ne", "NE", "ex", "EX", "nex", "NEX"}
 	regexSlice := []string{"re", "nre", "RE", "NRE"}
 	numberMethodSlice := []string{"ge", "GE", "gt", "GT", "le", "LE", "lt", "LT"}
 	supportedAttributesPrefixes := []string{"$sender.", "$receiver.", "senderLabel[", "receiverLabel[", "jsonpath:"}
@@ -461,7 +459,6 @@ func ValidateRuleConditions(r Rule) (bool, error) {
 			if strings.HasPrefix(condition.Attribute, "jsonpath:") && (!strings.HasPrefix(condition.Attribute, "jsonpath:$") && !strings.HasPrefix(condition.Attribute, "jsonpath:.")) {
 				return false, fmt.Errorf("jsonpath condition must start with '$' or '.'")
 			}
-
 
 			if condition.Method == "IN" || condition.Method == "NIN" {
 				L := len(condition.Value)
