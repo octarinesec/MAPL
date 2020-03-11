@@ -171,6 +171,11 @@ func RemoveLabelConditionsFromRules(rules *MAPL_engine.Rules, service_labels, se
 		return MAPL_engine.Rules{}, err
 	}
 	// recreate regular expressions and convert condition values:
+	MAPL_engine.PrepareRules(&newRules)
+	if err != nil {
+		return MAPL_engine.Rules{}, err
+	}
+	/*
 	err = MAPL_engine.ConvertFieldsToRegexManyRules(&newRules)
 	if err != nil {
 		return MAPL_engine.Rules{}, err
@@ -179,6 +184,7 @@ func RemoveLabelConditionsFromRules(rules *MAPL_engine.Rules, service_labels, se
 	if err != nil {
 		return MAPL_engine.Rules{}, err
 	}
+	 */
 	return newRules, nil
 }
 

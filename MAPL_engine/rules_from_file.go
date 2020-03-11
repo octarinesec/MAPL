@@ -4,6 +4,8 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"github.com/toolkits/slice"
+	"gopkg.in/getlantern/deepcopy.v1"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
@@ -25,21 +27,15 @@ func YamlReadRulesFromString(yamlString string) (Rules, error) {
 		return Rules{}, err
 	}
 
-	flag, outputString,err := IsNumberOfFieldsEqual(rules, yamlString)
-	if err!=nil{
-		return Rules{},err
+	flag, outputString, err := IsNumberOfFieldsEqual(rules, yamlString)
+	if err != nil {
+		return Rules{}, err
 	}
 	if flag == false {
 		return Rules{}, fmt.Errorf("number of fields in rules does not match number of fields in yaml file:\n" + outputString)
 	}
 
-	err = ConvertFieldsToRegexManyRules(&rules)
-	if err != nil {
-		log.Printf("error: %v", err)
-		return Rules{}, err
-	}
-
-	err = ConvertConditionStringToIntFloatRegexManyRules(&rules)
+	err = PrepareRules(&rules)
 	if err != nil {
 		log.Printf("error: %v", err)
 		return Rules{}, err
@@ -58,16 +54,12 @@ func JsonReadRulesFromString(jsonString string) (error_ret bool, rules Rules) {
 		error_ret = true
 	}
 
-	err = ConvertFieldsToRegexManyRules(&rules)
+	err = PrepareRules(&rules)
 	if err != nil {
 		log.Printf("error: %v", err)
 		error_ret = true
 	}
 
-	err = ConvertConditionStringToIntFloatRegexManyRules(&rules)
-	if err != nil {
-		error_ret = true
-	}
 	return error_ret, rules
 }
 
@@ -124,6 +116,7 @@ func isIpCIDR(str string) (isIP, isCIDR bool, IP_out net.IP, IPNet_out net.IPNet
 	return isIP, isCIDR, IP_out, IPNet_out
 }
 
+/*
 // convertFieldsToRegex converts some rule fields into regular expressions to be used later.
 // This enables use of wildcards in the sender, receiver names, etc... for array of rules
 func ConvertFieldsToRegexManyRules(rules *Rules) error {
@@ -134,9 +127,11 @@ func ConvertFieldsToRegexManyRules(rules *Rules) error {
 		if err != nil {
 			return err
 		}
+
 	}
 	return nil
 }
+*/
 
 // convertFieldsToRegex converts some rule fields into regular expressions to be used later.
 // This enables use of wildcards in the sender, receiver names, etc...
@@ -157,9 +152,13 @@ func ConvertFieldsToRegex(rule *Rule) error {
 		return err
 	}
 
-	rule.OperationRegex = regexp.MustCompile(ConvertOperationStringToRegex(rule.Operation)).Copy() // a special case of regex for operations to support CRUD
+	re, err := regexp.Compile(ConvertOperationStringToRegex(rule.Operation)) // a special case of regex for operations to support CRUD
+	if err != nil {
+		return err
+	}
+	rule.OperationRegex = re.Copy()
 
-	re, err := regexp.Compile(ConvertStringToRegex(rule.Resource.ResourceName))
+	re, err = regexp.Compile(ConvertStringToRegex(rule.Resource.ResourceName))
 	if err != nil {
 		return err
 	}
@@ -224,8 +223,11 @@ func ConvertStringToExpandedSenderReceiver(str_in string, type_in string) ([]Exp
 		str = strings.Replace(str, "/", "\\/", -1)
 		str = "^" + str + "$" // force full string
 
-		e.Regexp = regexp.MustCompile(str).Copy()
-
+		re,err:=regexp.Compile(str)
+		if err != nil {
+			return []ExpandedSenderReceiver{}, fmt.Errorf("can't create regex of value in list: %v",err)
+		}
+		e.Regexp = re.Copy()
 		output = append(output, e)
 	}
 	return output, nil
@@ -249,6 +251,7 @@ func ConvertOperationStringToRegex(str_in string) string {
 	return str_out
 }
 
+/*
 // ConvertConditionStringToIntFloatRegexManyRules convert values in strings in the conditions to integers, floats and regex
 // (or keep them default in case of failure) for array of rules
 func ConvertConditionStringToIntFloatRegexManyRules(rules *Rules) (err error) {
@@ -261,6 +264,7 @@ func ConvertConditionStringToIntFloatRegexManyRules(rules *Rules) (err error) {
 	}
 	return nil
 }
+*/
 
 func convertStringWithUnits(inputString string) (string, float64) {
 	// see: https://en.wikipedia.org/wiki/Binary_prefix
@@ -288,14 +292,26 @@ func convertStringWithUnits(inputString string) (string, float64) {
 // (or keep them default in case of failure)
 func ConvertConditionStringToIntFloatRegex(r *Rule) (err error) {
 
+	r2 := Rule{}
+	err = deepcopy.Copy(&r2, r)
+	if err != nil {
+		return fmt.Errorf("can't test validity of rule conditions")
+	}
+	isValid, err := ValidateRuleConditions(r2)
+	if err != nil {
+		return err
+	}
+	if !isValid {
+		return fmt.Errorf("rule conditions are invalid")
+	}
+
+	regexSlice := []string{"re", "nre", "RE", "NRE"}
+
 	for i_dnf, andConditions := range (r.DNFConditions) {
 		for i_and, condition := range (andConditions.ANDConditions) {
 
 			if condition.Method == "IN" || condition.Method == "NIN" {
-				L := len(condition.Value)
-				if L == -0 {
-					return fmt.Errorf("test membership in empty array")
-				}
+
 				tempString := strings.Replace(condition.Value, "[", "", -1)
 				tempString = strings.Replace(tempString, "]", "", -1)
 				tempString = strings.Replace(tempString, ",", "$|^", -1)
@@ -311,7 +327,6 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) (err error) {
 			}
 
 			tempString, factor := convertStringWithUnits(condition.Value)
-
 			valFloat, err := strconv.ParseFloat(tempString, 64)
 			valFloat = valFloat * factor
 			if err == nil {
@@ -321,12 +336,13 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) (err error) {
 			if err == nil {
 				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueInt = valInt
 			}
+
 			re, err := regexp.Compile(condition.Value)
 			if err == nil {
 				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueRegex = re.Copy() // this is used in RE,NRE
 			}
-			if err != nil && (condition.Method == "re" || condition.Method == "RE" || condition.Method == "nre" || condition.Method == "NRE") {
-				return fmt.Errorf("invalid regex string")
+			if err != nil && slice.ContainsString(regexSlice, condition.Method) {
+				return fmt.Errorf("invalid regex string in condition")
 			}
 
 			re, err = regexp.Compile(ConvertStringToRegex(condition.Value))
@@ -336,18 +352,11 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) (err error) {
 				return fmt.Errorf("condition.Value could not be converted to regex")
 			}
 
-			/*t, err := time.Parse(time.RFC3339,condition.Value)
-			if err == nil{
-				rules_out.Rules[i_rule].DNFConditions[i_dnf].ANDConditions[i_and].ValueTime = t
-			}*/
-
 			if strings.Index(condition.Attribute, "senderLabel[") == 0 { // test if ATTRIBUTE is of type senderLabel
 				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeIsSenderLabel = true
 				i1 := strings.Index(condition.Attribute, "[") + 1
 				i2 := strings.Index(condition.Attribute, "]")
-				if i2 < len(condition.Attribute)-1 {
-					return fmt.Errorf("senderLabel has a wrong format")
-				}
+
 				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeSenderLabelKey = condition.Attribute[i1:i2]
 				r.DNFConditions[i_dnf].ANDConditions[i_and].Attribute = "senderLabel"
 				r.DNFConditions[i_dnf].ANDConditions[i_and].OriginalAttribute = condition.Attribute // used in hash
@@ -356,9 +365,7 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) (err error) {
 				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeIsReceiverLabel = true
 				i1 := strings.Index(condition.Attribute, "[") + 1
 				i2 := strings.Index(condition.Attribute, "]")
-				if i2 < len(condition.Attribute)-1 {
-					return fmt.Errorf("receiverLabel has a wrong format")
-				}
+
 				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeReceiverLabelKey = condition.Attribute[i1:i2]
 				r.DNFConditions[i_dnf].ANDConditions[i_and].Attribute = "receiverLabel"
 				r.DNFConditions[i_dnf].ANDConditions[i_and].OriginalAttribute = condition.Attribute // used in hash
@@ -368,9 +375,7 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) (err error) {
 				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueIsReceiverLabel = true
 				i1 := strings.Index(condition.Value, "[") + 1
 				i2 := strings.Index(condition.Value, "]")
-				if i2 < len(condition.Value)-1 {
-					return fmt.Errorf("value receiverLabel has a wrong format")
-				}
+
 				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueReceiverLabelKey = condition.Value[i1:i2]
 				r.DNFConditions[i_dnf].ANDConditions[i_and].Value = "receiverLabel"
 				r.DNFConditions[i_dnf].ANDConditions[i_and].OriginalValue = condition.Value // used in hash
@@ -398,7 +403,6 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) (err error) {
 				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueReceiverObject = condition.Value[i1:]
 				r.DNFConditions[i_dnf].ANDConditions[i_and].Value = "$receiver"
 				r.DNFConditions[i_dnf].ANDConditions[i_and].OriginalValue = condition.Value // used in hash
-
 			}
 
 			if strings.Index(condition.Attribute, "jsonpath:") == 0 { // test if ATTRIBUTE is of type jsonpath
@@ -419,10 +423,177 @@ func ConvertConditionStringToIntFloatRegex(r *Rule) (err error) {
 	return nil
 }
 
+// ValidateRuleConditions as much as possible
+func ValidateRuleConditions(r Rule) (bool, error) {
+
+	supportedMethodsSlice := []string{"ge", "GE", "gt", "GT", "le", "LE", "lt", "LT", "re", "RE", "nre", "NRE", "in", "IN", "nin", "NIN", "eq", "EQ", "neq", "NEQ", "ex", "EX", "nex", "NEX"}
+	regexSlice := []string{"re", "nre", "RE", "NRE"}
+	numberMethodSlice := []string{"ge", "GE", "gt", "GT", "le", "LE", "lt", "LT"}
+	supportedAttributesPrefixes := []string{"$sender.", "$receiver.", "senderLabel[", "receiverLabel[", "jsonpath:"}
+	supportedAttributesExact := []string{"true", "TRUE", "false", "FALSE", "payloadSize", "requestUseragent", "utcHoursFromMidnight", "minuteParity", "encryptionType", "encryptionVersion", "domain"}
+	allowedEncryptionVersionOperation := []string{"eq", "lt", "le", "gt", "ge", "EQ", "LT", "LE", "GT", "GE"}
+
+	for i_dnf, andConditions := range (r.DNFConditions) {
+		for i_and, condition := range (andConditions.ANDConditions) {
+
+			if !slice.ContainsString(supportedMethodsSlice, condition.Method) {
+				return false, fmt.Errorf("invalid method in condition [%v]", condition.Method)
+			}
+			flagAtt := false
+			for _, att := range supportedAttributesExact {
+				if condition.Attribute == att {
+					flagAtt = true
+				}
+			}
+			for _, att := range supportedAttributesPrefixes {
+				if strings.Index(condition.Attribute, att) == 0 {
+					flagAtt = true
+				}
+			}
+			if !flagAtt {
+				return false, fmt.Errorf("invalid attribute in condition [%v]", condition.Attribute)
+			}
+			if condition.Attribute == "encryptionVersion" {
+				if !slice.ContainsString(allowedEncryptionVersionOperation, condition.Method) {
+					return false, fmt.Errorf("invalid method for attribute 'EncryptionVersion'")
+				}
+			}
+			if strings.HasPrefix(condition.Attribute, "jsonpath:") && (!strings.HasPrefix(condition.Attribute, "jsonpath:$") && !strings.HasPrefix(condition.Attribute, "jsonpath:.")) {
+				return false, fmt.Errorf("jsonpath condition must start with '$' or '.'")
+			}
+
+
+			if condition.Method == "IN" || condition.Method == "NIN" {
+				L := len(condition.Value)
+				if L == -0 {
+					return false, fmt.Errorf("test membership in empty array")
+				}
+				tempString := strings.Replace(condition.Value, "[", "", -1)
+				tempString = strings.Replace(tempString, "]", "", -1)
+				tempString = strings.Replace(tempString, ",", "$|^", -1)
+				tempString = "^" + tempString + "$"
+
+				_, err := regexp.Compile(tempString)
+				if err != nil {
+					return false, fmt.Errorf("condition.Value is not a valid array")
+				}
+			}
+
+			tempString, factor := convertStringWithUnits(condition.Value)
+			isNum := false
+			valFloat, err := strconv.ParseFloat(tempString, 64)
+			valFloat = valFloat * factor
+			if err == nil {
+				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueFloat = valFloat
+				isNum = true
+			}
+			valInt, err := strconv.ParseInt(condition.Value, 10, 64)
+			if err == nil {
+				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueInt = valInt
+				isNum = true
+			}
+
+			if isNum == false && slice.ContainsString(numberMethodSlice, condition.Method) {
+				return false, fmt.Errorf("invalid numerical value in condition")
+			}
+
+			_, err = regexp.Compile(condition.Value)
+			if err != nil && slice.ContainsString(regexSlice, condition.Method) {
+				return false, fmt.Errorf("invalid regex string in condition")
+			}
+
+			/*
+				_, err = regexp.Compile(ConvertStringToRegex(condition.Value))
+				if err != nil slice.ContainsString(regexSlice, condition.Method){
+					return false, fmt.Errorf("condition.Value could not be converted to regex")
+				}
+			*/
+
+			if strings.Index(condition.Attribute, "senderLabel[") == 0 { // test if ATTRIBUTE is of type senderLabel
+				i2 := strings.Index(condition.Attribute, "]")
+				if i2 < len(condition.Attribute)-1 {
+					return false, fmt.Errorf("senderLabel has a wrong format")
+				}
+				if slice.ContainsString(numberMethodSlice, condition.Method) {
+					return false, fmt.Errorf("numerical method with senderLabel")
+				}
+			}
+			if strings.Index(condition.Attribute, "receiverLabel[") == 0 { // test if ATTRIBUTE is of type receiverLabel
+				i2 := strings.Index(condition.Attribute, "]")
+				if i2 < len(condition.Attribute)-1 {
+					return false, fmt.Errorf("receiverLabel has a wrong format")
+				}
+				if slice.ContainsString(numberMethodSlice, condition.Method) {
+					return false, fmt.Errorf("numerical method with receiverLabel")
+				}
+			}
+
+			if strings.Index(condition.Value, "receiverLabel[") == 0 { // test if VALUE is of type receiverLabel (used to compare attribute senderLabel[key1] to value receiverLabel[key2])
+				i2 := strings.Index(condition.Value, "]")
+				if i2 < len(condition.Value)-1 {
+					return false, fmt.Errorf("value receiverLabel has a wrong format")
+				}
+			}
+
+			if strings.HasPrefix(condition.Attribute, "$sender.") { // test if ATTRIBUTE is of type sender object
+				if slice.ContainsString(numberMethodSlice, condition.Method) {
+					return false, fmt.Errorf("numerical method with $sender")
+				}
+			}
+
+			if strings.HasPrefix(condition.Attribute, "$receiver.") { // test if ATTRIBUTE is of type receiver object
+				if slice.ContainsString(numberMethodSlice, condition.Method) {
+					return false, fmt.Errorf("numerical method with $receiver")
+				}
+			}
+		}
+	}
+	return true, nil
+}
+
+func ValidateRule(rule *Rule) error {
+
+	rule2 := Rule{}
+	err := deepcopy.Copy(&rule2, rule)
+	if err != nil {
+		return fmt.Errorf("can't test validity of rule conditions")
+	}
+	err = ConvertFieldsToRegex(&rule2)
+	if err != nil {
+		return err
+	}
+	isValid, err := ValidateRuleConditions(rule2)
+	if err != nil {
+		return err
+	}
+	if !isValid {
+		return fmt.Errorf("rule conditions are invalid")
+	}
+	return nil
+}
+
 func PrepareRules(rules *Rules) error {
+
+	for i, _ := range (rules.Rules) {
+		err := PrepareOneRule(&rules.Rules[i])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func PrepareOneRule(rule *Rule) error {
 	// prepare the rules for use (when loading from json not all the fields are ready...)
-	ConvertFieldsToRegexManyRules(rules)                         // prepare the regex etc...
-	err := ConvertConditionStringToIntFloatRegexManyRules(rules) // prepare the label conditions
+	err := ValidateRule(rule)
+	if err != nil {
+		return err
+	}
+	err = ConvertFieldsToRegex(rule)
+	if err != nil {
+		return err
+	}
+	err = ConvertConditionStringToIntFloatRegex(rule) // prepare the label conditions
 	return err
 }
 

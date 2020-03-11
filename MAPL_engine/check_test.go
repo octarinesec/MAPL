@@ -51,13 +51,9 @@ func TestMaplEngine(t *testing.T) {
 		So(hashes[5], ShouldNotEqual, hashes[2])
 		fmt.Println("----------------------")
 
-		results_invalid, err := test_CheckMessages("../examples/invalid_rules.yaml", "../examples/messages_basic_sender_name.yaml")
-		So(len(results_invalid), ShouldEqual, 0)
-		So(err, ShouldNotEqual, nil)
-
 		str = "test whitelist: sender. Expected results: message 0: allow, message 1: block by default (no relevant whitelist entry), message 2: block by default (no relevant whitelist entry)  message 3: block by default (no relevant whitelist entry)"
 		fmt.Println(str)
-		results, err := test_CheckMessages("../examples/rules_basic.yaml", "../examples/messages_basic_sender_name.yaml")
+		results, _ := test_CheckMessages("../examples/rules_basic.yaml", "../examples/messages_basic_sender_name.yaml")
 		So(results[0], ShouldEqual, ALLOW)
 		So(results[1], ShouldEqual, DEFAULT)
 		So(results[2], ShouldEqual, DEFAULT)
@@ -469,6 +465,68 @@ func TestMaplEngine(t *testing.T) {
 	})
 }
 
+func TestRuleValidation(t *testing.T) {
+
+	logging := false
+	if logging {
+		// setup a log outfile file
+		f, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777) //create your file with desired read/write permissions
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Sync()
+		defer f.Close()
+		log.SetOutput(f) //set output of logs to f
+	} else {
+		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
+	}
+
+	reporting.QuietMode()
+	Convey("tests", t, func() {
+
+		isvalid_all, err := test_RuleValidity("../examples/invalid_rule_name_list.yaml")
+		fmt.Println(err)
+		So(isvalid_all, ShouldEqual, false)
+
+		isvalid_all, err = test_RuleValidity("../examples/invalid_rule_subnet.yaml")
+		fmt.Println(err)
+		So(isvalid_all, ShouldEqual, false)
+
+		isvalid_all, err = test_RuleValidity("../examples/invalid_rule_RE.yaml")
+		fmt.Println(err)
+		So(isvalid_all, ShouldEqual, false)
+
+		isvalid_all, err = test_RuleValidity("../examples/invalid_rule_Attribute.yaml")
+		fmt.Println(err)
+		So(isvalid_all, ShouldEqual, false)
+
+		isvalid_all, err = test_RuleValidity("../examples/invalid_rule_Method.yaml")
+		fmt.Println(err)
+		So(isvalid_all, ShouldEqual, false)
+
+		isvalid_all, err = test_RuleValidity("../examples/invalid_rule_mismatch_between_att_val.yaml")
+		fmt.Println(err)
+		So(isvalid_all, ShouldEqual, false)
+
+		isvalid_all, err = test_RuleValidity("../examples/invalid_rule_mismatch_between_att_val2.yaml")
+		fmt.Println(err)
+		So(isvalid_all, ShouldEqual, false)
+
+		isvalid_all, err = test_RuleValidity("../examples/valid_rule_match_between_att_val.yaml")
+		fmt.Println(err)
+		So(isvalid_all, ShouldEqual, true)
+
+
+		isvalid_all, _ = test_RuleValidity("../examples/valid_rule_RE.yaml")
+		So(isvalid_all, ShouldEqual, true)
+
+		isvalid_all, _ = test_RuleValidity("../examples/one_valid_one_invalid_rule_RE.yaml")
+		So(isvalid_all, ShouldEqual, false)
+
+
+	})
+}
+
 // Test_CheckMessages reads the rules and messages from yaml files and output the decision for each message to the stdout
 func test_CheckMessages(rulesFilename string, messagesFilename string) ([]int, error) {
 
@@ -495,6 +553,16 @@ func test_CheckMessages(rulesFilename string, messagesFilename string) ([]int, e
 
 	}
 	return outputResults, nil
+}
+
+// test_RuleValidity check the validity of rules in a file
+func test_RuleValidity(rulesFilename string) (bool, error) {
+
+	_, err := YamlReadRulesFromFile(rulesFilename)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 func read_binary_file(filename string) ([]byte, error) {

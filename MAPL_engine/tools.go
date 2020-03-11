@@ -52,7 +52,6 @@ func compareJsonAndYaml(jsonString string, yamlString string) (bool, string) {
 	jsonString = strings.Replace(jsonString, "DestinationLabels: ", "DestinationLabels- ", -1)               // change slightly so that the regex will not count it [this is a map[string]string field]
 	jsonString = strings.Replace(jsonString, "Regex: ", "Regex- ", -1)                                       // change slightly so that the regex will not count it [this is a map[string]string field]
 
-	//re := regexp.MustCompile("[[:alnum:]][:][ ][[:alnum:]]") // catches fieldnam[e: v]alue'
 	re, err := regexp.Compile(`(?m)^.*[:][ ]\S+`)
 	if err != nil {
 		return false, fmt.Sprintf("%v", err)
