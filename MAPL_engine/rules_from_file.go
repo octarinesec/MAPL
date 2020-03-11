@@ -251,7 +251,7 @@ func ConvertOperationStringToRegex(str_in string) string {
 	return str_out
 }
 
-/*
+
 // ConvertConditionStringToIntFloatRegexManyRules convert values in strings in the conditions to integers, floats and regex
 // (or keep them default in case of failure) for array of rules
 func ConvertConditionStringToIntFloatRegexManyRules(rules *Rules) (err error) {
@@ -264,7 +264,7 @@ func ConvertConditionStringToIntFloatRegexManyRules(rules *Rules) (err error) {
 	}
 	return nil
 }
-*/
+
 
 func convertStringWithUnits(inputString string) (string, float64) {
 	// see: https://en.wikipedia.org/wiki/Binary_prefix
