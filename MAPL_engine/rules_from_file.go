@@ -659,6 +659,10 @@ func RuleMD5HashConditions(rule Rule) (md5hash string) {
 	return md5hash
 }
 
+func (r Rule) ConditionsEqual(rule Rule) bool {
+	return RuleMD5HashConditions(r) == RuleMD5HashConditions(rule)
+}
+
 // Print displays one rule
 func (r Rule) Print() {
 
