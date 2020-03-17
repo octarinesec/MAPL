@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"math"
@@ -108,7 +107,7 @@ func isIpCIDR(str string) (isIP, isCIDR bool, IP_out net.IP, IPNet_out net.IPNet
 func ConvertFieldsToRegexManyRules(rules *Rules) {
 	// we replace wildcards with the corresponding regex
 
-	for i, _ := range (rules.Rules) {
+	for i, _ := range rules.Rules {
 		ConvertFieldsToRegex(&rules.Rules[i])
 	}
 }
@@ -141,7 +140,7 @@ func ConvertStringToRegex(str_in string) string {
 	str_out := "("
 	L := len(str_list)
 
-	for i_str, str := range (str_list) {
+	for i_str, str := range str_list {
 		str = strings.Replace(str, " ", "", -1)    // remove spaces
 		str = strings.Replace(str, ".", "[.]", -1) // handle dot for conversion to regex
 		str = strings.Replace(str, "$", "\\$", -1)
@@ -163,7 +162,7 @@ func ConvertStringToExpandedSenderReceiver(str_in string, type_in string) []Expa
 	var output []ExpandedSenderReceiver
 
 	str_list := strings.Split(str_in, ",")
-	for _, str := range (str_list) {
+	for _, str := range str_list {
 		var e ExpandedSenderReceiver
 		e.Name = str
 		//e.IsIP,e.IsCIDR,e.IP,e.CIDR=isIpCIDR(str)
@@ -198,7 +197,7 @@ func ConvertStringToExpandedSenderReceiver(str_in string, type_in string) []Expa
 func ConvertOperationStringToRegex(str_in string) string {
 
 	str_out := ""
-	switch (str_in) {
+	switch str_in {
 	case "*":
 		str_out = ".*"
 	case "write", "WRITE":
@@ -215,7 +214,7 @@ func ConvertOperationStringToRegex(str_in string) string {
 // (or keep them default in case of failure) for array of rules
 func ConvertConditionStringToIntFloatRegexManyRules(rules *Rules) {
 
-	for i_rule, _ := range (rules.Rules) {
+	for i_rule, _ := range rules.Rules {
 		ConvertConditionStringToIntFloatRegex(&rules.Rules[i_rule])
 	}
 }
@@ -229,8 +228,8 @@ func convertStringWithUnits(inputString string) (string, float64) {
 
 	for i_unit, unit := range strVec {
 
-		flag1:=strings.HasSuffix(inputString, unit)
-		flag2:=strings.Count(inputString, unit)==1
+		flag1 := strings.HasSuffix(inputString, unit)
+		flag2 := strings.Count(inputString, unit) == 1
 
 		if flag1 && flag2 {
 			outputString := strings.Replace(inputString, unit, "", -1)
@@ -246,8 +245,8 @@ func convertStringWithUnits(inputString string) (string, float64) {
 // (or keep them default in case of failure)
 func ConvertConditionStringToIntFloatRegex(r *Rule) {
 
-	for i_dnf, andConditions := range (r.DNFConditions) {
-		for i_and, condition := range (andConditions.ANDConditions) {
+	for i_dnf, andConditions := range r.DNFConditions {
+		for i_and, condition := range andConditions.ANDConditions {
 
 			if condition.Method == "IN" || condition.Method == "NIN" {
 				L := len(condition.Value)
@@ -371,7 +370,7 @@ func RuleConditionsToString(rule Rule) string {
 		}
 		sort.Strings(andStrings)
 		andStr := ""
-		for _, str := range (andStrings) {
+		for _, str := range andStrings {
 			andStr += str + "&"
 		}
 		andStr = andStr[:len(andStr)-1]
@@ -379,7 +378,7 @@ func RuleConditionsToString(rule Rule) string {
 	}
 	sort.Strings(dnfStrings)
 	totalDNFstring := "("
-	for _, str := range (dnfStrings) {
+	for _, str := range dnfStrings {
 		totalDNFstring += str + ")|("
 	}
 	if len(dnfStrings) > 0 {
@@ -417,6 +416,10 @@ func RuleMD5HashConditions(rule Rule) (md5hash string) {
 	md5hash = fmt.Sprintf("%x", md5.Sum(data))
 
 	return md5hash
+}
+
+func (r Rule) ConditionsEqual(rule Rule) bool {
+	return RuleMD5HashConditions(r) == RuleMD5HashConditions(rule)
 }
 
 // Print displays one rule
