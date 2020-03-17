@@ -99,7 +99,7 @@ func addResourceTypeToMessages(messages *Messages) {
 	// add resource_type by the resource_protocol
 	// we have resource_type to allow for several types per one protocol.
 
-	for i, _ := range (messages.Messages) {
+	for i, _ := range messages.Messages {
 		AddResourceType(&messages.Messages[i])
 	}
 }
@@ -134,7 +134,7 @@ func addTimeInfoToMessages(messages *Messages) error {
 	// add resource_type by the resource_protocol
 	// we have resource_type to allow for several types per one protocol.
 
-	for i, _ := range (messages.Messages) {
+	for i, _ := range messages.Messages {
 		err := AddTimeInfoToMessage(&messages.Messages[i])
 		if err != nil {
 			return err
@@ -151,7 +151,7 @@ func AddNetIpToMessage(message *MessageAttributes) {
 
 // addNetIpToMessages function parses string ip data for all messages
 func AddNetIpToMessages(messages *Messages) {
-	for i, _ := range (messages.Messages) {
+	for i, _ := range messages.Messages {
 		AddNetIpToMessage(&messages.Messages[i])
 	}
 }
@@ -176,7 +176,7 @@ func parseLabelsJsonOfMessage(message *MessageAttributes) {
 }
 
 func parseLabelsJsonOfMessages(messages *Messages) {
-	for i, _ := range (messages.Messages) {
+	for i, _ := range messages.Messages {
 		parseLabelsJsonOfMessage(&messages.Messages[i])
 	}
 }
