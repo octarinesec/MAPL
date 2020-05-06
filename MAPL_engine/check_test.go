@@ -3,6 +3,7 @@ package MAPL_engine
 import (
 	"bufio"
 	"fmt"
+	"github.com/ghodss/yaml"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/smartystreets/goconvey/convey/reporting"
 	"io/ioutil"
@@ -31,12 +32,22 @@ func TestMaplEngine(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
-		if false {
+		if true {
 			results, _ := test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_debug.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_debug.json")
 			So(results[0], ShouldEqual, BLOCK)
+			results2, _ := test_CheckMessagesWithJsonRaw("../examples/rules_with_jsonpath_debug2.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_debug.json")
+			So(results2[0], ShouldEqual, DEFAULT)
 
-			results2, _ := test_ConditionsWithJsonRaw("../examples/rules_with_jsonpath_debug.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_debug.json")
-			So(results2[0][0], ShouldEqual, true)
+			results3, _ := test_CheckMessagesWithYamlRaw("../examples/rules_with_jsonpath_debug.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/yaml_raw_data_debug2.yaml")
+			So(results3[0], ShouldEqual, BLOCK)
+			results4, _ := test_CheckMessagesWithYamlRaw("../examples/rules_with_jsonpath_debug2.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/yaml_raw_data_debug2.yaml")
+			So(results4[0], ShouldEqual, DEFAULT)
+
+			results5, _ := test_ConditionsWithJsonRaw("../examples/rules_with_jsonpath_debug.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_debug.json")
+			So(results5[0][0], ShouldEqual, true)
+			results6, _ := test_ConditionsWithJsonRaw("../examples/rules_with_jsonpath_debug2.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_debug.json")
+			So(results6[0][0], ShouldEqual, false)
+
 
 		}
 
@@ -613,6 +624,46 @@ func test_CheckMessagesWithJsonRaw(rulesFilename string, messagesFilename string
 	for i_message, message := range (messages.Messages) {
 
 		message.RequestJsonRaw = &data
+
+		result, msg, relevantRuleIndex, _, appliedRulesIndices, _ := Check(&message, &rules)
+		if relevantRuleIndex >= 0 {
+			fmt.Printf("message #%v: decision=%v [%v] by rule #%v ; applicable rules =%v \n", i_message, result, msg, rules.Rules[relevantRuleIndex].RuleID, appliedRulesIndices)
+		} else {
+			fmt.Printf("message #%v: decision=%v [%v]\n", i_message, result, msg)
+		}
+		outputResults = append(outputResults, result)
+
+	}
+	return outputResults, nil
+}
+
+func test_CheckMessagesWithYamlRaw(rulesFilename string, messagesFilename string, yamlRawFilename string) ([]int, error) {
+
+	rules, err := YamlReadRulesFromFile(rulesFilename)
+	if err != nil {
+		log.Printf("error: =%v", err)
+		return []int{}, err
+	}
+	messages, err := YamlReadMessagesFromFile(messagesFilename)
+	if err != nil {
+		return []int{}, err
+	}
+	data, err := read_binary_file(yamlRawFilename)
+	if err != nil {
+		log.Printf("can't read json raw file")
+		return []int{}, err
+	}
+	data2, err := yaml.YAMLToJSON(data)
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
+	}
+
+
+	var outputResults []int
+
+	for i_message, message := range (messages.Messages) {
+
+		message.RequestJsonRaw = &data2
 
 		result, msg, relevantRuleIndex, _, appliedRulesIndices, _ := Check(&message, &rules)
 		if relevantRuleIndex >= 0 {

@@ -1,42 +1,278 @@
 {
+  "kind": "Pod",
+  "apiVersion": "core/v1",
   "metadata": {
-    "name": "echo-a",
-    "namespace": "default",
-    "selfLink": "/api/v1/namespaces/default/pods/echo-a",
-    "uid": "ffb233af-45c5-11ea-b0ff-3e29b4ecce94",
-    "resourceVersion": "2467327",
-    "creationTimestamp": "2020-02-02T14:12:08Z",
-    "labels": {
-      "aaa": "echo-a"
-    },
+    "name": "docker-runner",
+    "namespace": "development",
+    "selfLink": "/api/v1/namespaces/development/pods/docker-runner",
+    "uid": "468f5528-8ea9-11ea-a6cb-52748450348a",
+    "resourceVersion": "12086",
+    "creationTimestamp": "2020-05-05T08:20:27Z",
     "annotations": {
-      "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"annotations\":{},\"labels\":{\"aaa\":\"echo-a\"},\"name\":\"echo-a\",\"namespace\":\"default\"},\"spec\":{\"containers\":[{\"image\":\"octarinesec/echo_server:latest\",\"name\":\"echo-a\",\"ports\":[{\"containerPort\":5000}]}],\"imagePullSecrets\":[{\"name\":\"docker-registry-secret\"}],\"securityContext\":{\"runAsUser\":0}}}\n"
+      "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"annotations\":{},\"name\":\"docker-runner\",\"namespace\":\"development\"},\"spec\":{\"containers\":[{\"args\":[\"while true; do sleep 86400; done\"],\"command\":[\"/bin/bash\",\"-c\"],\"image\":\"google/cloud-sdk:284.0.0\",\"imagePullPolicy\":\"Always\",\"name\":\"docker-runner\",\"volumeMounts\":[{\"mountPath\":\"/var/run/docker.sock\",\"name\":\"dockersock\"}]}],\"volumes\":[{\"hostPath\":{\"path\":\"/var/run/docker.sock\"},\"name\":\"dockersock\"}]}}\n",
+      "sidecar.octarinesec.com/status": "{\"version\":\"f31a0796e59b27007c0e0ceb7361a2de7355e13e0d6399ba9f7142734a19c5a8\",\"initContainers\":[\"idclient\",\"iptables-redirect\"],\"containers\":[\"proxy\"],\"volumes\":[\"idclient-files\",\"octarine-sockets\"],\"imagePullSecrets\":[\"docker-registry-secret\"],\"env\":[\"OCTARINE_ACCOUNT=demo\",\"OCTARINE_WORKLOAD_ARTIFACT=development:docker-runner\",\"OCTARINE_WORKLOAD_DOMAIN=demo:cloud\"]}"
     }
   },
   "spec": {
     "volumes": [
       {
-        "name": "default-token-75psw",
+        "name": "dockersock",
+        "hostPath": {
+          "path": "/var/run/docker.sock",
+          "type": ""
+        }
+      },
+      {
+        "name": "default-token-mwtvc",
         "secret": {
-          "secretName": "default-token-75psw",
+          "secretName": "default-token-mwtvc",
           "defaultMode": 420
+        }
+      },
+      {
+        "name": "idclient-files",
+        "emptyDir": {
+
+        }
+      },
+      {
+        "name": "octarine-sockets",
+        "hostPath": {
+          "path": "/var/run/octarine/demo",
+          "type": "Directory"
+        }
+      }
+    ],
+    "initContainers": [
+      {
+        "name": "idclient",
+        "image": "octarinesec/idclient:develop",
+        "env": [
+          {
+            "name": "OCTARINE_ID_CLIENT_ACCOUNT",
+            "value": "demo"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_ARTIFACT_ID",
+            "value": "development:docker-runner"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_DOMAIN_ID",
+            "value": "demo:cloud"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_BACKEND_HOSTNAME",
+            "value": "52.177.34.149"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_BACKEND_PORT",
+            "value": "443"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_MESSAGEPROXY_HOSTNAME",
+            "value": "52.177.33.139"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_MESSAGEPROXY_PORT",
+            "value": "50051"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_WORKLOAD_VERSION",
+            "value": "1"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_INSTRUMENTATION_LOG_LEVEL",
+            "value": "0"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_RESTFUL_REPORT",
+            "value": "false"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_AGENT_REGISTER_ONLY",
+            "value": "false"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_EMBED_IP",
+            "value": "true"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_GFLAGS_FILE",
+            "value": "/octarine_id/gflags"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_CERTIFICATE_FILE",
+            "value": "/octarine_id/certificate"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_PRIVATE_KEY_FILE",
+            "value": "/octarine_id/private_key"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_KEYSTORE_FILE",
+            "value": "/octarine_id/keystore"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_KEYSTORE_PASSWORD_FILE",
+            "value": "/octarine_id/keystore_password"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_TRUST_CHAIN_FILE",
+            "value": "/octarine_id/trust_chain"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_TRUSTSTORE_FILE",
+            "value": "/octarine_id/truststore"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_TRUSTSTORE_PASSWORD_FILE",
+            "value": "/octarine_id/truststore_password"
+          },
+          {
+            "name": "OCTARINE_ID_CLIENT_BLACKLIST_UNIX_SOCKET_PATH",
+            "value": "/var/run/octarine/demo/blacklist_controller_demo.sock"
+          },
+          {
+            "name": "OCTARINE_CERTAUTH_SERVICE_HOST",
+            "value": "idcontroller.octarine-dataplane.svc.cluster.local"
+          },
+          {
+            "name": "OCTARINE_CERTAUTH_SERVICE_PORT",
+            "value": "8080"
+          },
+          {
+            "name": "OCTARINE_CERTAUTH_SERVICE_SCHEME",
+            "value": "https"
+          },
+          {
+            "name": "OCTARINE_SECRETS_SERVICE_HOST",
+            "value": "52.177.34.149"
+          },
+          {
+            "name": "OCTARINE_SECRETS_SERVICE_PORT",
+            "value": "443"
+          },
+          {
+            "name": "OCTARINE_SECRETS_SERVICE_SCHEME",
+            "value": "https"
+          },
+          {
+            "name": "OCTARINE_ID_CONTROLLER_HOST",
+            "value": "idcontroller.octarine-dataplane.svc.cluster.local"
+          },
+          {
+            "name": "OCTARINE_ID_CONTROLLER_PORT",
+            "value": "8080"
+          },
+          {
+            "name": "OCTARINE_ID_CONTROLLER_SCHEME",
+            "value": "https"
+          },
+          {
+            "name": "OCTARINE_HTTP_RETRY_COUNT",
+            "value": "10"
+          },
+          {
+            "name": "OCTARINE_HTTP_RETRY_SECONDS",
+            "value": "5"
+          }
+        ],
+        "resources": {
+          "limits": {
+            "cpu": "500m",
+            "memory": "512Mi"
+          },
+          "requests": {
+            "cpu": "10m",
+            "memory": "50Mi"
+          }
+        },
+        "volumeMounts": [
+          {
+            "name": "idclient-files",
+            "mountPath": "/octarine_id"
+          }
+        ],
+        "terminationMessagePath": "/dev/termination-log",
+        "terminationMessagePolicy": "File",
+        "imagePullPolicy": "IfNotPresent",
+        "securityContext": {
+          "runAsNonRoot": true,
+          "allowPrivilegeEscalation": false
+        }
+      },
+      {
+        "name": "iptables-redirect",
+        "image": "octarinesec/microservice-proxy-iptables-init:develop",
+        "command": [
+          "/proxy-iptables-init.sh",
+          "-u",
+          "1500",
+          "-i",
+          "",
+          "-o",
+          ""
+        ],
+        "resources": {
+          "limits": {
+            "cpu": "500m",
+            "memory": "512Mi"
+          },
+          "requests": {
+            "cpu": "10m",
+            "memory": "50Mi"
+          }
+        },
+        "terminationMessagePath": "/dev/termination-log",
+        "terminationMessagePolicy": "File",
+        "imagePullPolicy": "IfNotPresent",
+        "securityContext": {
+          "capabilities": {
+            "add": [
+              "NET_ADMIN",
+              "NET_RAW"
+            ]
+          },
+          "runAsUser": 0,
+          "allowPrivilegeEscalation": false
         }
       }
     ],
     "containers": [
       {
-        "name": "echo-a",
-        "image": "octarinesec/echo_server:latest",
-        "ports": [
+        "name": "docker-runner",
+        "image": "google/cloud-sdk:284.0.0",
+        "command": [
+          "/bin/bash",
+          "-c"
+        ],
+        "args": [
+          "while true; do sleep 86400; done"
+        ],
+        "env": [
           {
-            "containerPort": 5000,
-            "protocol": "TCP"
+            "name": "OCTARINE_ACCOUNT",
+            "value": "demo"
+          },
+          {
+            "name": "OCTARINE_WORKLOAD_ARTIFACT",
+            "value": "development:docker-runner"
+          },
+          {
+            "name": "OCTARINE_WORKLOAD_DOMAIN",
+            "value": "demo:cloud"
           }
         ],
-        "resources": {},
+        "resources": {
+
+        },
         "volumeMounts": [
           {
-            "name": "default-token-75psw",
+            "name": "dockersock",
+            "mountPath": "/var/run/docker.sock"
+          },
+          {
+            "name": "default-token-mwtvc",
             "readOnly": true,
             "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
           }
@@ -44,6 +280,76 @@
         "terminationMessagePath": "/dev/termination-log",
         "terminationMessagePolicy": "File",
         "imagePullPolicy": "Always"
+      },
+      {
+        "name": "proxy",
+        "image": "octarinesec/microservice-proxy:develop",
+        "env": [
+          {
+            "name": "GRPC_DEFAULT_SSL_ROOTS_FILE_PATH",
+            "value": "/octarine_id/trust_chain"
+          },
+          {
+            "name": "OCTARINE_UID",
+            "value": "1500"
+          },
+          {
+            "name": "OCTARINE_GFLAGS_PATH",
+            "value": "/octarine_id/gflags"
+          },
+          {
+            "name": "OCTARINE_USE_ENCRYPTION",
+            "value": "true"
+          },
+          {
+            "name": "loglevel",
+            "value": "info"
+          },
+          {
+            "name": "OCTARINE_IDS_UNIX_SOCKET_PATH",
+            "value": "/var/run/octarine/demo/ids_demo.sock"
+          },
+          {
+            "name": "OCTARINE_DISCOVERY_HOST",
+            "value": "octarine-discovery.octarine-dataplane.svc.cluster.local"
+          },
+          {
+            "name": "OCTARINE_DISCOVERY_PORT",
+            "value": "50051"
+          }
+        ],
+        "resources": {
+          "limits": {
+            "cpu": "500m",
+            "memory": "512Mi"
+          },
+          "requests": {
+            "cpu": "10m",
+            "memory": "50Mi"
+          }
+        },
+        "volumeMounts": [
+          {
+            "name": "idclient-files",
+            "mountPath": "/octarine_id"
+          },
+          {
+            "name": "octarine-sockets",
+            "mountPath": "/var/run/octarine/demo"
+          }
+        ],
+        "terminationMessagePath": "/dev/termination-log",
+        "terminationMessagePolicy": "File",
+        "imagePullPolicy": "IfNotPresent",
+        "securityContext": {
+          "capabilities": {
+            "add": [
+              "SYS_PTRACE"
+            ]
+          },
+          "runAsUser": 0,
+          "allowPrivilegeEscalation": false
+        }
       }
     ],
     "restartPolicy": "Always",
@@ -51,9 +357,9 @@
     "dnsPolicy": "ClusterFirst",
     "serviceAccountName": "default",
     "serviceAccount": "default",
-    "nodeName": "aks-nodepool1-10341338-vmss000000",
+    "nodeName": "aks-nodepool1-75936469-vmss000000",
     "securityContext": {
-      "runAsUser": 0
+
     },
     "imagePullSecrets": [
       {
@@ -85,47 +391,106 @@
         "type": "Initialized",
         "status": "True",
         "lastProbeTime": null,
-        "lastTransitionTime": "2020-02-02T14:12:08Z"
+        "lastTransitionTime": "2020-05-05T08:21:07Z"
       },
       {
         "type": "Ready",
         "status": "True",
         "lastProbeTime": null,
-        "lastTransitionTime": "2020-02-02T14:13:18Z"
+        "lastTransitionTime": "2020-05-05T08:26:02Z"
       },
       {
         "type": "ContainersReady",
         "status": "True",
         "lastProbeTime": null,
-        "lastTransitionTime": "2020-02-02T14:13:18Z"
+        "lastTransitionTime": "2020-05-05T08:26:02Z"
       },
       {
         "type": "PodScheduled",
         "status": "True",
         "lastProbeTime": null,
-        "lastTransitionTime": "2020-02-02T14:12:08Z"
+        "lastTransitionTime": "2020-05-05T08:20:27Z"
       }
     ],
     "hostIP": "10.240.0.4",
-    "podIP": "10.244.0.65",
-    "startTime": "2020-02-02T14:12:08Z",
-    "containerStatuses": [
+    "podIP": "10.244.0.60",
+    "startTime": "2020-05-05T08:20:27Z",
+    "initContainerStatuses": [
       {
-        "name": "echo-a",
+        "name": "idclient",
         "state": {
-          "running": {
-            "startedAt": "2020-02-02T14:13:17Z"
+          "terminated": {
+            "exitCode": 0,
+            "reason": "Completed",
+            "startedAt": "2020-05-05T08:20:32Z",
+            "finishedAt": "2020-05-05T08:20:49Z",
+            "containerID": "docker://526e6c96da2e33fa427ac14ab58063313b731595a1088959da2feae61a8f9281"
           }
         },
-        "lastState": {},
+        "lastState": {
+
+        },
         "ready": true,
         "restartCount": 0,
-        "image": "octarinesec/echo_server:latest",
-        "imageID": "docker-pullable://octarinesec/echo_server@sha256:544d69a04f684826af680cc3a61112137d731636cd74ba22d93b3fbb8f4d9ed5",
-        "containerID": "docker://8e8865d1fd576869a2bd79cfa95a36105159e1227fee0c00b24a42800bb357a2"
+        "image": "octarinesec/idclient:develop",
+        "imageID": "docker-pullable://octarinesec/idclient@sha256:eb41b3448a578a923eaa50c75a39b074de6e6cbe814519621269bb06dc66a9fb",
+        "containerID": "docker://526e6c96da2e33fa427ac14ab58063313b731595a1088959da2feae61a8f9281"
+      },
+      {
+        "name": "iptables-redirect",
+        "state": {
+          "terminated": {
+            "exitCode": 0,
+            "reason": "Completed",
+            "startedAt": "2020-05-05T08:21:00Z",
+            "finishedAt": "2020-05-05T08:21:01Z",
+            "containerID": "docker://f197c1ead32637eac65baa627c57d76f87f08339f0bfcd56865c29ef4a70a3f3"
+          }
+        },
+        "lastState": {
+
+        },
+        "ready": true,
+        "restartCount": 0,
+        "image": "octarinesec/microservice-proxy-iptables-init:develop",
+        "imageID": "docker-pullable://octarinesec/microservice-proxy-iptables-init@sha256:75cf4b34cfd23d8f37d7b7782a0d47fa7d8925a1718f1a8c765633cf6d6a51f7",
+        "containerID": "docker://f197c1ead32637eac65baa627c57d76f87f08339f0bfcd56865c29ef4a70a3f3"
       }
     ],
-    "qosClass": "BestEffort"
-  },
-  "kind": "Pod"
+    "containerStatuses": [
+      {
+        "name": "docker-runner",
+        "state": {
+          "running": {
+            "startedAt": "2020-05-05T08:24:36Z"
+          }
+        },
+        "lastState": {
+
+        },
+        "ready": true,
+        "restartCount": 0,
+        "image": "google/cloud-sdk:284.0.0",
+        "imageID": "docker-pullable://google/cloud-sdk@sha256:fd9985597827057effdb04fd1b07db9463f4a00ac24684cd3726c05e146eafa1",
+        "containerID": "docker://dc7c407ecc727602b1bccbd83bfcd732f19a51390e20a64da7737ecdc4da4a18"
+      },
+      {
+        "name": "proxy",
+        "state": {
+          "running": {
+            "startedAt": "2020-05-05T08:25:45Z"
+          }
+        },
+        "lastState": {
+
+        },
+        "ready": true,
+        "restartCount": 0,
+        "image": "octarinesec/microservice-proxy:develop",
+        "imageID": "docker-pullable://octarinesec/microservice-proxy@sha256:e9996f7430cd5f015e6caaa2ebb5a3f86b7150045578769e3acd1bd1da9ec463",
+        "containerID": "docker://b7f621dee19970a48ea9f6d9881061f10a26c9e41c55f8382197de619d2df162"
+      }
+    ],
+    "qosClass": "Burstable"
+  }
 }

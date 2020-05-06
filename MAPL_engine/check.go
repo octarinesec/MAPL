@@ -414,8 +414,8 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			//panic("jsonpath query failed")
 		}
 
-		expectedArrayLength := 1
-		if strings.Contains(c.AttributeJsonpathQuery, "[:]") {
+		expectedArrayLength := -1
+		if strings.Contains(c.AttributeJsonpathQuery, "ontainers[:]") {
 			ind := strings.Index(c.AttributeJsonpathQuery, "[:]")
 			jsonpathQueryTemp := c.AttributeJsonpathQuery[0:ind]
 			valueToCompareBytes2, err := jsonslice.Get(*message.RequestJsonRaw, jsonpathQueryTemp)
@@ -462,15 +462,32 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			valueToCompareStringArray = []string{valueToCompareString0}
 		}
 
-		if len(valueToCompareStringArray) != expectedArrayLength {
-			if c.Method == "NEX" || c.Method == "nex" {
-				//if len(valueToCompareStringArray) == 0 {
-				return true
-				//}
+		if expectedArrayLength>=0 {
+			if len(valueToCompareStringArray) != expectedArrayLength {
+				if c.Method == "NEX" || c.Method == "nex" {
+					//if len(valueToCompareStringArray) == 0 {
+					return true
+					//}
+				}
+				//return false
 			}
-			//return false
+		}else{
+			if len(valueToCompareStringArray)==0{
+				if c.Method == "NEX" {
+					return true
+				}
+				if c.Method == "EX" {
+					return false
+				}
+			} else{
+				if c.Method == "NEX" {
+					return false
+				}
+				if c.Method == "EX" {
+					return true
+				}
+			}
 		}
-
 		/*
 			if we have two jsonpath conditions that have array results then we test each one separately.
 			(for example cpu limit and memory limit).

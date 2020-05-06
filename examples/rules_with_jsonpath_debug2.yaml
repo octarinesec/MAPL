@@ -14,5 +14,5 @@ rules:
     DNFconditions:
       - ANDconditions:
           - attribute: jsonpath:$.spec.volumes[:].hostPath.path
-            method: EX
+            method: NEX
     decision: block
