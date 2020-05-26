@@ -414,8 +414,8 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			//panic("jsonpath query failed")
 		}
 
-		expectedArrayLength := -1
-		if strings.Contains(c.AttributeJsonpathQuery, "ontainers[:]") {
+		expectedArrayLength := 1
+		if strings.Contains(c.AttributeJsonpathQuery, "[:]") {
 			ind := strings.Index(c.AttributeJsonpathQuery, "[:]")
 			jsonpathQueryTemp := c.AttributeJsonpathQuery[0:ind]
 			valueToCompareBytes2, err := jsonslice.Get(*message.RequestJsonRaw, jsonpathQueryTemp)
@@ -462,32 +462,15 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			valueToCompareStringArray = []string{valueToCompareString0}
 		}
 
-		if expectedArrayLength>=0 {
-			if len(valueToCompareStringArray) != expectedArrayLength {
-				if c.Method == "NEX" || c.Method == "nex" {
-					//if len(valueToCompareStringArray) == 0 {
-					return true
-					//}
-				}
-				//return false
+		if len(valueToCompareStringArray) != expectedArrayLength {
+			if c.Method == "NEX" || c.Method == "nex" {
+				//if len(valueToCompareStringArray) == 0 {
+				return true
+				//}
 			}
-		}else{
-			if len(valueToCompareStringArray)==0{
-				if c.Method == "NEX" {
-					return true
-				}
-				if c.Method == "EX" {
-					return false
-				}
-			} else{
-				if c.Method == "NEX" {
-					return false
-				}
-				if c.Method == "EX" {
-					return true
-				}
-			}
+			//return false
 		}
+
 		/*
 			if we have two jsonpath conditions that have array results then we test each one separately.
 			(for example cpu limit and memory limit).
@@ -538,17 +521,17 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			case "EX", "NEX":
 				if len(valueToCompareString) == 0 {
 					if method == "NEX" { // just test the existence of the key
-						return true
+						result_temp=true
 					}
 					if method == "EX" { // just test the existence of the key
-						return false
+						result_temp=false
 					}
 				} else {
 					if method == "NEX" { // just test the existence of the key
-						return false
+						result_temp=false
 					}
 					if method == "EX" { // just test the existence of the key
-						return true
+						result_temp=true
 					}
 				}
 
