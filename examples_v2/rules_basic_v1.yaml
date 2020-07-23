@@ -1,0 +1,25 @@
+rules:
+  - rule_id: 0
+    DNFconditions:
+      - ANDconditions:
+          - attribute: payloadSize
+            method: LE
+            value: 4096
+          - attribute: payloadSize
+            method: GE
+            value: 1024
+      - ANDconditions:
+          - attribute: payloadSize
+            method: LE
+            value: 20000
+          - attribute: payloadSize
+            method: GE
+            value: 16384
+      - ANDconditions:
+          - attribute: utcHoursFromMidnight
+            method: LE
+            value: 16
+          - attribute: utcHoursFromMidnight
+            method: GE
+            value: 14
+    decision: block

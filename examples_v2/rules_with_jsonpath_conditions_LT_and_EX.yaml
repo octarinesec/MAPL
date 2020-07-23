@@ -1,0 +1,23 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "workload"
+    protocol: "*"
+    resource:
+      resourceType: "*"
+      resourceName: "*"
+    operation: "*"
+    conditions:
+      AND:
+      - attribute: jsonpath:$.spec.template.spec.containers[:].resources.limits.cpu
+        method: LT
+        value: 4
+      - attribute: jsonpath:$.spec.template.spec.containers[:].resources.limits.memory
+        method: EX
+
+    decision: block

@@ -1,0 +1,58 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
+    resource:
+      resourceType: path
+      resourceName: "*"
+    operation: GET
+    decision: allow
+
+  - rule_id: 1
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
+    resource:
+      resourceType: path
+      resourceName: "*"
+    operation: POST
+    decision: block
+
+  - rule_id: 2
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "C.my_namespace"
+      receiverType: "*"
+    protocol: http
+    resource:
+      resourceType: path
+      resourceName: "*"
+    operation: read
+    decision: allow
+
+  - rule_id: 3
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "C.my_namespace"
+      receiverType: "*"
+    protocol: http
+    resource:
+      resourceType: path
+      resourceName: "*"
+    operation: write
+    decision: block
+

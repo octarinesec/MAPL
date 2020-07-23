@@ -1,0 +1,20 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "workload"
+    protocol: "*"
+    resource:
+      resourceType: "*"
+      resourceName: "*"
+    operation: "*"
+    DNFconditions:
+      - ANDconditions:
+          - attribute: jsonpath:$.spec.containers[:].resources.limits.cpu
+            method: NEX
+
+    decision: block

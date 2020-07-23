@@ -1,0 +1,135 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "*"
+      senderType: "*"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: "*"
+    resource:
+      resourceType: "*"
+      resourceName: "*"
+    operation: "*"
+    decision: allow
+
+  - rule_id: 1
+    sender:
+      senderName: "ratings.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "reviews.my_namespace"
+      receiverType: "*"
+    protocol: HTTP
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    DNFconditions:
+      - ANDconditions:
+        - attribute: payloadSize
+          method: LE
+          value: 4096
+        - attribute: payloadSize
+          method: GE
+          value: 1024
+      - ANDconditions:
+        - attribute: payloadSize
+          method: LE
+          value: 20000
+        - attribute: payloadSize
+          method: GE
+          value: 16384
+      - ANDconditions:
+        - attribute: utcHoursFromMidnight
+          method: LE
+          value: 16
+        - attribute: utcHoursFromMidnight
+          method: GE
+          value: 14
+    decision: block
+    
+  - rule_id: 2
+    sender:
+      senderName: "ratings.my_namespace"
+      senderType: "*"
+    receiver:
+      receiverName: "reviews.my_namespace"
+      receiverType: "workload"
+    protocol: http
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: POST
+    decision: block
+    
+  - rule_id: 3
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "*"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
+    resource:      resourceType: path
+      resourceName: "/*"
+    operation: POST
+    decision: block
+  
+  - rule_id: 4
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "*"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
+    resource:
+      resourceType: path
+      resourceName: "/book/123"
+    operation: GET
+    decision: allow
+    
+  - rule_id: 5
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "*"
+    receiver:
+      senderName: "B.my_namespace"
+      senderType: "*"
+    protocol: http
+    resource:
+      resourceType: path
+      resourceName: "/book/321"
+    operation: GET
+    decision: alert
+  
+  - rule_id: 6
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "*"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
+    resource:
+      resourceType: path
+      resourceName: "/book/1?3"
+    operation: GET
+    decision: block
+    
+  - rule_id: 7
+    sender:
+      senderName: "ratings.*.svc.*.local"
+      senderType: "*"
+    receiver:
+      receiverName: "*.my_namespace"
+      receiverType: "*"
+    protocol: HTTP
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET    
+    decision: alert
+

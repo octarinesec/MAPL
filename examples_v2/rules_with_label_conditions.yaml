@@ -1,0 +1,71 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "*"
+      senderType: "workload"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: HTTP
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    conditions:
+      OR:
+      - AND:
+        - attribute: "senderLabel[key1]"
+          method: EQ
+          value: "abc"
+        - attribute: "receiverLabel[key1]"
+          method: EQ
+          value: "abc"
+      - AND:
+        - attribute: "senderLabel[key2]"
+          method: EQ
+          value: "receiverLabel[key2]"
+    decision: allow
+
+  - rule_id: 1
+    sender:
+      senderName: "*"
+      senderType: "workload"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: HTTP
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    conditions:
+      attribute: "senderLabel[key4]"
+      method: EX
+      value: "don't care"
+    decision: allow
+
+  - rule_id: 2
+    sender:
+      senderName: "*"
+      senderType: "workload"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: HTTP
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    conditions:
+      AND:
+      - attribute: "senderLabel[key1]"
+        method: EQ
+        value: "A?C"
+      - attribute: "senderLabel[key2]"
+        method: EQ
+        value: "*F"
+      - attribute: "senderLabel[key3]"
+        method: RE
+        value: "X.Z"
+    decision: allow

@@ -1,0 +1,30 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "192.168.1.1"
+      senderType: "subnet"
+    receiver:
+      receiverName: "192.168.4.2"
+      receiverType: "subnet"
+    protocol: http
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    decision: allow
+  
+
+  - rule_id: 1
+    sender:
+      senderName: "192.168.2.1/30"
+      senderType: "subnet"
+    receiver:
+      receiverName: "192.168.4.1/30"
+      receiverType: "subnet"
+    protocol: http
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    decision: allow

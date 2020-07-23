@@ -2,32 +2,16 @@
 package MAPL_engine
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/bhmj/jsonslice"
 	"log"
-	"regexp"
+	"strconv"
 	"strings"
 )
 
-// general action codes
-const (
-	DEFAULT int = iota
-	ALLOW
-	ALERT
-	BLOCK
-	NONE
-)
 
-var DecisionNames = [...]string{
-	DEFAULT: "rules do not apply to message - block by default",
-	ALLOW:   "allow",
-	ALERT:   "alert",
-	BLOCK:   "block",
-	NONE:    "none",
-}
-
-// Check is the main function to test if any of the rules is applicable for the message and decide according
-// to those rules' decisions.
-
-func Check(message *MessageAttributes, rules *Rules) (decision int, descisionString string, relevantRuleIndex int, results []int, appliedRulesIndices []int, ruleDescription string) {
+func CheckV2(message *MessageAttributes, rules *RulesV2) (decision int, descisionString string, relevantRuleIndex int, results []int, appliedRulesIndices []int, ruleDescription string) {
 	//
 	// for each message we check its attributes against all of the rules and return a decision
 	//
@@ -37,11 +21,11 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 	results = make([]int, N)
 	ruleDescriptions := make([]string, N)
 	sem := make(chan int, N) // semaphore pattern
-	if true {                // check in parallel
+	if false{             // check in parallel
 
 		for i, rule := range (rules.Rules) { // check all the rules in parallel
-			go func(in_i int, in_rule Rule) {
-				results[in_i] = CheckOneRule(message, &in_rule)
+			go func(in_i int, in_rule RuleV2) {
+				results[in_i] = CheckOneRuleV2(message, &in_rule)
 				if desc, ok := in_rule.Metadata["description"]; ok {
 					ruleDescriptions[in_i] = desc
 				} else {
@@ -60,7 +44,7 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 	} else { // used for debugging
 
 		for in_i, in_rule := range (rules.Rules) {
-			results[in_i] = CheckOneRule(message, &in_rule)
+			results[in_i] = CheckOneRuleV2(message, &in_rule)
 			if desc, ok := in_rule.Metadata["description"]; ok {
 				ruleDescriptions[in_i] = desc
 			} else {
@@ -92,20 +76,20 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 }
 
 // CheckOneRules gives the result of testing the message attributes with of one rule
-func CheckOneRule(message *MessageAttributes, rule *Rule) int {
+func CheckOneRuleV2(message *MessageAttributes, rule *RuleV2) int {
 	// ----------------------
 	// compare basic message attributes:
 
 	if rule.AlreadyConvertedFieldsToRegexFlag == false {
-		ConvertFieldsToRegex(rule)
+		ConvertFieldsToRegexV2(rule)
 	}
 
-	match := TestSender(rule, message)
+	match := TestSenderV2(rule, message)
 	if !match {
 		return DEFAULT
 	}
 
-	match = TestReceiver(rule, message)
+	match = TestReceiverV2(rule, message)
 	if !match {
 		return DEFAULT
 	}
@@ -143,8 +127,8 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 	// ----------------------
 	// test conditions:
 	conditionsResult := true // if there are no conditions then we skip the test and return the rule.Decision
-	if len(rule.DNFConditions) > 0 {
-		conditionsResult = TestConditions(rule, message)
+	if rule.ConditionsTree != nil {
+		conditionsResult = TestConditionsV2(rule, message)
 	}
 	if conditionsResult == false {
 		return DEFAULT
@@ -163,10 +147,10 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) int {
 	return DEFAULT
 }
 
-func TestSender(rule *Rule, message *MessageAttributes) bool {
+func TestSenderV2(rule *RuleV2, message *MessageAttributes) bool {
 
 	if rule.AlreadyConvertedFieldsToRegexFlag == false {
-		ConvertFieldsToRegex(rule)
+		ConvertFieldsToRegexV2(rule)
 	}
 
 	match := false
@@ -195,10 +179,10 @@ func TestSender(rule *Rule, message *MessageAttributes) bool {
 	return match
 }
 
-func TestReceiver(rule *Rule, message *MessageAttributes) bool {
+func TestReceiverV2(rule *RuleV2, message *MessageAttributes) bool {
 
 	if rule.AlreadyConvertedFieldsToRegexFlag == false {
-		ConvertFieldsToRegex(rule)
+		ConvertFieldsToRegexV2(rule)
 	}
 
 	match := false
@@ -232,35 +216,17 @@ func TestReceiver(rule *Rule, message *MessageAttributes) bool {
 	return match
 }
 
+
 // testConditions tests the conditions of the rule with the message attributes
-func TestConditions(rule *Rule, message *MessageAttributes) bool {
+func TestConditionsV2(rule *RuleV2, message *MessageAttributes) bool {
 
 	if rule.AlreadyConvertedFieldsToRegexFlag == false {
-		ConvertFieldsToRegex(rule)
+		ConvertFieldsToRegexV2(rule)
 	}
+	return rule.ConditionsTree.Eval(message)
 
-	dnfConditions := rule.DNFConditions
-	res := make([]bool, len(dnfConditions))
-	for i_andCondtions, andConditions := range (dnfConditions) {
-		temp_res := true
-		for _, condition := range (andConditions.ANDConditions) { // calculate AND clauses
-			oneConditionResult := testOneCondition(&condition, message) // test one condition
-			if oneConditionResult == false {
-				temp_res = false
-				break
-			}
-		}
-		res[i_andCondtions] = temp_res
-	}
-
-	output := false // calculate OR of all the AND clauses
-	for _, r := range (res) {
-		output = output || r // logic OR
-	}
-	return output
 }
 
-/*
 // testOneCondition tests one condition of the rule with the message attributes
 func testOneCondition(c *Condition, message *MessageAttributes) bool {
 	// ---------------
@@ -485,7 +451,6 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 				}
 			}
 		}
- */
 		/*
 			if we have two jsonpath conditions that have array results then we test each one separately.
 			(for example cpu limit and memory limit).
@@ -494,7 +459,7 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			and at least one container has problem with the memory limits.
 			they don't have to be the same container.
 		*/
-/*
+
 		result = false // OR on values in the array. if one value in the array passes the condition then we return true
 
 		for _, valueToCompareString := range (valueToCompareStringArray) {
@@ -563,123 +528,4 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		return false
 	}
 	return result
-}
- */
-
-func getAttribute(sender_receiver, attribute string, message MessageAttributes) string {
-	switch attribute {
-	case "namespace":
-		if sender_receiver == "$sender" {
-			return message.SourceNamespace
-		} else {
-			return message.DestinationNamespace
-		}
-	case "cluster":
-		if sender_receiver == "$sender" {
-			return message.SourceCluster
-		} else {
-			return message.DestinationCluster
-		}
-	}
-
-	return ""
-
-}
-
-// compareIntFunc compares one int value according the method string.
-func compareIntFunc(value1 int64, method string, value2 int64) bool { //value2 is the reference value from the rule
-	switch (method) {
-	case "EQ", "eq":
-		return (value1 == value2)
-	case "NEQ", "neq", "ne", "NE":
-		return (value1 != value2)
-	case "LE", "le":
-		return (value1 <= value2)
-	case "LT", "lt":
-		return (value1 < value2)
-	case "GE", "ge":
-		return (value1 >= value2)
-	case "GT", "gt":
-		return (value1 > value2)
-	}
-	return false
-}
-
-// compareFloatFunc compares one float value according the method string.
-func compareFloatFunc(value1 float64, method string, value2 float64) bool { //value2 is the reference value from the rule
-	switch (method) {
-	case "EQ", "eq":
-		return (value1 == value2)
-	case "NEQ", "neq", "ne", "NE":
-		return (value1 != value2)
-	case "LE", "le":
-		return (value1 <= value2)
-	case "LT", "lt":
-		return (value1 < value2)
-	case "GE", "ge":
-		return (value1 >= value2)
-	case "GT", "gt":
-		return (value1 > value2)
-	}
-	return false
-}
-
-// compareStringFunc compares one string value according the method string
-func compareStringFunc(value1 string, method string, value2 string) bool {
-	switch (method) {
-	case "EQ", "eq":
-		return (value1 == value2)
-	case "NEQ", "neq", "ne", "NE":
-		return (value1 != value2)
-	}
-	return false
-}
-
-// compareStringWithWildcardsFunc compares one string value according the method string (supports wildcards)
-func compareStringWithWildcardsFunc(value1 string, method string, value2 *regexp.Regexp) bool {
-	//log.Printf("%v ?%v? %v",value1,method,value2)
-
-	if value2==nil{
-		switch (method) {
-		case "EQ", "eq":
-			return false
-		case "NEQ", "neq", "ne", "NE":
-			return true
-		}
-	}
-
-	switch (method) {
-
-	case "EX", "ex":
-		return len(value1) > 0
-	case "NEX", "nex":
-		return len(value1) == 0
-	case "EQ", "eq":
-		return (value2.MatchString(value1))
-	case "NEQ", "neq", "ne", "NE":
-		return !(value2.MatchString(value1))
-	}
-	return false
-
-}
-
-// compareRegexFunc compares one string value according the regular expression string.
-func compareRegexFunc(value1 string, method string, value2 *regexp.Regexp) bool { //value2 is the reference value from the rule
-
-	if value2 == nil{
-		switch (method) {
-		case "RE", "re":
-			return false
-		case "NRE", "nre":
-			return true
-		}
-	}
-
-	switch (method) {
-	case "RE", "re":
-		return (value2.MatchString(value1))
-	case "NRE", "nre":
-		return !(value2.MatchString(value1))
-	}
-	return false
 }

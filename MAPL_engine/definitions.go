@@ -11,7 +11,7 @@ import (
 
 type GeneralStruct interface {
 	// a general interface to structures.
-	ToJson() (string,error) // This function is used when comparing structures read from yaml files to the resulting fields in the structure.
+	ToJson() (string, error) // This function is used when comparing structures read from yaml files to the resulting fields in the structure.
 }
 
 //-------------------rules-------------------------------------
@@ -71,6 +71,43 @@ type Condition struct {
 
 	OriginalAttribute string `yaml:"-" json:"OriginalAttribute,omitempty" bson:"OriginalAttribute,omitempty" structs:"OriginalAttribute,omitempty"` // used in hash
 	OriginalValue     string `yaml:"-" json:"OriginalValue,omitempty" bson:"OriginalValue,omitempty" structs:"OriginalValue,omitempty"`             // used in hash
+}
+
+type ConditionNode struct {
+	Attribute string `yaml:"attribute,omitempty" json:"attribute" bson:"Attribute" structs:"Attribute,omitempty"`
+	Method    string `yaml:"method,omitempty" json:"method" bson:"Method" structs:"Method,omitempty"`
+	Value     string `yaml:"value,omitempty" json:"value" bson:"Value" structs:"Value,omitempty"`
+}
+
+func ConditionFromConditionNode(c ConditionNode) Condition {
+	c_out := Condition{}
+
+	c_out.Attribute = c.Attribute
+	c_out.Method = c.Method
+	c_out.Value = c.Value
+
+	return c_out
+
+}
+
+func ReadCondition(v map[interface{}]interface{}) (ConditionNode, bool) {
+
+	c := ConditionNode{}
+	for k, val := range v {
+		switch k.(string) {
+		case "attribute", "Attribute":
+			c.Attribute = val.(string)
+
+		case "method", "Method":
+			c.Method = val.(string)
+
+		case "value", "Value":
+			c.Value=fmt.Sprintf("%v", val) // to avoid interface interpreted as int which causes panic
+		default:
+			return ConditionNode{}, false
+		}
+	}
+	return c, true
 }
 
 // ANDConditions structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)

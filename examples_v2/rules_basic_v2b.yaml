@@ -1,0 +1,35 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    decision: allow
+    conditions:
+      AND:
+        - OR:
+          - attribute: jsonpath:$.kind
+            method: EQ
+            value: "Deployment"
+          - AND:
+            - attribute: jsonpath:$.abc
+              method: EQ
+              value: "ABC"
+            - attribute: jsonpath:$.def
+              method: EQ
+              value: "DEF"
+        - AND:
+          - attribute: jsonpath:$.zzz
+            method: EQ
+            value: "ZZZ"
+          - attribute: jsonpath:$.xyz
+            method: EQ
+            value: "XYZ"
