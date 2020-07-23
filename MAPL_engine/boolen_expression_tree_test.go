@@ -1,6 +1,7 @@
 package MAPL_engine
 
 import (
+	"fmt"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/smartystreets/goconvey/convey/reporting"
 	"io/ioutil"
@@ -73,7 +74,6 @@ func TestBET2(t *testing.T) {
 
 	reporting.QuietMode()
 	Convey("tests", t, func() {
-/*
 
 		rules, err := YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2b.yaml")
 		So(err, ShouldEqual, nil)
@@ -92,10 +92,29 @@ func TestBET2(t *testing.T) {
   line 21: key "method" already set in map
   line 22: key "value" already set in map`
 		So(errStr, ShouldEqual, expectedError)
-		*/
-		_, err := YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2e.yaml")
-		So(err, ShouldEqual, "node type not supported. possible error: array of conditions without AND,OR (etc) parent")
 
+		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2e0.yaml")
+		So(err, ShouldEqual, nil)
+		condStringExpected:="<jsonpath:$.abc-EQ-ABC>"
+		condString=rules.Rules[0].ConditionsTree.String2()
+		So(condString,ShouldEqual,condStringExpected)
+
+		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2e1.yaml")
+		errStr=fmt.Sprintf("%v",err)
+		So(errStr, ShouldEqual, "node type not supported. possible error: array of conditions without AND,OR (etc) parent")
+
+
+
+		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2e2.yaml")
+		So(err, ShouldEqual, nil)
+		condStringExpected="(<jsonpath:$.abc-EQ-ABC>)"
+		condString=rules.Rules[0].ConditionsTree.String2()
+		So(condString,ShouldEqual,condStringExpected)
+
+		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2e3.yaml")
+		So(err, ShouldEqual, nil)
+		condString=rules.Rules[0].ConditionsTree.String2()
+		So(condString,ShouldEqual,condStringExpected)
 
 
 
