@@ -1,0 +1,29 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    decision: allow
+    conditions:
+      ANY:
+        parentAttribute: jsonpath:$.spec.template.spec.containers[:]
+        AND:
+          - attribute: jsonpath:$.a
+            method: EQ
+            value: "A"
+          - OR:
+            - attribute: jsonpath:$.b
+              method: EQ
+              value: "B"
+            - attribute: jsonpath:$.c
+              method: EQ
+              value: "C"

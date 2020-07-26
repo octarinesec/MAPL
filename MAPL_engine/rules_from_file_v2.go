@@ -105,7 +105,7 @@ func InterpretNode(node interface{}, parentString string) (Node, error) {
 func handleMapInterfaceInterface(v map[interface{}]interface{}, node interface{}, parentString string) (Node, error) {
 
 	// test if this is a condition:
-	cond0,ok:=node.(ConditionNode)
+	cond0, ok := node.(ConditionNode)
 	fmt.Println(ok)
 	fmt.Println(cond0)
 	cond, ok := ReadCondition(v)
@@ -114,7 +114,7 @@ func handleMapInterfaceInterface(v map[interface{}]interface{}, node interface{}
 		if err != nil {
 			return nil, err
 		}
-		if parentString != "" {
+		if parentString != "" && parentString != "condition" {
 			nodes, err := getNodeByParentString(parentString)
 			if err != nil {
 				return nil, err
@@ -127,17 +127,50 @@ func handleMapInterfaceInterface(v map[interface{}]interface{}, node interface{}
 	}
 	// else it is supposed to be an AND, OR (etc) node:
 	v2 := node.(map[interface{}]interface{})
-	if len(v2) != 1 {
-		return nil, fmt.Errorf("map of size larger than 1")
-	}
-	for key, val := range (v2) {
-		node, err := InterpretNode(val, key.(string)) // recursion!
+
+	switch parentString {
+	case "ANY":
+		if len(v2) != 2 {
+			return nil, fmt.Errorf("map of size differnet than 2 [ANY node]")
+		}
+		anyNode := &Any{}
+		for key, val := range (v2) {
+			if key.(string) == "parentAttribute" {
+				anyNode.parentJsonAttribute = val.(string)
+			} else {
+				node, err := InterpretNode(val, key.(string)) // recursion!
+				if err != nil {
+					return nil, err
+				}
+				anyNode.Append(node)
+			}
+		}
+		return anyNode, nil
+	default:
+		val, nodeType, err := getNodeValType(v2, parentString)
+		if err != nil {
+			return nil, err
+		}
+		node, err := InterpretNode(val, nodeType) // recursion!
 		if err != nil {
 			return nil, err
 		}
 		return node, nil
+
 	}
+
 	return nil, fmt.Errorf("can't interpret map[interface{}]interface{}")
+}
+
+func getNodeValType(node map[interface{}]interface{}, parentString string) (interface{}, string, error) {
+	if len(node) != 1 {
+		return nil, "", fmt.Errorf("map of size larger than 1 [%v node]", parentString)
+	}
+
+	for key, val := range (node) {
+		return val, key.(string), nil
+	}
+	return nil, "", fmt.Errorf("not supposed to get here")
 }
 
 func prepareOneConditionNode(cond ConditionNode) (Node, error) {
@@ -181,6 +214,12 @@ func getNodeByParentString(parentString string) (Node, error) {
 
 	case "OR":
 		return &Or{}, nil
+
+	case "ANY":
+		return &Any{}, nil
+
+	//case "ALL":
+	//	return &All{}, nil
 
 	default:
 		return nil, fmt.Errorf("node type not supported. possible error: array of conditions without AND,OR (etc) parent")

@@ -14,7 +14,11 @@ rules:
     operation: GET
     decision: allow
     conditions:
-      Attribute: jsonpath:$.kind
-      Method: EQ
-      Value: "Deployment"
+      AND:
+        - Attribute: jsonpath:$.kind
+          Method: EQ
+          Value: "Deployment"
+        - Attribute: jsonpath:$.abc
+          Method: EQ
+          Value: "ABC"
 

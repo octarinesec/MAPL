@@ -74,14 +74,14 @@ func TestConditionsTree2(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
-		rules, err := YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2.yaml")
+		rules, err := YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2a.yaml")
 		So(err, ShouldEqual, nil)
 		condString := "<jsonpath:$.kind-EQ-Deployment>"
 		So(rules.Rules[0].ConditionsTree.String2(), ShouldEqual, condString)
 
-		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2a.yaml")
+		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2aa.yaml")
 		So(err, ShouldEqual, nil)
-		condString = "(<jsonpath:$.kind-EQ-Deployment>)"
+		condString = "(<jsonpath:$.kind-EQ-Deployment> && <jsonpath:$.abc-EQ-ABC>)"
 		So(rules.Rules[0].ConditionsTree.String2(), ShouldEqual, condString)
 
 		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2b.yaml")
@@ -121,6 +121,16 @@ func TestConditionsTree2(t *testing.T) {
 		So(err, ShouldEqual, nil)
 		condString = rules.Rules[0].ConditionsTree.String2()
 		So(condString, ShouldEqual, condStringExpected)
+
+		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2f.yaml")
+		So(err, ShouldEqual, nil)
+		condString = "[ANY<jsonpath:$.spec.template.spec.containers[:]>:<jsonpath:$.abc-EQ-ABC>]"
+		So(rules.Rules[0].ConditionsTree.String2(), ShouldEqual, condString)
+
+		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2fb.yaml")
+		So(err, ShouldEqual, nil)
+		condString = "[ANY<jsonpath:$.spec.template.spec.containers[:]>:(<jsonpath:$.a-EQ-A> && (<jsonpath:$.b-EQ-B> || <jsonpath:$.c-EQ-C>))]"
+		So(rules.Rules[0].ConditionsTree.String2(), ShouldEqual, condString)
 
 	})
 }

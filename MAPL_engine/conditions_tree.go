@@ -1,12 +1,14 @@
 package MAPL_engine
 
 import "fmt"
+
 //--------------------------------------
 type Node interface {
 	Eval(message *MessageAttributes) bool
 	Append(node Node)
 	String2() string
 }
+
 //--------------------------------------
 type And struct {
 	nodes []Node
@@ -35,6 +37,7 @@ func (a *And) String2() string {
 	str += ")"
 	return str
 }
+
 //--------------------------------------
 type Or struct {
 	nodes []Node
@@ -62,6 +65,38 @@ func (o *Or) String2() string {
 	str += ")"
 	return str
 }
+
+//--------------------------------------
+type Any struct {
+	parentJsonAttribute string
+	node                Node
+}
+
+func (a *Any) Eval(message *MessageAttributes) bool {
+
+	rawArrayData1 := []byte(`xxx`)
+	rawArrayData2 := []byte(`yyy`)
+
+	rawArrayData := [][]byte{rawArrayData1, rawArrayData2}
+
+	for _, val := range (rawArrayData) {
+		message.RequestJsonRaw = &val
+		flag := a.node.Eval(message)
+		if flag {
+			return true
+		}
+	}
+	return false
+}
+func (a *Any) Append(node Node) {
+	a.node = node
+}
+
+func (a *Any) String2() string {
+	str := fmt.Sprintf("[ANY<%v>:%v]", a.parentJsonAttribute, a.node.String2())
+	return str
+}
+
 //--------------------------------------
 type True struct{}
 
@@ -73,6 +108,7 @@ func (t True) Append(node Node) {
 func (t True) String2() string {
 	return "true"
 }
+
 //--------------------------------------
 type False struct{}
 
@@ -84,6 +120,7 @@ func (f False) Append(node Node) {
 func (t False) String2() string {
 	return "false"
 }
+
 //--------------------------------------
 func (c Condition) Eval(message *MessageAttributes) bool {
 	return testOneCondition(&c, message)
