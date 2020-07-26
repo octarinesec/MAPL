@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestBET(t *testing.T) {
+func TestConditionsTree(t *testing.T) {
 
 	logging := false
 	if logging {
@@ -55,7 +55,7 @@ func TestBET(t *testing.T) {
 	})
 }
 
-func TestBET2(t *testing.T) {
+func TestConditionsTree2(t *testing.T) {
 
 	logging := false
 	if logging {

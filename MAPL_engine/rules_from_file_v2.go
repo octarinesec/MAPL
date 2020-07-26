@@ -79,12 +79,12 @@ func ParseAndValidateConditions(rule *RuleV2) error {
 
 func ParseConditionsTree(c interface{}) (Node, error) {
 
-	BET, err := InterpretNode(c, "")
+	conditionsTree, err := InterpretNode(c, "")
 	if err != nil {
 		return nil, err
 	}
 
-	return BET, nil
+	return conditionsTree, nil
 }
 
 func InterpretNode(node interface{}, parentString string) (Node, error) {
