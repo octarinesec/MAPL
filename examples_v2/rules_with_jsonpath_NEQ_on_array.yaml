@@ -12,10 +12,9 @@ rules:
       resourceType: "*"
       resourceName: "*"
     operation: "*"
-    DNFconditions:
-      - ANDconditions:
-          - attribute: jsonpath:$.spec.containers[:].securityContext.runAsUser
-            method: NEQ
-            value: 0
+    conditions:
+      attribute: jsonpath:$.spec.containers[:].securityContext.runAsUser
+      method: NEQ
+      value: 0
 
     decision: block

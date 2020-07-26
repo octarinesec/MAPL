@@ -12,10 +12,9 @@ rules:
       resourceType: "*"
       resourceName: "*"
     operation: "*"
-    DNFconditions:
-      - ANDconditions:
-          - attribute: jsonpath:$.spec.containers[:].image
-            method: RE
-            value: "^..*:abc$"
+    conditions:
+      attribute: jsonpath:$.spec.containers[:].image
+      method: RE
+      value: "^..*:abc$"
 
     decision: block

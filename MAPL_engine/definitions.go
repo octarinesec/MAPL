@@ -79,6 +79,10 @@ type ConditionNode struct {
 	Value     string `yaml:"value,omitempty" json:"value" bson:"Value" structs:"Value,omitempty"`
 }
 
+type ConditionNode2 struct {
+	condition ConditionNode `yaml:"condition" json:"condition" bson:"condition" structs:"condition,omitempty"`
+}
+
 func ConditionFromConditionNode(c ConditionNode) Condition {
 	c_out := Condition{}
 

@@ -12,9 +12,8 @@ rules:
       resourceType: "*"
       resourceName: "*"
     operation: "*"
-    DNFconditions:
-      - ANDconditions:
-          - attribute: jsonpath:$.spec.containers[:].resources.limits.cpu
-            method: EX
+    conditions:
+      attribute: jsonpath:$.spec.containers[:].resources.limits.cpu
+      method: EX
 
     decision: block

@@ -12,9 +12,8 @@ rules:
       resourceType: "*"
       resourceName: "*"
     operation: "*"
-    DNFconditions:
-      - ANDconditions:
-          - attribute: jsonpath:$.metadata.labels.foo
-            method: NEX
+    conditions:
+      attribute: jsonpath:$.metadata.labels.foo
+      method: NEX
 
     decision: block

@@ -12,9 +12,8 @@ rules:
       resourceType: "*"
       resourceName: "*"
     operation: "*"
-    DNFconditions:
-      - ANDconditions:
-          - attribute: jsonpath:$.spec.containers[:].resources.limits.cpu
-            method: NEX
+    conditions:
+      attribute: jsonpath:$.spec.containers[:].resources.limits.cpu
+      method: NEX
 
     decision: block

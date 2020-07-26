@@ -55,7 +55,6 @@ func TestBET(t *testing.T) {
 	})
 }
 
-
 func TestBET2(t *testing.T) {
 
 	logging := false
@@ -75,19 +74,28 @@ func TestBET2(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
-		rules, err := YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2b.yaml")
+		rules, err := YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2.yaml")
 		So(err, ShouldEqual, nil)
-		condString:="((<jsonpath:$.kind-EQ-Deployment> || (<jsonpath:$.abc-EQ-ABC> && <jsonpath:$.def-EQ-DEF>)) && (<jsonpath:$.zzz-EQ-ZZZ> && <jsonpath:$.xyz-EQ-XYZ>))"
-		So(rules.Rules[0].ConditionsTree.String2(),ShouldEqual,condString)
+		condString := "<jsonpath:$.kind-EQ-Deployment>"
+		So(rules.Rules[0].ConditionsTree.String2(), ShouldEqual, condString)
+
+		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2a.yaml")
+		So(err, ShouldEqual, nil)
+		condString = "(<jsonpath:$.kind-EQ-Deployment>)"
+		So(rules.Rules[0].ConditionsTree.String2(), ShouldEqual, condString)
+
+		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2b.yaml")
+		So(err, ShouldEqual, nil)
+		condString = "((<jsonpath:$.kind-EQ-Deployment> || (<jsonpath:$.abc-EQ-ABC> && <jsonpath:$.def-EQ-DEF>)) && (<jsonpath:$.zzz-EQ-ZZZ> && <jsonpath:$.xyz-EQ-XYZ>))"
+		So(rules.Rules[0].ConditionsTree.String2(), ShouldEqual, condString)
 
 		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2c.yaml")
-		errStr:=fmt.Sprintf("%v",err)
+		errStr := fmt.Sprintf("%v", err)
 		So(errStr, ShouldEqual, "node type not supported. possible error: array of conditions without AND,OR (etc) parent")
 
-
 		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2d.yaml")
-		errStr=fmt.Sprintf("%v",err)
-		expectedError:=`yaml: unmarshal errors:
+		errStr = fmt.Sprintf("%v", err)
+		expectedError := `yaml: unmarshal errors:
   line 20: key "attribute" already set in map
   line 21: key "method" already set in map
   line 22: key "value" already set in map`
@@ -95,28 +103,24 @@ func TestBET2(t *testing.T) {
 
 		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2e0.yaml")
 		So(err, ShouldEqual, nil)
-		condStringExpected:="<jsonpath:$.abc-EQ-ABC>"
-		condString=rules.Rules[0].ConditionsTree.String2()
-		So(condString,ShouldEqual,condStringExpected)
+		condStringExpected := "<jsonpath:$.abc-EQ-ABC>"
+		condString = rules.Rules[0].ConditionsTree.String2()
+		So(condString, ShouldEqual, condStringExpected)
 
 		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2e1.yaml")
-		errStr=fmt.Sprintf("%v",err)
+		errStr = fmt.Sprintf("%v", err)
 		So(errStr, ShouldEqual, "node type not supported. possible error: array of conditions without AND,OR (etc) parent")
-
-
 
 		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2e2.yaml")
 		So(err, ShouldEqual, nil)
-		condStringExpected="(<jsonpath:$.abc-EQ-ABC>)"
-		condString=rules.Rules[0].ConditionsTree.String2()
-		So(condString,ShouldEqual,condStringExpected)
+		condStringExpected = "(<jsonpath:$.abc-EQ-ABC>)"
+		condString = rules.Rules[0].ConditionsTree.String2()
+		So(condString, ShouldEqual, condStringExpected)
 
 		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2e3.yaml")
 		So(err, ShouldEqual, nil)
-		condString=rules.Rules[0].ConditionsTree.String2()
-		So(condString,ShouldEqual,condStringExpected)
-
-
+		condString = rules.Rules[0].ConditionsTree.String2()
+		So(condString, ShouldEqual, condStringExpected)
 
 	})
 }

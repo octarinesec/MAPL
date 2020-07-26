@@ -67,17 +67,17 @@ func ParseAndValidateConditions(rule *RuleV2) error {
 	}
 	c := rule.Conditions
 
-	BET, err := ParseBooleanExpressionTree(c)
+	conditionsTree, err := ParseConditionsTree(c)
 	if err != nil {
 		return err
 	}
 
-	rule.ConditionsTree = BET
+	rule.ConditionsTree = conditionsTree
 
 	return nil
 }
 
-func ParseBooleanExpressionTree(c interface{}) (Node, error) {
+func ParseConditionsTree(c interface{}) (Node, error) {
 
 	BET, err := InterpretNode(c, "")
 	if err != nil {
@@ -105,6 +105,9 @@ func InterpretNode(node interface{}, parentString string) (Node, error) {
 func handleMapInterfaceInterface(v map[interface{}]interface{}, node interface{}, parentString string) (Node, error) {
 
 	// test if this is a condition:
+	cond0,ok:=node.(ConditionNode)
+	fmt.Println(ok)
+	fmt.Println(cond0)
 	cond, ok := ReadCondition(v)
 	if ok {
 		c, err := prepareOneConditionNode(cond)

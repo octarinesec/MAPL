@@ -12,10 +12,9 @@ rules:
       resourceType: "*"
       resourceName: "*"
     operation: "*"
-    DNFconditions:
-      - ANDconditions:
-          - attribute: jsonpath:$.spec.containers[:].labels.a
-            method: IN
-            value: "[A,B,C]"
+    conditions:
+      attribute: jsonpath:$.spec.containers[:].labels.a
+      method: IN
+      value: "[A,B,C]"
 
     decision: block

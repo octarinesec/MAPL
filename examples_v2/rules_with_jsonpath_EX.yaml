@@ -12,9 +12,8 @@ rules:
       resourceType: "*"
       resourceName: "*"
     operation: "*"
-    DNFconditions:
-      - ANDconditions:
-          - attribute: jsonpath:$.metadata.labels.foo
-            method: EX
+    conditions:
+      attribute: jsonpath:$.metadata.labels.foo
+      method: EX
 
     decision: block
