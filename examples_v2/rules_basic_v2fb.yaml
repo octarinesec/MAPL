@@ -15,15 +15,15 @@ rules:
     decision: allow
     conditions:
       ANY:
-        parentAttribute: jsonpath:$.spec.template.spec.containers[:]
+        parentJsonpathAttribute: jsonpath:$.spec.template.spec.containers[:]
         AND:
-          - attribute: jsonpath:$.a
+        - attribute: jsonpath:$.a
+          method: EQ
+          value: "A"
+        - OR:
+          - attribute: jsonpath:$.b
             method: EQ
-            value: "A"
-          - OR:
-            - attribute: jsonpath:$.b
-              method: EQ
-              value: "B"
-            - attribute: jsonpath:$.c
-              method: EQ
-              value: "C"
+            value: "B"
+          - attribute: jsonpath:$.c
+            method: EQ
+            value: "C"

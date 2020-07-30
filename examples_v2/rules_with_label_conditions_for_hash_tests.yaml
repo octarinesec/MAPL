@@ -12,18 +12,18 @@ rules:
       resourceType: path
       resourceName: "/*"
     operation: GET
-    DNFconditions:
-      - ANDconditions:
+    conditions:
+      OR:
+      - AND:
         - attribute: "senderLabel[key1]"
           method: EQ
           value: "abc"
         - attribute: "receiverLabel[key1]"
           method: EQ
           value: "abc"
-      - ANDconditions:
-        - attribute: "senderLabel[key2]"
-          method: EQ
-          value: "receiverLabel[key2]"
+      - attribute: "senderLabel[key2]"
+        method: EQ
+        value: "receiverLabel[key2]"
     decision: allow
 
   - rule_id: 1
@@ -38,12 +38,12 @@ rules:
       resourceType: path
       resourceName: "/*"
     operation: GET
-    DNFconditions:
-      - ANDconditions:
-        - attribute: "senderLabel[key2]"
-          method: EQ
-          value: "receiverLabel[key2]"
-      - ANDconditions:
+    conditions:
+      OR:
+      - attribute: "senderLabel[key2]"
+        method: EQ
+        value: "receiverLabel[key2]"
+      - AND:
         - attribute: "receiverLabel[key1]"
           method: EQ
           value: "abc"
@@ -65,22 +65,23 @@ rules:
       resourceType: path
       resourceName: "/*"
     operation: GET
-    DNFconditions:
-      - ANDconditions:
+    conditions:
+      OR:
+      - AND:
         - attribute: payloadSize
           method: LE
           value: 4096
         - attribute: payloadSize
           method: GE
           value: 1024
-      - ANDconditions:
+      - AND:
         - attribute: payloadSize
           method: LE
           value: 20000
         - attribute: payloadSize
           method: GE
           value: 16384
-      - ANDconditions:
+      - AND:
         - attribute: utcHoursFromMidnight
           method: LE
           value: 16
@@ -101,19 +102,20 @@ rules:
       resourceType: path
       resourceName: "/*"
     operation: GET
-    DNFconditions:
-      - ANDconditions:
+    conditions:
+      OR:
+      - AND:
         - attribute: payloadSize
           method: LE
           value: 4096
         - attribute: payloadSize
           method: GE
           value: 1024
-      - ANDconditions:
+      - AND:
         - attribute: payloadSize
           method: LE
           value: 20000
-      - ANDconditions:
+      - AND:
         - attribute: utcHoursFromMidnight
           method: LE
           value: 16
@@ -134,22 +136,23 @@ rules:
       resourceType: path
       resourceName: "/*"
     operation: GET
-    DNFconditions:
-      - ANDconditions:
+    conditions:
+      OR:
+      - AND:
         - attribute: payloadSize
           method: GE
           value: 1024
         - attribute: payloadSize
           method: LE
           value: 4096
-      - ANDconditions:
+      - AND:
         - attribute: payloadSize
           method: LE
           value: 20000
         - attribute: payloadSize
           method: GE
           value: 16384
-      - ANDconditions:
+      - AND:
         - attribute: utcHoursFromMidnight
           method: LE
           value: 16
@@ -170,15 +173,16 @@ rules:
       resourceType: path
       resourceName: "/*"
     operation: GET
-    DNFconditions:
-      - ANDconditions:
+    conditions:
+      OR:
+      - AND:
         - attribute: utcHoursFromMidnight
           method: LE
           value: 16
         - attribute: utcHoursFromMidnight
           method: GE
           value: 14
-      - ANDconditions:
+      - AND:
         - attribute: payloadSize
           method: GE
           value: 1024
@@ -188,9 +192,66 @@ rules:
         - attribute: payloadSize
           method: GE
           value: 16384
-      - ANDconditions:
+      - AND:
         - attribute: payloadSize
           method: LE
           value: 20000
 
     decision: block
+
+
+  - rule_id: 6
+    sender:
+      senderName: "*"
+      senderType: "workload"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: HTTP
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    conditions:
+      OR:
+      - AND:
+          attribute: "senderLabel[key2]"
+          method: EQ
+          value: "receiverLabel[key2]"
+      - AND:
+        - attribute: "receiverLabel[key1]"
+          method: EQ
+          value: "abc"
+        - attribute: "senderLabel[key1]"
+          method: EQ
+          value: "abc"
+
+    decision: allow
+
+  - rule_id: 7
+    sender:
+      senderName: "*"
+      senderType: "workload"
+    receiver:
+      receiverName: "*"
+      receiverType: "*"
+    protocol: HTTP
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    conditions:
+      OR:
+        - AND:
+          - attribute: "senderLabel[key2]"
+            method: EQ
+            value: "receiverLabel[key2]"
+        - AND:
+          - attribute: "receiverLabel[key1]"
+            method: EQ
+            value: "abc"
+          - attribute: "senderLabel[key1]"
+            method: EQ
+            value: "abc"
+
+    decision: allow

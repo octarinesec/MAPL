@@ -53,6 +53,7 @@ func YamlReadMessagesFromString(yamlString string) (Messages, error) {
 	AddNetIpToMessages(&messages)
 	parseLabelsJsonOfMessages(&messages)
 
+	/*
 	flag, outputString, err := IsNumberOfFieldsEqual(messages, yamlString)
 	if err != nil {
 		return Messages{}, err
@@ -62,6 +63,7 @@ func YamlReadMessagesFromString(yamlString string) (Messages, error) {
 		log.Printf("error: %s", err_str)
 		return Messages{}, fmt.Errorf(err_str)
 	}
+	 */
 	return messages, nil
 }
 

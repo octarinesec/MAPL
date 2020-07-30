@@ -1,4 +1,5 @@
 rules:
+
   - rule_id: 0
     sender:
       senderName: "A.my_namespace"
@@ -12,9 +13,14 @@ rules:
       resourceName: "*"
     operation: "*"
     conditions:
-      ANY:
-        parentJsonpathAttribute: jsonpath:$.spec.volumes[:]
-        conditions:
-          attribute: jsonpath:$relative.hostPath.path
-          method: EX
+      ALL:
+        parentJsonpathAttribute: "jsonpath:$.spec.containers[:]"
+        ALL:
+          parentJsonpathAttribute: "jsonpath:$relative.volumeMounts[:]"
+          condition:
+            attribute: "jsonpath:$relative.name"
+            method: EQ
+            value: "xxx"
+
+
     decision: block

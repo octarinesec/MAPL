@@ -1,6 +1,7 @@
 package MAPL_engine
 
 import (
+	"crypto/md5"
 	"errors"
 	"fmt"
 	"github.com/toolkits/slice"
@@ -91,7 +92,7 @@ func InterpretNode(node interface{}, parentString string) (Node, error) {
 	switch v := node.(type) {
 
 	case map[interface{}]interface{}:
-		return handleMapInterfaceInterface(v, node, parentString)
+		return handleMapInterfaceInterface(v, parentString)
 
 	case []interface{}: // array of nodes
 		return handleInterfaceArray(node, parentString)
@@ -102,50 +103,26 @@ func InterpretNode(node interface{}, parentString string) (Node, error) {
 	return nil, errors.New("can't parse conditions")
 }
 
-func handleMapInterfaceInterface(v map[interface{}]interface{}, node interface{}, parentString string) (Node, error) {
+func handleMapInterfaceInterface(v map[interface{}]interface{}, parentString string) (Node, error) {
 
+	v2 := mapInterfaceToMapString(v)
 	// test if this is a condition:
-	cond0, ok := node.(ConditionNode)
-	fmt.Println(ok)
-	fmt.Println(cond0)
-	cond, ok := ReadCondition(v)
-	if ok {
-		c, err := prepareOneConditionNode(cond)
+
+	if isConditionNode(v2) {
+		nodeOut, err := getNodeCondition(v2, parentString)
 		if err != nil {
 			return nil, err
-		}
-		if parentString != "" && parentString != "condition" {
-			nodes, err := getNodeByParentString(parentString)
-			if err != nil {
-				return nil, err
-			}
-			nodes.Append(c)
-			return nodes, nil
 		} else {
-			return c, nil
+			return nodeOut, nil
 		}
 	}
-	// else it is supposed to be an AND, OR (etc) node:
-	v2 := node.(map[interface{}]interface{})
+
+	// else it is supposed to be an AND, OR, ANY, ALL (etc) node:
 
 	switch parentString {
-	case "ANY":
-		if len(v2) != 2 {
-			return nil, fmt.Errorf("map of size differnet than 2 [ANY node]")
-		}
-		anyNode := &Any{}
-		for key, val := range (v2) {
-			if key.(string) == "parentAttribute" {
-				anyNode.parentJsonAttribute = val.(string)
-			} else {
-				node, err := InterpretNode(val, key.(string)) // recursion!
-				if err != nil {
-					return nil, err
-				}
-				anyNode.Append(node)
-			}
-		}
-		return anyNode, nil
+	case "ANY", "ALL":
+		anyAllNode, err := getAnyAllNode(v2, parentString)
+		return anyAllNode, err
 	default:
 		val, nodeType, err := getNodeValType(v2, parentString)
 		if err != nil {
@@ -158,19 +135,95 @@ func handleMapInterfaceInterface(v map[interface{}]interface{}, node interface{}
 		return node, nil
 
 	}
-
 	return nil, fmt.Errorf("can't interpret map[interface{}]interface{}")
 }
 
-func getNodeValType(node map[interface{}]interface{}, parentString string) (interface{}, string, error) {
-	if len(node) != 1 {
-		return nil, "", fmt.Errorf("map of size larger than 1 [%v node]", parentString)
+func getNodeCondition(v map[string]interface{}, parentString string) (Node, error) {
+
+	cond := ReadCondition(v)
+
+	c, err := prepareOneConditionNode(cond) // add regexes etc... and validate the condition
+	if err != nil {
+		return nil, err
+	}
+	if parentString != "" && parentString != "condition" { // add the condition to a AND,OR etc... Node
+		nodes, err := getNodeByParentString(parentString)
+		if err != nil {
+			return nil, err
+		}
+		nodes.Append(c)
+		return nodes, nil
+	} else { // just return the node
+		return c, nil
+	}
+}
+
+func getAnyAllNode(v2 map[string]interface{}, parentString string) (Node, error) {
+
+	keys := getKeys(v2)
+	if len(keys) != 2 {
+		return nil, fmt.Errorf("map of size different than 2 [ANY/ALL node]")
+	}
+	if !slice.ContainsString(keys, "parentJsonpathAttribute") {
+		return nil, fmt.Errorf("ANY/ALL node without 'parentJsonpathAttribute' key")
 	}
 
-	for key, val := range (node) {
-		return val, key.(string), nil
+	var anyAllNode AnyAllNode //OOP
+	if parentString == "ANY" {
+		anyAllNode = &Any{}
+	} else {
+		anyAllNode = &All{}
 	}
-	return nil, "", fmt.Errorf("not supposed to get here")
+
+	for key, val := range (v2) {
+		if key == "parentJsonpathAttribute" {
+			parentJsonpathAttribute := val.(string)
+			if isValidParentJsonpathAttribute(parentJsonpathAttribute) {
+				anyAllNode.SetParentJsonpathAttribute(parentJsonpathAttribute)
+			} else {
+				return nil, fmt.Errorf("invalid parentJsonpathAttribute [%v]",parentJsonpathAttribute)
+			}
+		} else {
+			node, err := InterpretNode(val, key) // recursion!
+			if err != nil {
+				return nil, err
+			}
+			anyAllNode.Append(node)
+		}
+	}
+	return anyAllNode, nil
+}
+
+func isValidParentJsonpathAttribute(parentJsonpathAttribute string) bool {
+	flag1 := strings.HasPrefix(parentJsonpathAttribute, "jsonpath:.")
+	flag2 := strings.HasPrefix(parentJsonpathAttribute, "jsonpath:$.")
+	flag3 := strings.HasPrefix(parentJsonpathAttribute, "jsonpath:$relative.")
+	if !flag1 && !flag2 && !flag3 {
+		return false
+	}
+	if !strings.HasSuffix(parentJsonpathAttribute, "[:]") {
+		return false
+	}
+	return true
+}
+
+func mapInterfaceToMapString(node map[interface{}]interface{}) map[string]interface{} {
+	node_out := make(map[string]interface{})
+	for k, val := range node {
+		node_out[k.(string)] = val
+	}
+	return node_out
+}
+
+func getNodeValType(node map[string]interface{}, parentString string) (interface{}, string, error) {
+
+	keys := getKeys(node)
+	if len(keys) != 1 {
+		return nil, "", fmt.Errorf("map of size larger than 1 [node] %v", parentString)
+	}
+	key := keys[0]
+	return node[key], key, nil
+
 }
 
 func prepareOneConditionNode(cond ConditionNode) (Node, error) {
@@ -186,7 +239,7 @@ func prepareOneConditionNode(cond ConditionNode) (Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	return c, nil
+	return &c, nil
 }
 
 func handleInterfaceArray(node interface{}, parentString string) (Node, error) {
@@ -199,7 +252,7 @@ func handleInterfaceArray(node interface{}, parentString string) (Node, error) {
 	for _, subNode := range (v2) {
 		subNode2, err := InterpretNode(subNode, "") // recursion!
 		if err != nil {
-			return nil, fmt.Errorf("can't parse subNode [%+v]", subNode)
+			return nil, fmt.Errorf("can't parse subNode [%+v]: %v", subNode,err)
 		}
 		nodes.Append(subNode2)
 	}
@@ -215,11 +268,8 @@ func getNodeByParentString(parentString string) (Node, error) {
 	case "OR":
 		return &Or{}, nil
 
-	case "ANY":
-		return &Any{}, nil
-
-	//case "ALL":
-	//	return &All{}, nil
+	case "ANY", "ALL":
+		return nil, fmt.Errorf("node of type ANY/ALL not according to spec")
 
 	default:
 		return nil, fmt.Errorf("node type not supported. possible error: array of conditions without AND,OR (etc) parent")
@@ -276,16 +326,11 @@ func PrepareRulesV2(rules *RulesV2) error {
 
 func PrepareOneRuleV2(rule *RuleV2) error {
 	// prepare the rules for use (when loading from json not all the fields are ready...)
-	/*
-		err := ValidateRule(rule)
-		if err != nil {
-			return err
-		}*/
+	// also do some validation on fields other than the conditions
 	err := ConvertFieldsToRegexV2(rule)
 	if err != nil {
 		return err
 	}
-	// err = ConvertConditionStringToIntFloatRegexV2(rule) // prepare the label conditions
 	return nil
 }
 
@@ -392,13 +437,44 @@ func ConvertConditionStringToIntFloatRegexV2(condition *Condition) error { // TO
 		i1 := strings.Index(condition.Attribute, ":") + 1
 		i2 := len(condition.Attribute)
 		netConditionAttribute := condition.Attribute[i1:i2]
+
+		condition.AttributeIsJsonpathRelative = false
+		if strings.Index(netConditionAttribute, "$relative.") == 0 {
+			condition.AttributeIsJsonpathRelative = true
+			netConditionAttribute = strings.Replace(netConditionAttribute, "$relative.", "$.", -1)
+		}
+
 		if netConditionAttribute[0] == '.' {
 			netConditionAttribute = "$" + netConditionAttribute
 		}
+
 		netConditionAttribute = strings.Replace(netConditionAttribute, "\"", "'", -1)
 		condition.AttributeJsonpathQuery = netConditionAttribute
 		condition.Attribute = "jsonpath"
 		condition.OriginalAttribute = originalAttribute // used in hash
 	}
 	return nil
+}
+
+func RuleToStringV2(rule RuleV2) string {
+
+	strMainPart := "<" + strings.ToLower(rule.Decision) + ">-<" + strings.ToLower(rule.Sender.SenderType) + ":" + rule.Sender.SenderName + ">-<" + strings.ToLower(rule.Receiver.ReceiverType) +
+		":" + rule.Receiver.ReceiverName + ">-" + strings.ToLower(rule.Operation) + "-" + strings.ToLower(rule.Protocol) + "-<" + rule.Resource.ResourceType + "-" + rule.Resource.ResourceName + ">"
+
+	ruleStr := strMainPart
+	if rule.ConditionsTree != nil {
+		conditionsString := rule.ConditionsTree.String()
+		ruleStr += "-" + conditionsString
+	}
+
+	return ruleStr
+}
+
+func RuleMD5HashV2(rule RuleV2) (md5hash string) {
+
+	ruleStr := RuleToStringV2(rule)
+	data := []byte(ruleStr)
+	md5hash = fmt.Sprintf("%x", md5.Sum(data))
+
+	return md5hash
 }

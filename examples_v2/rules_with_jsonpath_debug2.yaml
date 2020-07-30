@@ -11,8 +11,10 @@ rules:
       resourceType: "*"
       resourceName: "*"
     operation: "*"
-    Conditions:
-      AND:
-      - attribute: jsonpath:$.spec.volumes[:].hostPath.path
-        method: NEX
+    conditions:
+      ANY:
+        parentJsonpathAttribute: jsonpath:$.spec.volumes[:]
+        condition:
+          attribute: jsonpath:$relative.hostPath.path
+          method: NEX
     decision: block

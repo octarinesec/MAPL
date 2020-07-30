@@ -13,8 +13,9 @@ rules:
     operation: "*"
     conditions:
       ANY:
-        parentJsonpathAttribute: jsonpath:$.spec.volumes[:]
-        conditions:
-          attribute: jsonpath:$relative.hostPath.path
-          method: EX
+        parentJsonpathAttribute: jsonpath:$.spec.containers[:]
+        condition:
+          attribute: "jsonpath:$relative.resources.limits.cpu"
+          method: LT
+          value: 4
     decision: block

@@ -13,9 +13,13 @@ rules:
       resourceName: "/*"
     operation: GET
     decision: allow
+    metadata:
+      name: "xxx"
+      description: "yyy"
+
     conditions:
       ANY:
-        parentJsonpathAttribute: jsonpath:$.spec.template.spec.containers[:]
+        parentJsonpathAttribute: jsonpath:$.spec.containers
         condition:
           attribute: jsonpath:$.abc
           method: EQ

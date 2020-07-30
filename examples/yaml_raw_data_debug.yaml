@@ -9,13 +9,7 @@ spec:
       command:
         - /bin/sh
         - "-c"
-        - "while true; \
-           do \
-             docker run -d --name BOOM_\$(cat /dev/urandom | \
-             tr -cd 'a-f0-9' | \
-             head -c 6) nginx ; \
-             sleep 10 ; \
-           done"
+        - "while true; do docker run -d --name BOOM_(cat /dev/urandom | tr -cd 'a-f0-9' | head -c 6) nginx ; sleep 10 ; done"
       name: cloudbomb
       volumeMounts:
         - mountPath: /var/run/docker.sock

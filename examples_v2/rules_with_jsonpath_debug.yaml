@@ -12,7 +12,9 @@ rules:
       resourceName: "*"
     operation: "*"
     conditions:
-      AND:
-      - attribute: jsonpath:$.spec.volumes[:].hostPath.path
-        method: EX
+      ANY:
+        parentJsonpathAttribute: jsonpath:$.spec.volumes[:]
+        condition:
+          attribute: jsonpath:$relative.hostPath.path
+          method: EX
     decision: block

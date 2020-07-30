@@ -47,7 +47,7 @@ func TestConditionsTree(t *testing.T) {
 
 		node1 := And{[]Node{True{}, True{}, True{}}}
 		node2 := Or{[]Node{False{}, True{}, &node1}}
-		node3 := And{[]Node{condition}}
+		node3 := And{[]Node{&condition}}
 		node := And{[]Node{&node1, &node2, True{}, &node3}}
 		nodeEval := node.Eval(&message) // returns true
 		So(nodeEval, ShouldEqual, true)
@@ -77,17 +77,17 @@ func TestConditionsTree2(t *testing.T) {
 		rules, err := YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2a.yaml")
 		So(err, ShouldEqual, nil)
 		condString := "<jsonpath:$.kind-EQ-Deployment>"
-		So(rules.Rules[0].ConditionsTree.String2(), ShouldEqual, condString)
+		So(rules.Rules[0].ConditionsTree.String(), ShouldEqual, condString)
 
 		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2aa.yaml")
 		So(err, ShouldEqual, nil)
-		condString = "(<jsonpath:$.kind-EQ-Deployment> && <jsonpath:$.abc-EQ-ABC>)"
-		So(rules.Rules[0].ConditionsTree.String2(), ShouldEqual, condString)
+		condString = "(<jsonpath:$.abc-EQ-ABC> && <jsonpath:$.kind-EQ-Deployment>)"
+		So(rules.Rules[0].ConditionsTree.String(), ShouldEqual, condString)
 
 		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2b.yaml")
 		So(err, ShouldEqual, nil)
-		condString = "((<jsonpath:$.kind-EQ-Deployment> || (<jsonpath:$.abc-EQ-ABC> && <jsonpath:$.def-EQ-DEF>)) && (<jsonpath:$.zzz-EQ-ZZZ> && <jsonpath:$.xyz-EQ-XYZ>))"
-		So(rules.Rules[0].ConditionsTree.String2(), ShouldEqual, condString)
+		condString = "(((<jsonpath:$.abc-EQ-ABC> && <jsonpath:$.def-EQ-DEF>) || <jsonpath:$.kind-EQ-Deployment>) && (<jsonpath:$.xyz-EQ-XYZ> && <jsonpath:$.zzz-EQ-ZZZ>))"
+		So(rules.Rules[0].ConditionsTree.String(), ShouldEqual, condString)
 
 		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2c.yaml")
 		errStr := fmt.Sprintf("%v", err)
@@ -104,7 +104,7 @@ func TestConditionsTree2(t *testing.T) {
 		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2e0.yaml")
 		So(err, ShouldEqual, nil)
 		condStringExpected := "<jsonpath:$.abc-EQ-ABC>"
-		condString = rules.Rules[0].ConditionsTree.String2()
+		condString = rules.Rules[0].ConditionsTree.String()
 		So(condString, ShouldEqual, condStringExpected)
 
 		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2e1.yaml")
@@ -113,24 +113,24 @@ func TestConditionsTree2(t *testing.T) {
 
 		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2e2.yaml")
 		So(err, ShouldEqual, nil)
-		condStringExpected = "(<jsonpath:$.abc-EQ-ABC>)"
-		condString = rules.Rules[0].ConditionsTree.String2()
+		condStringExpected = "<jsonpath:$.abc-EQ-ABC>"
+		condString = rules.Rules[0].ConditionsTree.String()
 		So(condString, ShouldEqual, condStringExpected)
 
 		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2e3.yaml")
 		So(err, ShouldEqual, nil)
-		condString = rules.Rules[0].ConditionsTree.String2()
+		condString = rules.Rules[0].ConditionsTree.String()
 		So(condString, ShouldEqual, condStringExpected)
 
 		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2f.yaml")
 		So(err, ShouldEqual, nil)
 		condString = "[ANY<jsonpath:$.spec.template.spec.containers[:]>:<jsonpath:$.abc-EQ-ABC>]"
-		So(rules.Rules[0].ConditionsTree.String2(), ShouldEqual, condString)
+		So(rules.Rules[0].ConditionsTree.String(), ShouldEqual, condString)
 
 		rules, err = YamlReadRulesFromFileV2("../examples_v2/rules_basic_v2fb.yaml")
 		So(err, ShouldEqual, nil)
-		condString = "[ANY<jsonpath:$.spec.template.spec.containers[:]>:(<jsonpath:$.a-EQ-A> && (<jsonpath:$.b-EQ-B> || <jsonpath:$.c-EQ-C>))]"
-		So(rules.Rules[0].ConditionsTree.String2(), ShouldEqual, condString)
+		condString = "[ANY<jsonpath:$.spec.template.spec.containers[:]>:((<jsonpath:$.b-EQ-B> || <jsonpath:$.c-EQ-C>) && <jsonpath:$.a-EQ-A>)]"
+		So(rules.Rules[0].ConditionsTree.String(), ShouldEqual, condString)
 
 	})
 }

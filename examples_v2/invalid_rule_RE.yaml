@@ -17,8 +17,8 @@ rules:
       name: "xxx"
       description: "yyy"
 
-    DNFconditions:
-      - ANDconditions:
-          - attribute: jsonpath:$.kind
-            method: RE
-            value: "[gcr.io/loveholidays-ci-cd|eu.gcr.io/loveholidays-ci-cd]/.*"
+    conditions:
+      AND:
+        attribute: jsonpath:$.kind
+        method: RE
+        value: "[gcr.io/loveholidays-ci-cd|eu.gcr.io/loveholidays-ci-cd]/.*"

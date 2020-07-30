@@ -55,8 +55,18 @@ func validateAttribute(condition *Condition) (bool, error) {
 			return false, fmt.Errorf("invalid method for attribute 'EncryptionVersion'")
 		}
 	}
-	if strings.HasPrefix(condition.Attribute, "jsonpath:") && (!strings.HasPrefix(condition.Attribute, "jsonpath:$") && !strings.HasPrefix(condition.Attribute, "jsonpath:.")) {
-		return false, fmt.Errorf("jsonpath condition must start with '$' or '.'")
+	if strings.HasPrefix(condition.Attribute, "jsonpath:") {
+		if (!strings.HasPrefix(condition.Attribute, "jsonpath:$") && !strings.HasPrefix(condition.Attribute, "jsonpath:.")) {
+			return false, fmt.Errorf("jsonpath condition must start with '$' or '.' [%v]",condition.Attribute)
+		}
+		if strings.HasPrefix(condition.Attribute, "jsonpath:$") && !strings.HasPrefix(condition.Attribute, "jsonpath:$.") {
+			if !strings.HasPrefix(condition.Attribute, "jsonpath:$relative.") {
+				return false, fmt.Errorf("jsonpath condition must start with '$.' [%v]",condition.Attribute)
+			}
+		}
+		if strings.Contains(condition.Attribute, "[:]") {
+			return false, fmt.Errorf("jsonpath condition contains array reference. need to use parent node of type ANY/ALL")
+		}
 	}
 
 	flagLabels, err := validateConditionOnLabels(condition)
