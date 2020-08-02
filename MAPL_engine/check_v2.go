@@ -126,7 +126,7 @@ func CheckOneRuleV2(message *MessageAttributes, rule *RuleV2) int {
 	// ----------------------
 	// test conditions:
 	conditionsResult := true // if there are no conditions then we skip the test and return the rule.Decision
-	if rule.ConditionsTree != nil {
+	if rule.Conditions.ConditionsTree != nil {
 		conditionsResult = TestConditionsV2(rule, message)
 	}
 	if conditionsResult == false {
@@ -221,7 +221,7 @@ func TestConditionsV2(rule *RuleV2, message *MessageAttributes) bool { // to-do 
 	if rule.AlreadyConvertedFieldsToRegexFlag == false {
 		ConvertFieldsToRegexV2(rule)
 	}
-	return rule.ConditionsTree.Eval(message)
+	return rule.Conditions.ConditionsTree.Eval(message)
 
 }
 
