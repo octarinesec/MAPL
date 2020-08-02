@@ -373,6 +373,25 @@ func TestMaplEngineJsonConditionsWildcards(t *testing.T) {
 	Convey("tests", t, func() {
 
 
+
+				data:=[]byte(`{
+		  "metadata": {
+		    "labels": 
+		      {
+		        "name": "c1",
+		        "image": "busybox"
+		          }
+		        }
+		     }`)
+
+				z,err:=jsonslice.Get(data, "$.metadata.labels.*")
+				if err==nil {
+					fmt.Println(string(z))
+				}
+
+
+
+/*
 		data:=[]byte(`{
   "apiVersion": "v1",
   "kind": "Pod",
@@ -404,19 +423,19 @@ func TestMaplEngineJsonConditionsWildcards(t *testing.T) {
 		if err==nil {
 			fmt.Println(string(z))
 		}
-		/*z,err=jsonslice.Get(data, "$.spec.containers[*]")
+		z,err=jsonslice.Get(data, "$.spec.containers[*]")
 		if err==nil {
 			fmt.Println(string(z))
 		}
 		z,err=jsonslice.Get(data, "$..containers[:]")
 		if err==nil {
 			fmt.Println(string(z))
-		}*/
+		}
 		z,err=jsonslice.Get(data, "$..spec.containers[:]")
 		if err==nil {
 			fmt.Println(string(z))
 		}
-
+*/
 
 		results, _ := test_CheckMessagesWithRawData_v2("../examples_v2/rules_with_jsonpath_deepscan.yaml", "../examples/messages_base_jsonpath.yaml", "../examples/json_raw_data_2containers.json")
 		So(results[0], ShouldEqual, BLOCK)
