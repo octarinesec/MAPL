@@ -13,8 +13,11 @@ rules:
       resourceName: "*"
     operation: "*"
     conditions:
-      attribute: jsonpath:$.spec.containers[:].image
-      method: RE
-      value: "^..*:abc$"
+      ANY:
+        parentJsonpathAttribute: jsonpath:$.spec.containers[:]
+        condition:
+          attribute: jsonpath:$relative.labels.a
+          method: NIN
+          value: "[A,B,C]"
 
     decision: block

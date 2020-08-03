@@ -12,10 +12,11 @@ rules:
       resourceType: "*"
       resourceName: "*"
     operation: "*"
-    DNFconditions:
-      - ANDconditions:
-          - attribute: jsonpath:$.spec.containers[:].securityContext.runAsUser
-            method: EQ
-            value: 0
+    conditions:
+      ALL:
+        parentJsonpathAttribute: jsonpath:$.spec.containers[:]
+        condition:
+          attribute: jsonpath:$relative.resources.limits.cpu
+          method: EX
 
     decision: block

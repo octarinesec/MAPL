@@ -561,6 +561,8 @@ func TestMaplEngineJsonConditionsOnArraysAny(t *testing.T) {
 		So(results[0], ShouldEqual, DEFAULT)
 		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu5_mem2000.json")
 		So(results[0], ShouldEqual, DEFAULT)
+
+
 		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu_missing_from_one.json")
 		So(results[0], ShouldEqual, DEFAULT)
 		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu_missing_from_both.json")
@@ -635,6 +637,157 @@ func TestMaplEngineJsonConditionsOnArraysAll(t *testing.T) {
 
 	})
 }
+
+
+
+
+// The main test calls Test_CheckMessages with different sets of rule and message yaml files as inputs. The rule and message yaml files are stored in the examples folder.
+func TestMaplEngineJsonConditionsOnArraysAnyAll2(t *testing.T) {
+
+	logging := false
+	if logging {
+		// setup a log outfile file
+		f, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777) //create your file with desired read/write permissions
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Sync()
+		defer f.Close()
+		log.SetOutput(f) //set output of logs to f
+	} else {
+		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
+	}
+
+	reporting.QuietMode()
+	Convey("tests", t, func() {
+
+		// test on arrays
+		str := "test more jsonpath conditions on arrays"
+		fmt.Println(str)
+		//test on arrays with EQ, NEQ
+		str = "test jsonpath conditions on arrays with EQ/NEQ (the test returns true if one of the array value passes)"
+		fmt.Println(str)
+
+		results, _ := test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_EQ_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_EQ1.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_EQ_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_EQ2.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_EQ_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_EQ3.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NEQ_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_EQ1.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NEQ_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_EQ2.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NEQ_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_EQ3.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		fmt.Println("----------------------")
+
+		//test on arrays with IN, NIN
+		str = "test jsonpath conditions on arrays with IN/NIN (the test returns true if one of the array value passes)"
+		fmt.Println(str)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_IN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_a1.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_IN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_a2.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_IN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_a3.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_IN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_a4.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_IN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_a5.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NIN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_a1.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NIN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_a2.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NIN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_a3.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NIN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_a4.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NIN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_a5.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_IN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_no_a_no_b1.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_IN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_no_a_no_b2.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_IN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_a_b.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_IN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_a_b2.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_IN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_a_no_b.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_IN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_a_some_b.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_IN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_some_a_some_b.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NIN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_no_a_no_b1.json")
+		So(results[0], ShouldEqual, DEFAULT) // test on empty jsonpath result is false by default
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NIN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_no_a_no_b2.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NIN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_a_b.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NIN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_a_b2.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NIN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_a_no_b.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NIN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_a_some_b.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NIN_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_labels_some_a_some_b.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+		fmt.Println("----------------------")
+		//test on arrays with RE, NRE
+		str = "test jsonpath conditions on arrays with RE/NRE (the test returns true if one of the array value passes)"
+		fmt.Println(str)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_RE_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data0.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_RE_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_no_images.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_RE_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_one_image_no_abc.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_RE_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_one_image_abc.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_RE_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_two_images_no_abc.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_RE_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_two_images_one_abc.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_RE_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_two_images_two_abc.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NRE_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data0.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NRE_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_no_images.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NRE_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_one_image_no_abc.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NRE_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_one_image_abc.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NRE_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_two_images_no_abc.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NRE_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_two_images_one_abc.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NRE_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_two_images_two_abc.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_EX_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_cpu_not_missing.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NEX_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_cpu_not_missing.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_RE_on_array2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_password_in_env.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+	})
+}
+
 
 // The main test calls Test_CheckMessages with different sets of rule and message yaml files as inputs. The rule and message yaml files are stored in the examples folder.
 func TestMaplEngineJsonConditionsOnArraysMultilevel(t *testing.T) {

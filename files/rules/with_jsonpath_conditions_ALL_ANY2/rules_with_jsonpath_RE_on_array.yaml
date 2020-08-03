@@ -12,9 +12,13 @@ rules:
       resourceType: "*"
       resourceName: "*"
     operation: "*"
-    DNFconditions:
-      - ANDconditions:
-        - attribute: jsonpath:$.metadata.labels.foo
-          method: NEX
+    conditions:
+      ANY:
+        parentJsonpathAttribute: jsonpath:$.spec.containers[:]
+        condition:
+          attribute: jsonpath:$relative.image
+          method: RE
+          value: "^..*:abc$"
+
 
     decision: block

@@ -12,9 +12,12 @@ rules:
       resourceType: "*"
       resourceName: "*"
     operation: "*"
-    DNFconditions:
-      - ANDconditions:
-          - attribute: jsonpath:$.metadata.labels.foo
-            method: EX
+    conditions:
+      ANY:
+        parentJsonpathAttribute: jsonpath:$.spec.containers[:]
+        condition:
+          attribute: jsonpath:$relative.securityContext.runAsUser
+          method: EQ
+          value: 0
 
     decision: block

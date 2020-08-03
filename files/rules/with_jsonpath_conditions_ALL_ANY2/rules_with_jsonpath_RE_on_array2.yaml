@@ -13,8 +13,14 @@ rules:
       resourceName: "*"
     operation: "*"
     conditions:
-      attribute: jsonpath:$.spec.containers[:].labels.a
-      method: IN
-      value: "[A,B,C]"
+
+      ANY:
+        parentJsonpathAttribute: jsonpath:$.spec.template.spec.containers[:]
+        ANY:
+          parentJsonpathAttribute: jsonpath:$relative.env[:]
+          condition:
+            attribute: jsonpath:$relative.name
+            method: RE
+            value: ".*PASSWORD.*"
 
     decision: block
