@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-//
 type ConditionsTree struct {
 	ConditionsTree Node
 }
@@ -36,12 +35,14 @@ func (c *ConditionsTree) UnmarshalYAML(unmarshal func(interface{}) error) error 
 type Node interface {
 	Eval(message *MessageAttributes) bool
 	Append(node Node)
+	PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error
 	String() string // to-do: order terms so that hash will be the same
 }
 
 type AnyAllNode interface {
 	Eval(message *MessageAttributes) bool
 	Append(node Node)
+	PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error
 	String() string
 	SetParentJsonpathAttribute(parentJsonpathAttribute string)
 	GetParentJsonpathAttribute() string
@@ -55,17 +56,6 @@ type And struct {
 func (a *And) Eval(message *MessageAttributes) bool {
 	for _, node := range a.nodes {
 		flag := node.Eval(message)
-
-		// remove before release:
-		if false {
-			z := message.RequestJsonRawRelative
-			if z != nil {
-				fmt.Printf("%+v with %+v = %v\n", node.String(), string(*message.RequestJsonRawRelative), flag)
-			} else {
-				fmt.Printf("%+v with %+v = %v\n", node.String(), string(*message.RequestJsonRaw), flag)
-			}
-		}
-
 		if flag == false {
 			return false // no need to check the rest
 		}
@@ -74,6 +64,16 @@ func (a *And) Eval(message *MessageAttributes) bool {
 }
 func (a *And) Append(node Node) {
 	a.nodes = append(a.nodes, node)
+}
+
+func (a *And) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
+	for _, node := range a.nodes {
+		err := node.PrepareAndValidate(stringsAndlists)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (a *And) String() string {
@@ -120,6 +120,15 @@ func (o *Or) Eval(message *MessageAttributes) bool {
 func (o *Or) Append(node Node) {
 	o.nodes = append(o.nodes, node)
 }
+func (o *Or) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
+	for _, node := range o.nodes {
+		err := node.PrepareAndValidate(stringsAndlists)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 func (o *Or) String() string {
 	return AndOrString(o.nodes, " || ")
 }
@@ -152,6 +161,15 @@ func (a *Any) Eval(message *MessageAttributes) bool { // to-do: return errors
 }
 func (a *Any) Append(node Node) {
 	a.node = node
+}
+func (a *Any) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
+
+	err := a.PrepareAndValidate(stringsAndlists)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (a *Any) String() string {
@@ -226,6 +244,13 @@ func (a *All) Eval(message *MessageAttributes) bool {
 func (a *All) Append(node Node) {
 	a.node = node
 }
+func (a *All) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
+	err := a.PrepareAndValidate(stringsAndlists)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 func (a *All) String() string {
 	str := fmt.Sprintf("[ALL<%v>:%v]", a.parentJsonpathAttributeOriginal, a.node.String())
@@ -249,6 +274,9 @@ func (t True) Eval(message *MessageAttributes) bool {
 }
 func (t True) Append(node Node) {
 }
+func (t True) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
+	return nil
+}
 func (t True) String() string {
 	return "true"
 }
@@ -261,6 +289,9 @@ func (f False) Eval(message *MessageAttributes) bool {
 }
 func (f False) Append(node Node) {
 }
+func (f False) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
+	return nil
+}
 func (t False) String() string {
 	return "false"
 }
@@ -270,6 +301,23 @@ func (c *Condition) Eval(message *MessageAttributes) bool {
 	return testOneCondition(c, message)
 }
 func (c *Condition) Append(node Node) {
+}
+func (c *Condition) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
+	err := ReplaceStringsAndListsInCondition(c, stringsAndlists)
+	valid, err := ValidateOneCondition(c)
+	if err != nil {
+		return err
+	}
+	if !valid {
+		return fmt.Errorf("error in validating condition [%+v]", c)
+	}
+
+	err = ConvertConditionStringToIntFloatRegexV2(c)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
 
 /*
@@ -385,7 +433,7 @@ func getAnyAllNode(v2 map[string]interface{}, parentString string) (Node, error)
 			if isValidParentJsonpathAttribute(parentJsonpathAttribute) {
 				anyAllNode.SetParentJsonpathAttribute(parentJsonpathAttribute)
 			} else {
-				return nil, fmt.Errorf("invalid parentJsonpathAttribute [%v]",parentJsonpathAttribute)
+				return nil, fmt.Errorf("invalid parentJsonpathAttribute [%v]", parentJsonpathAttribute)
 			}
 		} else {
 			node, err := InterpretNode(val, key) // recursion!
@@ -439,10 +487,12 @@ func prepareOneConditionNode(cond ConditionNode) (Node, error) {
 	if !valid {
 		return nil, fmt.Errorf("error in validating condition [%+v]", cond)
 	}
-	err = ConvertConditionStringToIntFloatRegexV2(&c)
-	if err != nil {
-		return nil, err
-	}
+	/*
+		err = ConvertConditionStringToIntFloatRegexV2(&c)
+		if err != nil {
+			return nil, err
+		}
+	*/
 	return &c, nil
 }
 
@@ -456,7 +506,7 @@ func handleInterfaceArray(node interface{}, parentString string) (Node, error) {
 	for _, subNode := range (v2) {
 		subNode2, err := InterpretNode(subNode, "") // recursion!
 		if err != nil {
-			return nil, fmt.Errorf("can't parse subNode [%+v]: %v", subNode,err)
+			return nil, fmt.Errorf("can't parse subNode [%+v]: %v", subNode, err)
 		}
 		nodes.Append(subNode2)
 	}

@@ -23,12 +23,12 @@ func YamlReadRulesFromStringV2(yamlString string) (RulesV2, error) {
 	}
 
 	/*
-	for i_rule, _ := range (rules.Rules) {
-		err := ParseAndValidateConditions(&rules.Rules[i_rule])
-		if err != nil {
-			return RulesV2{}, err
-		}
-	}*/
+		for i_rule, _ := range (rules.Rules) {
+			err := ParseAndValidateConditions(&rules.Rules[i_rule])
+			if err != nil {
+				return RulesV2{}, err
+			}
+		}*/
 
 	err = PrepareRulesV2(&rules)
 	if err != nil {
@@ -56,6 +56,41 @@ func YamlReadRulesFromFileV2(filename string) (RulesV2, error) {
 	return rules, err
 }
 
+func YamlReadRulesFromStringWithPredefinedStrings(yamlString string, stringsAndlists PredefinedStringsAndLists) (RulesV2, error) {
+
+	var rules RulesV2
+	err := yaml.Unmarshal([]byte(yamlString), &rules)
+	if err != nil {
+		log.Printf("error: %v", err)
+		return RulesV2{}, err
+	}
+
+	err = PrepareRulesWithPredefinedStrings(&rules, stringsAndlists)
+	if err != nil {
+		return RulesV2{}, err
+	}
+
+	return rules, nil
+}
+
+func YamlReadRulesFromFileWithPredefinedStrings(filename string, stringsAndlists PredefinedStringsAndLists) (RulesV2, error) {
+
+	filename = strings.Replace(filename, "\\", "/", -1)
+
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return RulesV2{}, err
+	}
+
+	err = testYaml(data)
+	if err != nil {
+		return RulesV2{}, err
+	}
+
+	rules, err := YamlReadRulesFromStringWithPredefinedStrings(string(data), stringsAndlists)
+	return rules, err
+}
+
 func testYaml(data []byte) error {
 	var z interface{}
 	return yaml.UnmarshalStrict(data, &z)
@@ -79,7 +114,6 @@ func ParseAndValidateConditions(rule *RuleV2) error {
 	return nil
 }
 */
-
 
 // convertFieldsToRegex converts some rule fields into regular expressions to be used later.
 // This enables use of wildcards in the sender, receiver names, etc...
@@ -132,11 +166,151 @@ func PrepareRulesV2(rules *RulesV2) error {
 func PrepareOneRuleV2(rule *RuleV2) error {
 	// prepare the rules for use (when loading from json not all the fields are ready...)
 	// also do some validation on fields other than the conditions
+
 	err := ConvertFieldsToRegexV2(rule)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+
+func PrepareRulesWithPredefinedStrings(rules *RulesV2,stringsAndLists PredefinedStringsAndLists) error {
+
+	for i, _ := range (rules.Rules) {
+		err := PrepareOneRuleWithPredefinedStrings(&rules.Rules[i],stringsAndLists)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func PrepareOneRuleWithPredefinedStrings(rule *RuleV2,stringsAndLists PredefinedStringsAndLists) error {
+	// prepare the rules for use (when loading from json not all the fields are ready...)
+	// also do some validation on fields other than the conditions
+
+	if rule.Conditions.ConditionsTree != nil {
+		err := rule.Conditions.ConditionsTree.PrepareAndValidate(stringsAndLists)
+		if err != nil {
+			return err
+		}
+	}
+
+	err:=ReplaceStringsAndListsInOneRule(rule, stringsAndLists)
+	if err != nil {
+		return err
+	}
+	err = ConvertFieldsToRegexV2(rule)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+/*
+func ReplaceStringsAndListsInRules(rules *RulesV2, stringsAndlists PredefinedStringsAndLists) error {
+
+	for i, _ := range (rules.Rules) {
+		err := ReplaceStringsAndListsInOneRule(&rules.Rules[i], stringsAndlists)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+*/
+func ReplaceStringsAndListsInOneRule(rule *RuleV2, stringsAndLists PredefinedStringsAndLists) error {
+
+	newList, ok, isReplaceable := isReplacebleList(rule.Sender.SenderName, stringsAndLists)
+	if ok {
+		rule.Sender.SenderName = convertListToString(newList)
+	} else {
+		val, ok := isReplacebleString(rule.Sender.SenderName, stringsAndLists)
+		if ok {
+			rule.Sender.SenderName = val
+		}
+		if isReplaceable && !ok{
+			return fmt.Errorf("sender name is not predefined [%v]",rule.Sender.SenderName)
+		}
+	}
+
+	newList, ok,isReplaceable = isReplacebleList(rule.Receiver.ReceiverName, stringsAndLists)
+	if ok {
+		rule.Receiver.ReceiverName = convertListToString(newList)
+	} else {
+		val, ok := isReplacebleString(rule.Receiver.ReceiverName, stringsAndLists)
+		if ok {
+			rule.Receiver.ReceiverName = val
+		}
+		if isReplaceable && !ok {
+			return fmt.Errorf("receiver name is not predefined [%v]", rule.Receiver.ReceiverName)
+		}
+	}
+	return nil
+}
+func ReplaceStringsAndListsInCondition(c *Condition, stringsAndlists PredefinedStringsAndLists) error {
+	newList, ok,isReplaceable := isReplacebleList(c.Value, stringsAndlists)
+	if ok {
+		newValue := ""
+		if c.Method == "RE" || c.Method == "NRE" {
+			newValue = convertListToRegexString(newList)
+			_, err := regexp.Compile(newValue)
+			if err == nil {
+				return err
+			}
+		} else {
+			newValue = convertListToString(newList)
+		}
+		c.Value = newValue
+	} else {
+		newValue, ok := isReplacebleString(c.Value, stringsAndlists)
+		if ok {
+			c.Value = newValue
+		}else{
+			if isReplaceable{
+				return fmt.Errorf("condition value is not predefined [%v]", c.Value)
+			}
+		}
+	}
+	return nil
+}
+func convertListToString(list []string) string {
+	str := strings.Join(list, ",")
+	return str
+}
+
+func convertListToRegexString(list []string) string {
+	str := strings.Join(list, "|")
+	return str
+}
+
+func isReplacebleString(x string, stringsAndlists PredefinedStringsAndLists) (string, bool) {
+	if strings.HasPrefix(x, "#") {
+		x = strings.Replace(x, "#", "", -1)
+		val, ok := stringsAndlists.PredefinedStrings[x]
+		if ok {
+			return val, ok
+		}
+	}
+	return "", false
+}
+
+func isReplacebleList(x string, stringsAndlists PredefinedStringsAndLists) ([]string, bool,bool) {
+	if strings.HasPrefix(x, "#") {
+		x = strings.Replace(x, "#", "", -1)
+		keys, ok := stringsAndlists.PredefinedLists[x]
+		if ok {
+			list:=[]string{}
+			for _,key:=range(keys){
+				list=append(list,stringsAndlists.PredefinedStrings[key])
+			}
+			return list, ok,true
+		}else{
+			return []string{}, false,true
+		}
+	}
+	return []string{}, false,false
 }
 
 func ConvertConditionStringToIntFloatRegexV2(condition *Condition) error { // TO-DO: cut to sub-functions

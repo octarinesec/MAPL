@@ -1,0 +1,21 @@
+messages:
+  
+- message_id: 0
+  sender_service: A.my_namespace
+  receiver_service: abc
+  request_protocol: HTTP
+  request_path: /book/123
+  request_method: GET
+  request_size: 1024
+  request_time: 2018-07-29T14:30:00-07:00
+  request_user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36
+
+- message_id: 0
+  sender_service: A.my_namespace
+  receiver_service: def
+  request_protocol: HTTP
+  request_path: /book/123
+  request_method: GET
+  request_size: 1024
+  request_time: 2018-07-29T14:30:00-07:00
+  request_user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36

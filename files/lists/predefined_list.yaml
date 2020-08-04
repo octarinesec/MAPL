@@ -1,0 +1,8 @@
+predefinedStrings:
+  string1: "abc"
+  string2: "def"
+
+predefinedLists:
+  list1:
+    -  string1
+    -  string2

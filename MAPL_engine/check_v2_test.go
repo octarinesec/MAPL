@@ -41,6 +41,7 @@ func TestMaplEngineV2(t *testing.T) {
 
 	})
 }
+
 // TODO: test json path with '*'
 func TestRuleHashes(t *testing.T) { //To-do: re-write
 
@@ -352,7 +353,6 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 	})
 }
 
-
 func TestMaplEngineJsonConditionsWildcards(t *testing.T) {
 
 	logging := false
@@ -372,9 +372,7 @@ func TestMaplEngineJsonConditionsWildcards(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
-
-
-				data:=[]byte(`{
+		data := []byte(`{
 		  "metadata": {
 		    "labels": 
 		      {
@@ -384,62 +382,59 @@ func TestMaplEngineJsonConditionsWildcards(t *testing.T) {
 		        }
 		     }`)
 
-				z,err:=jsonslice.Get(data, "$.metadata.labels.*")
-				if err==nil {
-					fmt.Println(string(z))
-				}
-
-
-
-/*
-		data:=[]byte(`{
-  "apiVersion": "v1",
-  "kind": "Pod",
-  "spec": {
-    "containers": [
-      {
-        "name": "c1",
-        "image": "busybox",
-        "resources": {
-          "limits": {
-            "cpu": "2"
-          }
-        }
-      },
-      {
-        "name": "c2",
-        "image": "busybox",
-        "resources": {
-          "limits": {
-            "cpu": "2"
-          }
-        }
-      }
-    ]
-  }
-}`)
-
-		z,err:=jsonslice.Get(data, "$.spec.containers[:]")
-		if err==nil {
+		z, err := jsonslice.Get(data, "$.metadata.labels.*")
+		if err == nil {
 			fmt.Println(string(z))
 		}
-		z,err=jsonslice.Get(data, "$.spec.containers[*]")
-		if err==nil {
-			fmt.Println(string(z))
-		}
-		z,err=jsonslice.Get(data, "$..containers[:]")
-		if err==nil {
-			fmt.Println(string(z))
-		}
-		z,err=jsonslice.Get(data, "$..spec.containers[:]")
-		if err==nil {
-			fmt.Println(string(z))
-		}
-*/
+
+		/*
+		   		data:=[]byte(`{
+		     "apiVersion": "v1",
+		     "kind": "Pod",
+		     "spec": {
+		       "containers": [
+		         {
+		           "name": "c1",
+		           "image": "busybox",
+		           "resources": {
+		             "limits": {
+		               "cpu": "2"
+		             }
+		           }
+		         },
+		         {
+		           "name": "c2",
+		           "image": "busybox",
+		           "resources": {
+		             "limits": {
+		               "cpu": "2"
+		             }
+		           }
+		         }
+		       ]
+		     }
+		   }`)
+
+		   		z,err:=jsonslice.Get(data, "$.spec.containers[:]")
+		   		if err==nil {
+		   			fmt.Println(string(z))
+		   		}
+		   		z,err=jsonslice.Get(data, "$.spec.containers[*]")
+		   		if err==nil {
+		   			fmt.Println(string(z))
+		   		}
+		   		z,err=jsonslice.Get(data, "$..containers[:]")
+		   		if err==nil {
+		   			fmt.Println(string(z))
+		   		}
+		   		z,err=jsonslice.Get(data, "$..spec.containers[:]")
+		   		if err==nil {
+		   			fmt.Println(string(z))
+		   		}
+		*/
 
 		results, _ := test_CheckMessagesWithRawData_v2("../files/rules/deepscan/rules_with_jsonpath_deepscan.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/deepscan/json_raw_data_2containers.json")
 		So(results[0], ShouldEqual, BLOCK)
-
 
 	})
 }
@@ -562,7 +557,6 @@ func TestMaplEngineJsonConditionsOnArraysAny(t *testing.T) {
 		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu5_mem2000.json")
 		So(results[0], ShouldEqual, DEFAULT)
 
-
 		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu_missing_from_one.json")
 		So(results[0], ShouldEqual, DEFAULT)
 		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu_missing_from_both.json")
@@ -637,9 +631,6 @@ func TestMaplEngineJsonConditionsOnArraysAll(t *testing.T) {
 
 	})
 }
-
-
-
 
 // The main test calls Test_CheckMessages with different sets of rule and message yaml files as inputs. The rule and message yaml files are stored in the examples folder.
 func TestMaplEngineJsonConditionsOnArraysAnyAll2(t *testing.T) {
@@ -780,14 +771,11 @@ func TestMaplEngineJsonConditionsOnArraysAnyAll2(t *testing.T) {
 		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NEX_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_2containers_cpu_not_missing.json")
 		So(results[0], ShouldEqual, DEFAULT)
 
-
-
 		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_RE_on_array2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_password_in_env.json")
 		So(results[0], ShouldEqual, BLOCK)
 
 	})
 }
-
 
 // The main test calls Test_CheckMessages with different sets of rule and message yaml files as inputs. The rule and message yaml files are stored in the examples folder.
 func TestMaplEngineJsonConditionsOnArraysMultilevel(t *testing.T) {
@@ -866,7 +854,6 @@ func TestRuleValidationV2(t *testing.T) {
 		fmt.Println(err)
 		So(isvalid_all, ShouldEqual, false)
 
-
 		isvalid_all, err = test_RuleValidityV2("../files/rules/invalid_rules/invalid_rule_Attribute2.yaml")
 		fmt.Println(err)
 		So(isvalid_all, ShouldEqual, false)
@@ -926,6 +913,63 @@ func TestRuleValidationV2(t *testing.T) {
 	})
 }
 
+func TestRulesWithPredefinedStrings(t *testing.T) {
+
+	logging := false
+	if logging {
+		// setup a log outfile file
+		f, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777) //create your file with desired read/write permissions
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Sync()
+		defer f.Close()
+		log.SetOutput(f) //set output of logs to f
+	} else {
+		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
+	}
+
+	reporting.QuietMode()
+	Convey("tests", t, func() {
+
+		results, rules, err := test_CheckMessagesWithPredefinedStrings_v2("../files/rules/predefined_strings/rules_with_sender_translation_invalid.yaml", "../files/messages/predefined_strings/messages_basic_sender_name.yaml", "../files/lists/predefined_string.yaml")
+		errStr := fmt.Sprintf("%v", err)
+		So(errStr, ShouldEqual, "sender name is not predefined [#not_existing]")
+
+		results, rules, _ = test_CheckMessagesWithPredefinedStrings_v2("../files/rules/predefined_strings/rules_with_sender_translation.yaml", "../files/messages/predefined_strings/messages_basic_sender_name.yaml", "../files/lists/predefined_string.yaml")
+		So(rules.Rules[0].Sender.SenderName, ShouldEqual, "abc")
+		So(results[0], ShouldEqual, ALLOW)
+		So(results[1], ShouldEqual, DEFAULT)
+
+		results, rules, _ = test_CheckMessagesWithPredefinedStrings_v2("../files/rules/predefined_strings/rules_with_receiver_translation.yaml", "../files/messages/predefined_strings/messages_basic_receiver_name.yaml", "../files/lists/predefined_string.yaml")
+		So(rules.Rules[0].Receiver.ReceiverName, ShouldEqual, "abc")
+		So(results[0], ShouldEqual, ALLOW)
+		So(results[1], ShouldEqual, DEFAULT)
+
+		results, rules, _ = test_CheckMessagesWithPredefinedStrings_v2("../files/rules/predefined_strings/rules_with_sender_translation_list.yaml", "../files/messages/predefined_strings/messages_basic_sender_name.yaml", "../files/lists/predefined_list.yaml")
+		So(rules.Rules[0].Sender.SenderName, ShouldEqual, "abc,def")
+		So(results[0], ShouldEqual, ALLOW)
+		So(results[1], ShouldEqual, ALLOW)
+
+		results, rules, _ = test_CheckMessagesWithPredefinedStrings_v2("../files/rules/predefined_strings/rules_with_receiver_translation_list.yaml", "../files/messages/predefined_strings/messages_basic_receiver_name.yaml", "../files/lists/predefined_list.yaml")
+		So(rules.Rules[0].Receiver.ReceiverName, ShouldEqual, "abc,def")
+		So(results[0], ShouldEqual, ALLOW)
+		So(results[1], ShouldEqual, ALLOW)
+
+		results,rules, _ = test_CheckMessagesWithRawDataAndPredefinedStrings_v2("../files/rules/predefined_strings/rules_with_condition_translation_list.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/predefined_strings/json_raw_workload_dep.json", "../files/lists/predefined_list_workload.yaml")
+		z:=rules.Rules[0].Conditions.ConditionsTree.String()
+		So(z,ShouldEqual,"<jsonpath:$.kind-RE-^Deployment$|^Pod$>")
+		So(results[0], ShouldEqual, ALLOW)
+
+		results,rules, _ = test_CheckMessagesWithRawDataAndPredefinedStrings_v2("../files/rules/predefined_strings/rules_with_condition_translation_list.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/predefined_strings/json_raw_workload_pod.json", "../files/lists/predefined_list_workload.yaml")
+		So(results[0], ShouldEqual, ALLOW)
+
+		results,rules, _ = test_CheckMessagesWithRawDataAndPredefinedStrings_v2("../files/rules/predefined_strings/rules_with_condition_translation_list.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/predefined_strings/json_raw_workload_job.json", "../files/lists/predefined_list_workload.yaml")
+		So(results[0], ShouldEqual, DEFAULT)
+
+	})
+}
+
 // Test_CheckMessages reads the rules and messages from yaml files and output the decision for each message to the stdout
 func test_CheckMessages_v2(rulesFilename string, messagesFilename string) ([]int, error) {
 
@@ -958,9 +1002,53 @@ func test_CheckMessages_v2(rulesFilename string, messagesFilename string) ([]int
 
 }
 
-func readRulesMessageRawData(rulesFilename, messagesFilename, rawFilename string) (RulesV2, Messages, []byte, error) {
+// Test_CheckMessages reads the rules and messages from yaml files and output the decision for each message to the stdout
+func test_CheckMessagesWithPredefinedStrings_v2(rulesFilename string, messagesFilename string, stringListFilename string) ([]int, RulesV2, error) {
 
-	rules, err := YamlReadRulesFromFileV2(rulesFilename)
+	predefinedStringsAndLists, err := YamlReadStringListsFromFile(stringListFilename)
+	fmt.Println(predefinedStringsAndLists)
+
+	rules, err := YamlReadRulesFromFileWithPredefinedStrings(rulesFilename, predefinedStringsAndLists)
+	if err != nil {
+		return []int{}, rules, err
+	}
+	fmt.Printf("rules = %+v\n", rules)
+
+	messages, err := YamlReadMessagesFromFile(messagesFilename)
+	if err != nil {
+		return []int{}, rules, err
+	}
+
+	var outputResults []int
+
+	for i_message, message := range (messages.Messages) {
+
+		result, msg, relevantRuleIndex, _, appliedRulesIndices, _ := CheckV2(&message, &rules)
+		if relevantRuleIndex >= 0 {
+			fmt.Printf("message #%v: decision=%v [%v] by rule #%v ; applicable rules =%v \n", i_message, result, msg, rules.Rules[relevantRuleIndex].RuleID, appliedRulesIndices)
+		} else {
+			fmt.Printf("message #%v: decision=%v [%v]\n", i_message, result, msg)
+		}
+		outputResults = append(outputResults, result)
+
+	}
+
+	return outputResults, rules, nil
+
+}
+
+func readRulesMessageRawData(rulesFilename, messagesFilename, rawFilename, stringListFilename string) (RulesV2, Messages, []byte, error) {
+
+	predefinedStringsAndLists := PredefinedStringsAndLists{}
+	err := fmt.Errorf("error")
+	if len(stringListFilename) > 0 {
+		predefinedStringsAndLists, err = YamlReadStringListsFromFile(stringListFilename)
+		if err != nil {
+			fmt.Printf("error: %v", err)
+			return RulesV2{}, Messages{}, []byte{}, err
+		}
+	}
+	rules, err := YamlReadRulesFromFileWithPredefinedStrings(rulesFilename, predefinedStringsAndLists)
 	if err != nil {
 		fmt.Printf("error: %v", err)
 		return RulesV2{}, Messages{}, []byte{}, err
@@ -986,9 +1074,9 @@ func readRulesMessageRawData(rulesFilename, messagesFilename, rawFilename string
 	return rules, messages, data, nil
 }
 
-func test_CheckMessagesWithRawData_v2(rulesFilename string, messagesFilename string, rawFilename string) ([]int, error) {
+func test_CheckMessagesWithRawData_v2(rulesFilename, messagesFilename, rawFilename string) ([]int, error) {
 
-	rules, messages, data, err := readRulesMessageRawData(rulesFilename, messagesFilename, rawFilename)
+	rules, messages, data, err := readRulesMessageRawData(rulesFilename, messagesFilename, rawFilename, "")
 	if err != nil {
 		return []int{}, err
 	}
@@ -1010,10 +1098,34 @@ func test_CheckMessagesWithRawData_v2(rulesFilename string, messagesFilename str
 	}
 	return outputResults, nil
 }
+func test_CheckMessagesWithRawDataAndPredefinedStrings_v2(rulesFilename, messagesFilename, rawFilename, stringsAndListsFilename string) ([]int, RulesV2, error) {
+
+	rules, messages, data, err := readRulesMessageRawData(rulesFilename, messagesFilename, rawFilename, stringsAndListsFilename)
+	if err != nil {
+		return []int{}, RulesV2{}, err
+	}
+
+	var outputResults []int
+
+	for i_message, message := range (messages.Messages) {
+
+		message.RequestJsonRaw = &data
+
+		result, msg, relevantRuleIndex, _, appliedRulesIndices, _ := CheckV2(&message, &rules)
+		if relevantRuleIndex >= 0 {
+			fmt.Printf("message #%v: decision=%v [%v] by rule #%v ; applicable rules =%v \n", i_message, result, msg, rules.Rules[relevantRuleIndex].RuleID, appliedRulesIndices)
+		} else {
+			fmt.Printf("message #%v: decision=%v [%v]\n", i_message, result, msg)
+		}
+		outputResults = append(outputResults, result)
+
+	}
+	return outputResults, rules, nil
+}
 
 func test_ConditionsWithJsonRaw_v2(rulesFilename string, messagesFilename string, rawFilename string) ([][]bool, error) {
 
-	rules, messages, data, err := readRulesMessageRawData(rulesFilename, messagesFilename, rawFilename)
+	rules, messages, data, err := readRulesMessageRawData(rulesFilename, messagesFilename, rawFilename, "")
 	if err != nil {
 		return [][]bool{}, err
 	}
@@ -1042,8 +1154,6 @@ func test_RuleValidityV2(rulesFilename string) (bool, error) {
 	}
 	return true, nil
 }
-
-
 
 // Test_MD5Hash reads the rules outputs the MD5 hash of the rule
 func test_MD5HashV2(rulesFilename string) ([]string, error) {

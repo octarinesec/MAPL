@@ -1,0 +1,8 @@
+predefinedStrings:
+  dep: "Deployment"
+  pod: "Pod"
+
+predefinedLists:
+  workload:
+    -  dep
+    -  pod

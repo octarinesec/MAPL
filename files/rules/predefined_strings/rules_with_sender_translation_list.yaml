@@ -1,0 +1,18 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "#list1"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    decision: allow
+
+  
+
