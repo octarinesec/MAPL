@@ -1,0 +1,16 @@
+{
+  "kind": "Pod",
+  "apiVersion": "extensions/v1beta1",
+  "metadata": {
+    "name": "cart",
+    "namespace": "robot",
+    "uid": "f517e208-ce38-11e9-b19f-368d5550c416",
+    "resourceVersion": "167849",
+    "generation": 21,
+    "creationTimestamp": "2019-09-03T10:52:43Z",
+    "labels": {
+      "foo": "abc",
+      "foofoo": "barbar"
+    }
+  }
+}

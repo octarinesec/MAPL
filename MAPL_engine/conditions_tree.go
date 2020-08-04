@@ -164,7 +164,7 @@ func (a *Any) Append(node Node) {
 }
 func (a *Any) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
 
-	err := a.PrepareAndValidate(stringsAndlists)
+	err := a.node.PrepareAndValidate(stringsAndlists)
 	if err != nil {
 		return err
 	}
@@ -245,7 +245,7 @@ func (a *All) Append(node Node) {
 	a.node = node
 }
 func (a *All) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
-	err := a.PrepareAndValidate(stringsAndlists)
+	err := a.node.PrepareAndValidate(stringsAndlists)
 	if err != nil {
 		return err
 	}
@@ -304,6 +304,9 @@ func (c *Condition) Append(node Node) {
 }
 func (c *Condition) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
 	err := ReplaceStringsAndListsInCondition(c, stringsAndlists)
+	if err != nil {
+		return err
+	}
 	valid, err := ValidateOneCondition(c)
 	if err != nil {
 		return err

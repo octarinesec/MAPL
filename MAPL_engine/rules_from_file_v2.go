@@ -22,15 +22,8 @@ func YamlReadRulesFromStringV2(yamlString string) (RulesV2, error) {
 		return RulesV2{}, err
 	}
 
-	/*
-		for i_rule, _ := range (rules.Rules) {
-			err := ParseAndValidateConditions(&rules.Rules[i_rule])
-			if err != nil {
-				return RulesV2{}, err
-			}
-		}*/
-
-	err = PrepareRulesV2(&rules)
+	//err = PrepareRulesV2(&rules)
+	err = PrepareRulesWithPredefinedStrings(&rules, PredefinedStringsAndLists{})
 	if err != nil {
 		return RulesV2{}, err
 	}
@@ -256,7 +249,7 @@ func ReplaceStringsAndListsInCondition(c *Condition, stringsAndlists PredefinedS
 		if c.Method == "RE" || c.Method == "NRE" {
 			newValue = convertListToRegexString(newList)
 			_, err := regexp.Compile(newValue)
-			if err == nil {
+			if err != nil {
 				return err
 			}
 		} else {

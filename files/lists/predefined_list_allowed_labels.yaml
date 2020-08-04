@@ -1,0 +1,18 @@
+predefinedStrings:
+  allowed_label_string1: "bar"
+  allowed_label_string2: "xyz"
+  allowed_label_regex1: "bar"
+  allowed_label_regex2: "xyz"
+  allowed_label_regex1_B: "b.r"
+  allowed_label_regex2_B: "^x[yY]z"
+
+predefinedLists:
+  allowed_labels:
+    -  allowed_label_string1
+    -  allowed_label_string2
+  allowed_labels_regex:
+    -  allowed_label_regex1
+    -  allowed_label_regex2
+  allowed_labels_regex2:
+    - allowed_label_regex1_B
+    - allowed_label_regex2_B
