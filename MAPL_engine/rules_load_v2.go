@@ -167,11 +167,10 @@ func PrepareOneRuleV2(rule *RuleV2) error {
 	return nil
 }
 
-
-func PrepareRulesWithPredefinedStrings(rules *RulesV2,stringsAndLists PredefinedStringsAndLists) error {
+func PrepareRulesWithPredefinedStrings(rules *RulesV2, stringsAndLists PredefinedStringsAndLists) error {
 
 	for i, _ := range (rules.Rules) {
-		err := PrepareOneRuleWithPredefinedStrings(&rules.Rules[i],stringsAndLists)
+		err := PrepareOneRuleWithPredefinedStrings(&rules.Rules[i], stringsAndLists)
 		if err != nil {
 			return err
 		}
@@ -179,7 +178,7 @@ func PrepareRulesWithPredefinedStrings(rules *RulesV2,stringsAndLists Predefined
 	return nil
 }
 
-func PrepareOneRuleWithPredefinedStrings(rule *RuleV2,stringsAndLists PredefinedStringsAndLists) error {
+func PrepareOneRuleWithPredefinedStrings(rule *RuleV2, stringsAndLists PredefinedStringsAndLists) error {
 	// prepare the rules for use (when loading from json not all the fields are ready...)
 	// also do some validation on fields other than the conditions
 
@@ -190,7 +189,7 @@ func PrepareOneRuleWithPredefinedStrings(rule *RuleV2,stringsAndLists Predefined
 		}
 	}
 
-	err:=ReplaceStringsAndListsInOneRule(rule, stringsAndLists)
+	err := ReplaceStringsAndListsInOneRule(rule, stringsAndLists)
 	if err != nil {
 		return err
 	}
@@ -215,24 +214,24 @@ func ReplaceStringsAndListsInRules(rules *RulesV2, stringsAndlists PredefinedStr
 */
 func ReplaceStringsAndListsInOneRule(rule *RuleV2, stringsAndLists PredefinedStringsAndLists) error {
 
-	newList, ok, isReplaceable := isReplacebleList(rule.Sender.SenderName, stringsAndLists)
+	newList, ok, isReplaceable := isReplaceableList(rule.Sender.SenderName, stringsAndLists)
 	if ok {
 		rule.Sender.SenderName = convertListToString(newList)
 	} else {
-		val, ok := isReplacebleString(rule.Sender.SenderName, stringsAndLists)
+		val, ok := isReplaceableString(rule.Sender.SenderName, stringsAndLists)
 		if ok {
 			rule.Sender.SenderName = val
 		}
-		if isReplaceable && !ok{
-			return fmt.Errorf("sender name is not predefined [%v]",rule.Sender.SenderName)
+		if isReplaceable && !ok {
+			return fmt.Errorf("sender name is not predefined [%v]", rule.Sender.SenderName)
 		}
 	}
 
-	newList, ok,isReplaceable = isReplacebleList(rule.Receiver.ReceiverName, stringsAndLists)
+	newList, ok, isReplaceable = isReplaceableList(rule.Receiver.ReceiverName, stringsAndLists)
 	if ok {
 		rule.Receiver.ReceiverName = convertListToString(newList)
 	} else {
-		val, ok := isReplacebleString(rule.Receiver.ReceiverName, stringsAndLists)
+		val, ok := isReplaceableString(rule.Receiver.ReceiverName, stringsAndLists)
 		if ok {
 			rule.Receiver.ReceiverName = val
 		}
@@ -243,7 +242,7 @@ func ReplaceStringsAndListsInOneRule(rule *RuleV2, stringsAndLists PredefinedStr
 	return nil
 }
 func ReplaceStringsAndListsInCondition(c *Condition, stringsAndlists PredefinedStringsAndLists) error {
-	newList, ok,isReplaceable := isReplacebleList(c.Value, stringsAndlists)
+	newList, ok, isReplaceable := isReplaceableList(c.Value, stringsAndlists)
 	if ok {
 		newValue := ""
 		if c.Method == "RE" || c.Method == "NRE" {
@@ -257,11 +256,11 @@ func ReplaceStringsAndListsInCondition(c *Condition, stringsAndlists PredefinedS
 		}
 		c.Value = newValue
 	} else {
-		newValue, ok := isReplacebleString(c.Value, stringsAndlists)
+		newValue, ok := isReplaceableString(c.Value, stringsAndlists)
 		if ok {
 			c.Value = newValue
-		}else{
-			if isReplaceable{
+		} else {
+			if isReplaceable {
 				return fmt.Errorf("condition value is not predefined [%v]", c.Value)
 			}
 		}
@@ -278,9 +277,9 @@ func convertListToRegexString(list []string) string {
 	return str
 }
 
-func isReplacebleString(x string, stringsAndlists PredefinedStringsAndLists) (string, bool) {
+func isReplaceableString(x string, stringsAndlists PredefinedStringsAndLists) (string, bool) {
 	if strings.HasPrefix(x, "#") {
-		x = strings.Replace(x, "#", "", -1)
+		x = strings.Replace(x, "#", "", 1)
 		val, ok := stringsAndlists.PredefinedStrings[x]
 		if ok {
 			return val, ok
@@ -288,34 +287,48 @@ func isReplacebleString(x string, stringsAndlists PredefinedStringsAndLists) (st
 	}
 	return "", false
 }
-
-func isReplacebleList(x string, stringsAndlists PredefinedStringsAndLists) ([]string, bool,bool) {
+/*
+func isReplacebleListOld(x string, stringsAndlists PredefinedStringsAndLists) ([]string, bool, bool) {
 	if strings.HasPrefix(x, "#") {
-		x = strings.Replace(x, "#", "", -1)
+		x = strings.Replace(x, "#", "", 1)
 		keys, ok := stringsAndlists.PredefinedLists[x]
 		if ok {
-			list:=[]string{}
-			for _,key:=range(keys){
-				list=append(list,stringsAndlists.PredefinedStrings[key])
+			list := []string{}
+			for _, key := range (keys) {
+				list = append(list, stringsAndlists.PredefinedStrings[key])
 			}
-			return list, ok,true
-		}else{
-			return []string{}, false,true
+			return list, ok, true
+		} else {
+			return []string{}, false, true
 		}
 	}
-	return []string{}, false,false
+	return []string{}, false, false
+}
+*/
+func isReplaceableList(x string, stringsAndlists PredefinedStringsAndLists) ([]string, bool, bool) {
+	if strings.HasPrefix(x, "#") {
+		x = strings.Replace(x, "#", "", 1)
+		list, ok := stringsAndlists.PredefinedListsWithoutRefs[x]
+		if ok {
+			return list, ok, true
+		} else {
+			return []string{}, false, true
+		}
+	}
+	return []string{}, false, false
 }
 
 func ConvertConditionStringToIntFloatRegexV2(condition *Condition) error { // TO-DO: cut to sub-functions
 
 	originalAttribute := condition.Attribute
-	if condition.Method == "IN" || condition.Method == "NIN" {
+
+	if condition.Method == "IN" || condition.Method == "NIN" || condition.Method == "IS" {
 
 		tempString := strings.Replace(condition.Value, "[", "", -1)
 		tempString = strings.Replace(tempString, "]", "", -1)
 		tempString = strings.Replace(tempString, ",", "$|^", -1)
 		tempString = "^" + tempString + "$"
-		if condition.Method == "IN" {
+		if condition.Method == "IN" || condition.Method == "IS"{
 			condition.Method = "RE"
 		}
 		if condition.Method == "NIN" {
@@ -411,9 +424,9 @@ func ConvertConditionStringToIntFloatRegexV2(condition *Condition) error { // TO
 		netConditionAttribute := condition.Attribute[i1:i2]
 
 		condition.AttributeIsJsonpathRelative = false
-		if strings.Index(netConditionAttribute, "$relative.") == 0 {
+		if strings.Index(netConditionAttribute, "$RELATIVE.") == 0 {
 			condition.AttributeIsJsonpathRelative = true
-			netConditionAttribute = strings.Replace(netConditionAttribute, "$relative.", "$.", -1)
+			netConditionAttribute = strings.Replace(netConditionAttribute, "$RELATIVE.", "$.", 1)
 		}
 
 		if netConditionAttribute[0] == '.' {

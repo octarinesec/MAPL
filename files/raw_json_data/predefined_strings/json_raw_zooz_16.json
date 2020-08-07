@@ -1,0 +1,85 @@
+{
+  "kind": "Deployment",
+  "apiVersion": "extensions/v1beta1",
+  "metadata": {
+    "name": "cart",
+    "namespace": "robot",
+    "uid": "f517e208-ce38-11e9-b19f-368d5550c416",
+    "resourceVersion": "167849",
+    "generation": 21,
+    "creationTimestamp": "2019-09-03T10:52:43Z",
+    "labels": {
+      "foo": "bar",
+      "io.kompose.service": "cart"
+    }
+  },
+  "spec": {
+    "replicas": 2,
+    "selector": {
+      "matchLabels": {
+        "io.kompose.service": "cart"
+      }
+    },
+    "template": {
+      "metadata": {
+        "creationTimestamp": null,
+        "labels": {
+          "io.kompose.service": "cart"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "cart",
+            "image": "robotshop/rs-cart:latest",
+            "ports": [
+              {
+                "containerPort": 8080,
+                "protocol": "TCP"
+              }
+            ],
+            "env": [
+              {
+                "name": "INSTANA_AGENT_HOST",
+                "value": "123"
+                },
+              {
+                "name": "abc",
+                "value": {"type": "service_account"}
+              }
+            ],
+            "resources": {
+              "limits": {
+                "cpu": "2",
+                "memory": "1000Mi"
+              },
+              "requests": {
+                "cpu": "1",
+                "memory": "500Mi"
+              }
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "imagePullPolicy": "Always"
+          }
+        ],
+        "restartPolicy": "Always",
+        "terminationGracePeriodSeconds": 30,
+        "dnsPolicy": "ClusterFirst",
+        "securityContext": {
+          "runAsUser": 0
+        },
+        "schedulerName": "default-scheduler"
+      }
+    },
+    "strategy": {
+      "type": "RollingUpdate",
+      "rollingUpdate": {
+        "maxUnavailable": 1,
+        "maxSurge": 1
+      }
+    },
+    "revisionHistoryLimit": 2147483647,
+    "progressDeadlineSeconds": 2147483647
+  }
+}

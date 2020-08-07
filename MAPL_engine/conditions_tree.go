@@ -150,9 +150,6 @@ func (a *Any) Eval(message *MessageAttributes) bool { // to-do: return errors
 	for _, val := range (rawArrayData) {
 		message.RequestJsonRawRelative = &val
 		flag := a.node.Eval(message)
-
-		fmt.Printf("%+v with %+v = %v\n", a.String(), string(*message.RequestJsonRawRelative), flag)
-
 		if flag {
 			return true
 		}
@@ -191,8 +188,8 @@ func getArrayOfJsons(a AnyAllNode, message *MessageAttributes) ([][]byte, error)
 	arrayData := []byte{}
 	err := errors.New("error")
 	parentJsonpath := a.GetParentJsonpathAttribute()
-	if strings.HasPrefix(parentJsonpath, "$relative.") { // to-do: create a flag once when parsing!
-		parentJsonpath = strings.Replace(parentJsonpath, "$relative.", "$.", -1)
+	if strings.HasPrefix(parentJsonpath, "$RELATIVE.") { // to-do: create a flag once when parsing!
+		parentJsonpath = strings.Replace(parentJsonpath, "$RELATIVE.", "$.", 1)
 		arrayData, err = jsonslice.Get(*message.RequestJsonRawRelative, parentJsonpath)
 	} else {
 		arrayData, err = jsonslice.Get(*message.RequestJsonRaw, parentJsonpath)
@@ -452,7 +449,7 @@ func getAnyAllNode(v2 map[string]interface{}, parentString string) (Node, error)
 func isValidParentJsonpathAttribute(parentJsonpathAttribute string) bool {
 	flag1 := strings.HasPrefix(parentJsonpathAttribute, "jsonpath:.")
 	flag2 := strings.HasPrefix(parentJsonpathAttribute, "jsonpath:$.")
-	flag3 := strings.HasPrefix(parentJsonpathAttribute, "jsonpath:$relative.")
+	flag3 := strings.HasPrefix(parentJsonpathAttribute, "jsonpath:$RELATIVE.")
 	if !flag1 && !flag2 && !flag3 {
 		return false
 	}

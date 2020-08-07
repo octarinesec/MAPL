@@ -4,5 +4,5 @@ predefinedStrings:
 
 predefinedLists:
   workload:
-    -  "#dep"
+    -  "Deployment"
     -  "#pod"

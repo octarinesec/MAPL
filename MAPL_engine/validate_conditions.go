@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var supportedMethodsSlice = []string{"ge", "GE", "gt", "GT", "le", "LE", "lt", "LT", "re", "RE", "nre", "NRE", "in", "IN", "nin", "NIN", "eq", "EQ", "neq", "NEQ", "ne", "NE", "ex", "EX", "nex", "NEX"}
+var supportedMethodsSlice = []string{"ge", "GE", "gt", "GT", "le", "LE", "lt", "LT", "re", "RE", "nre", "NRE", "in", "IN", "nin", "NIN", "eq", "EQ", "neq", "NEQ", "ne", "NE", "ex", "EX", "nex", "NEX", "IS"}
 var regexSlice = []string{"re", "nre", "RE", "NRE"}
 var numberMethodSlice = []string{"ge", "GE", "gt", "GT", "le", "LE", "lt", "LT"}
 var supportedAttributesPrefixes = []string{"$sender.", "$receiver.", "senderLabel[", "receiverLabel[", "jsonpath:"}
@@ -57,11 +57,11 @@ func validateAttribute(condition *Condition) (bool, error) {
 	}
 	if strings.HasPrefix(condition.Attribute, "jsonpath:") {
 		if (!strings.HasPrefix(condition.Attribute, "jsonpath:$") && !strings.HasPrefix(condition.Attribute, "jsonpath:.")) {
-			return false, fmt.Errorf("jsonpath condition must start with '$' or '.' [%v]",condition.Attribute)
+			return false, fmt.Errorf("jsonpath condition must start with '$' or '.' [%v]", condition.Attribute)
 		}
 		if strings.HasPrefix(condition.Attribute, "jsonpath:$") && !strings.HasPrefix(condition.Attribute, "jsonpath:$.") {
-			if !strings.HasPrefix(condition.Attribute, "jsonpath:$relative.") {
-				return false, fmt.Errorf("jsonpath condition must start with '$.' [%v]",condition.Attribute)
+			if !strings.HasPrefix(condition.Attribute, "jsonpath:$RELATIVE.") {
+				return false, fmt.Errorf("jsonpath condition must start with '$.' [%v]", condition.Attribute)
 			}
 		}
 		if strings.Contains(condition.Attribute, "[:]") {

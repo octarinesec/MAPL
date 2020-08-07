@@ -8,11 +8,11 @@ predefinedStrings:
 
 predefinedLists:
   allowed_labels:
-    -  allowed_label_string1
-    -  allowed_label_string2
+    -  "#allowed_label_string1"
+    -  "#allowed_label_string2"
   allowed_labels_regex:
-    -  allowed_label_regex1
-    -  allowed_label_regex2
+    -  "#allowed_label_regex1"
+    -  "#allowed_label_regex2"
   allowed_labels_regex2:
-    - allowed_label_regex1_B
-    - allowed_label_regex2_B
+    - "#allowed_label_regex1_B"
+    - "#allowed_label_regex2_B"

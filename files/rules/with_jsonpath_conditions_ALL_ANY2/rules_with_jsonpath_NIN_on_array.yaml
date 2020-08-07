@@ -16,7 +16,7 @@ rules:
       ANY:
         parentJsonpathAttribute: jsonpath:$.spec.containers[:]
         condition:
-          attribute: jsonpath:$relative.labels.a
+          attribute: jsonpath:$RELATIVE.labels.a
           method: NIN
           value: "[A,B,C]"
 

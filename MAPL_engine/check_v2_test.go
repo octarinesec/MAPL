@@ -956,16 +956,21 @@ func TestRulesWithPredefinedStrings(t *testing.T) {
 		So(results[0], ShouldEqual, ALLOW)
 		So(results[1], ShouldEqual, ALLOW)
 
-		results, rules, _ = test_CheckMessagesWithRawDataAndPredefinedStrings_v2("../files/rules/predefined_strings/rules_with_condition_translation_list.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/predefined_strings/json_raw_workload_dep.json", "../files/lists/predefined_list_workload.yaml")
-		z := rules.Rules[0].Conditions.ConditionsTree.String()
-		So(z, ShouldEqual, "<jsonpath:$.kind-RE-^Deployment$|^Pod$>")
-		So(results[0], ShouldEqual, ALLOW)
+		//---------
+		predefined_lists:=[]string{"../files/lists/predefined_list_workload.yaml","../files/lists/predefined_list_workload2.yaml","../files/lists/predefined_list_workload3.yaml"}
+		for _,f:=range(predefined_lists) {
+			results, rules, _ = test_CheckMessagesWithRawDataAndPredefinedStrings_v2("../files/rules/predefined_strings/rules_with_condition_translation_list.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/predefined_strings/json_raw_workload_dep.json", f)
+			z := rules.Rules[0].Conditions.ConditionsTree.String()
+			So(z, ShouldEqual, "<jsonpath:$.kind-RE-^Deployment$|^Pod$>")
+			So(results[0], ShouldEqual, ALLOW)
 
-		results, rules, _ = test_CheckMessagesWithRawDataAndPredefinedStrings_v2("../files/rules/predefined_strings/rules_with_condition_translation_list.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/predefined_strings/json_raw_workload_pod.json", "../files/lists/predefined_list_workload.yaml")
-		So(results[0], ShouldEqual, ALLOW)
+			results, rules, _ = test_CheckMessagesWithRawDataAndPredefinedStrings_v2("../files/rules/predefined_strings/rules_with_condition_translation_list.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/predefined_strings/json_raw_workload_pod.json", f)
+			So(results[0], ShouldEqual, ALLOW)
 
-		results, rules, _ = test_CheckMessagesWithRawDataAndPredefinedStrings_v2("../files/rules/predefined_strings/rules_with_condition_translation_list.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/predefined_strings/json_raw_workload_job.json", "../files/lists/predefined_list_workload.yaml")
-		So(results[0], ShouldEqual, DEFAULT)
+			results, rules, _ = test_CheckMessagesWithRawDataAndPredefinedStrings_v2("../files/rules/predefined_strings/rules_with_condition_translation_list.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/predefined_strings/json_raw_workload_job.json", f)
+			So(results[0], ShouldEqual, DEFAULT)
+		}
+		//---------
 
 		results, _, _ = test_CheckMessagesWithRawDataAndPredefinedStrings_v2("../files/rules/predefined_strings/rules_with_condition_translation_foo.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/predefined_strings/json_raw_workload_pod.json", "../files/lists/predefined_list_allowed_labels.yaml")
 		So(results[0], ShouldEqual, ALLOW)
@@ -1008,6 +1013,35 @@ func TestRulesWithPredefinedStrings(t *testing.T) {
 		results, _, _ = test_CheckMessagesWithRawDataAndPredefinedStrings_v2("../files/rules/predefined_strings/rules_with_condition_translation_foo_regex_list2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/predefined_strings/json_raw_workload_pod_abc.json", "../files/lists/predefined_list_allowed_labels.yaml")
 		So(results[0], ShouldEqual, DEFAULT)
 
+	})
+}
+
+
+func TestRulesWithPredefinedStringsZooz(t *testing.T) {
+
+	logging := false
+	if logging {
+		// setup a log outfile file
+		f, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777) //create your file with desired read/write permissions
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Sync()
+		defer f.Close()
+		log.SetOutput(f) //set output of logs to f
+	} else {
+		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
+	}
+
+	reporting.QuietMode()
+	Convey("tests", t, func() {
+
+		for i := 1;  i<=19; i++ {
+			f := fmt.Sprintf("../files/raw_json_data/predefined_strings/json_raw_zooz_%v.json", i)
+			results, _, _ := test_CheckMessagesWithRawDataAndPredefinedStrings_v2("../files/rules/predefined_strings/rule_zooz.yaml", "../files/messages/messages_base_jsonpath.yaml", f, "../files/lists/predefined_password_list.yaml")
+			So(results[0], ShouldEqual, BLOCK)
+			fmt.Printf("zooz test #%v passed\n",i)
+		}
 	})
 }
 

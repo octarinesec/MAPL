@@ -16,7 +16,7 @@ rules:
       ANY:
         parentJsonpathAttribute: jsonpath:$.spec.containers[:]
         condition:
-          attribute: jsonpath:$relative.resources.limits.cpu
+          attribute: jsonpath:$RELATIVE.resources.limits.cpu
           method: NEX
 
 

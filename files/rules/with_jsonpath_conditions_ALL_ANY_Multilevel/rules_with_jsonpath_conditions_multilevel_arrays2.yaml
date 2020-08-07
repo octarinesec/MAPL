@@ -16,9 +16,9 @@ rules:
       ANY:
         parentJsonpathAttribute: "jsonpath:$.spec.containers[:]"
         ANY:
-          parentJsonpathAttribute: "jsonpath:$relative.volumeMounts[:]"
+          parentJsonpathAttribute: "jsonpath:$RELATIVE.volumeMounts[:]"
           condition:
-            attribute: "jsonpath:$relative.name"
+            attribute: "jsonpath:$RELATIVE.name"
             method: EQ
             value: "xxx"
 

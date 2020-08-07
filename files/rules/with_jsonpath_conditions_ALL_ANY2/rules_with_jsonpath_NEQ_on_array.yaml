@@ -16,7 +16,7 @@ rules:
       ANY:
         parentJsonpathAttribute: jsonpath:$.spec.containers[:]
         condition:
-          attribute: jsonpath:$relative.securityContext.runAsUser
+          attribute: jsonpath:$RELATIVE.securityContext.runAsUser
           method: NEQ
           value: 0
 

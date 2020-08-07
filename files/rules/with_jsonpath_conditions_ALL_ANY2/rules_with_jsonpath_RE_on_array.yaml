@@ -16,7 +16,7 @@ rules:
       ANY:
         parentJsonpathAttribute: jsonpath:$.spec.containers[:]
         condition:
-          attribute: jsonpath:$relative.image
+          attribute: jsonpath:$RELATIVE.image
           method: RE
           value: "^..*:abc$"
 

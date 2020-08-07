@@ -1,0 +1,31 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: http
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    decision: block
+
+    conditions:
+      AND:
+      - ANY:
+          parentJsonpathAttribute: jsonpath:$.spec.template.spec.containers[:]
+          condition:
+            ANY:
+              parentJsonpathAttribute: jsonpath:$RELATIVE.env[:]
+              condition:
+                attribute: jsonpath:$RELATIVE.value
+                method: RE
+                value: "#regex_passwords"
+      - attribute: jsonpath:$.kind
+        method: IS
+        value: "#workload"
+

@@ -15,6 +15,6 @@ rules:
       ANY:
         parentJsonpathAttribute: jsonpath:$.spec.volumes[:]
         condition:
-          attribute: jsonpath:$relative.hostPath.path
+          attribute: jsonpath:$RELATIVE.hostPath.path
           method: EX
     decision: block

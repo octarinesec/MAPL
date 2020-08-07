@@ -17,9 +17,9 @@ rules:
       ANY:
         parentJsonpathAttribute: jsonpath:$.spec.template.spec.containers[:]
         ANY:
-          parentJsonpathAttribute: jsonpath:$relative.env[:]
+          parentJsonpathAttribute: jsonpath:$RELATIVE.env[:]
           condition:
-            attribute: jsonpath:$relative.name
+            attribute: jsonpath:$RELATIVE.name
             method: RE
             value: ".*PASSWORD.*"
 

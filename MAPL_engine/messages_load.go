@@ -82,36 +82,6 @@ func YamlReadMessagesFromFile(filename string) (Messages, error) {
 	return messages, nil
 }
 
-
-// YamlReadMessagesFromString function reads messages from a yaml string
-func YamlReadStringListsFromString(yamlString string) (PredefinedStringsAndLists, error) {
-
-	var predefinedStringsAndLists PredefinedStringsAndLists
-	err := yaml.Unmarshal([]byte(yamlString), &predefinedStringsAndLists)
-	if err != nil {
-		log.Printf("error: %v", err)
-		return PredefinedStringsAndLists{}, err
-	}
-
-	return predefinedStringsAndLists, nil
-}
-
-func YamlReadStringListsFromFile(filename string) (PredefinedStringsAndLists, error) {
-	data, err := ioutil.ReadFile(filename)
-	if err != nil {
-		log.Printf("error: %v", err)
-		return PredefinedStringsAndLists{}, err
-	}
-	predefinedStringsAndLists, err := YamlReadStringListsFromString(string(data))
-	if err != nil {
-		log.Printf("error: %v", err)
-		return PredefinedStringsAndLists{}, err
-	}
-	return predefinedStringsAndLists, nil
-}
-
-
-
 // AddResourceType function adds resource type to one message by the resource protocol for HTTP and TCP. For KAFKA the resource_type need to be filled in the message attributes.
 func AddResourceType(message *MessageAttributes) {
 	// add resource_type by the resource_protocol
