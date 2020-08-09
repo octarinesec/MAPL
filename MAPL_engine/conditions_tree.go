@@ -188,8 +188,10 @@ func getArrayOfJsons(a AnyAllNode, message *MessageAttributes) ([][]byte, error)
 	arrayData := []byte{}
 	err := errors.New("error")
 	parentJsonpath := a.GetParentJsonpathAttribute()
-	if strings.HasPrefix(parentJsonpath, "$RELATIVE.") { // to-do: create a flag once when parsing!
+	if strings.HasPrefix(parentJsonpath, "$RELATIVE.") || strings.HasPrefix(parentJsonpath, "$KEY.") || strings.HasPrefix(parentJsonpath, "$VALUE.") { // to-do: create a flag once when parsing!
 		parentJsonpath = strings.Replace(parentJsonpath, "$RELATIVE.", "$.", 1)
+		parentJsonpath = strings.Replace(parentJsonpath, "$KEY.", "$.", 1)
+		parentJsonpath = strings.Replace(parentJsonpath, "$VALUE.", "$.", 1)
 		arrayData, err = jsonslice.Get(*message.RequestJsonRawRelative, parentJsonpath)
 	} else {
 		arrayData, err = jsonslice.Get(*message.RequestJsonRaw, parentJsonpath)
@@ -199,14 +201,45 @@ func getArrayOfJsons(a AnyAllNode, message *MessageAttributes) ([][]byte, error)
 		return [][]byte{}, err
 	}
 
+	arrayJson, err := getArrayOfJsonsFromInterfaceArray(arrayData)
+	if err != nil {
+		arrayJson, err := getArrayOfJsonsFromMapStringInterface(arrayData)
+		if err != nil {
+			return [][]byte{}, err
+		}
+		return arrayJson, nil
+	}
+	return arrayJson, nil
+}
+
+func getArrayOfJsonsFromInterfaceArray(arrayData []byte) ([][]byte, error) {
 	var arrayInterface []interface{}
 	arrayJson := [][]byte{}
-	err = json.Unmarshal([]byte(arrayData), &arrayInterface)
+	err := json.Unmarshal([]byte(arrayData), &arrayInterface)
 	if err != nil {
 		return [][]byte{}, err
 	}
 	for _, x := range (arrayInterface) {
 		y, err := json.Marshal(x)
+		if err != nil {
+			return [][]byte{}, err
+		}
+		arrayJson = append(arrayJson, y)
+	}
+	return arrayJson, nil
+}
+
+func getArrayOfJsonsFromMapStringInterface(arrayData []byte) ([][]byte, error) {
+	var arrayInterface map[string]interface{}
+	arrayJson := [][]byte{}
+	err := json.Unmarshal([]byte(arrayData), &arrayInterface)
+	if err != nil {
+		return [][]byte{}, err
+	}
+	for i_x, x := range (arrayInterface) {
+		z := map[string]interface{}{}
+		z[i_x] = x
+		y, err := json.Marshal(z)
 		if err != nil {
 			return [][]byte{}, err
 		}
@@ -453,9 +486,9 @@ func isValidParentJsonpathAttribute(parentJsonpathAttribute string) bool {
 	if !flag1 && !flag2 && !flag3 {
 		return false
 	}
-	if !strings.HasSuffix(parentJsonpathAttribute, "[:]") {
-		return false
-	}
+	//if !strings.HasSuffix(parentJsonpathAttribute, "[:]") {
+	//	return false
+	//}
 	return true
 }
 

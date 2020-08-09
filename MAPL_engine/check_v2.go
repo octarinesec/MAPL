@@ -2,6 +2,7 @@
 package MAPL_engine
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/bhmj/jsonslice"
@@ -368,18 +369,26 @@ func testJsonPathCondition(c *Condition, message *MessageAttributes) bool {
 		log.Println("jsonpath without the correct format")
 		return false
 	}
-	valueToCompareBytes:=[]byte{}
-	err:=errors.New("error")
-	if c.AttributeIsJsonpathRelative{
-		if (*message).RequestJsonRawRelative==nil{
+	valueToCompareBytes := []byte{}
+	err := errors.New("error")
+	if c.AttributeIsJsonpathRelative {
+		if (*message).RequestJsonRawRelative == nil {
 			return false // By definition
 		}
 		if len(*message.RequestJsonRawRelative) == 0 { // how to protect against nil pointer?
 			return false // By definition. This will create a "change" if something is true in the a new deployment
 		}
-		valueToCompareBytes, err = jsonslice.Get(*message.RequestJsonRawRelative, c.AttributeJsonpathQuery)
-	}else {
-		if (*message).RequestJsonRaw==nil{
+		if c.AttributeJsonpathQuery == "$KEY" || strings.HasPrefix(c.AttributeJsonpathQuery , "$VALUE") {
+			valueToCompareBytes, err = getKeyValue(*message.RequestJsonRawRelative, c.AttributeJsonpathQuery)
+			if  strings.HasPrefix(c.AttributeJsonpathQuery , "$VALUE."){
+				tempQuery:=strings.Replace(c.AttributeJsonpathQuery,"$VALUE.","$.",1)
+				valueToCompareBytes, err = jsonslice.Get(valueToCompareBytes, tempQuery)
+			}
+		} else {
+			valueToCompareBytes, err = jsonslice.Get(*message.RequestJsonRawRelative, c.AttributeJsonpathQuery)
+		}
+	} else {
+		if (*message).RequestJsonRaw == nil {
 			return false // By definition
 		}
 		if len(*message.RequestJsonRaw) == 0 {
@@ -479,4 +488,28 @@ func testJsonPathCondition(c *Condition, message *MessageAttributes) bool {
 	}
 
 	return result
+}
+
+func getKeyValue(jsonRaw []byte, attribute string) ([]byte, error) {
+
+	valueToCompareBytes := []byte{}
+	var z map[string]interface{}
+	err := json.Unmarshal(jsonRaw, &z)
+	if err != nil {
+		return []byte{}, err
+	}
+	keys := getKeys(z)
+	if len(keys) != 1 {
+		return []byte{}, err
+	}
+	if attribute == "$KEY" {
+		valueToCompareBytes = []byte(keys[0])
+	} else {
+		z2, err := json.Marshal(z[keys[0]])
+		if err != nil {
+			return []byte{}, err
+		}
+		valueToCompareBytes = z2
+	}
+	return valueToCompareBytes, nil
 }

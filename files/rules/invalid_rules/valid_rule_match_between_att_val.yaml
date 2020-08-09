@@ -17,8 +17,7 @@ rules:
       name: "xxx"
       description: "yyy"
 
-    DNFconditions:
-      - ANDconditions:
-          - attribute: "jsonpath:$.kind"
-            method: GT
-            value: 1.2Mi
+    conditions:
+          attribute: "jsonpath:$.kind"
+          method: GT
+          value: 1.2Mi

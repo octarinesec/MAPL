@@ -1,0 +1,30 @@
+{
+  "apiVersion": "v1",
+  "kind": "Pod",
+  "metadata": {
+    "labels": {
+      "abc": "ABC",
+      "def": "DEF",
+      "xyz": "XYZ"
+    }
+  },
+  "spec": {
+    "containers": [
+      {
+        "name": "c1",
+        "image": "busybox",
+        "command": [
+          "sh",
+          "-c",
+          "echo 'Hello1 AppArmor!' && sleep 1h"
+        ],
+        "resources": {
+          "limits": {
+            "cpu": "2",
+            "memory": "1000Mi"
+          }
+        }
+      }
+    ]
+  }
+}

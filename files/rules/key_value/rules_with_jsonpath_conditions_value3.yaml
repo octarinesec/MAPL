@@ -13,8 +13,12 @@ rules:
       resourceName: "*"
     operation: "*"
     conditions:
-        attribute: jsonpath:$.metadata.annotations.["container.apparmor.security.beta.kubernetes.io/hello"]
-        method: EQ
-        value: localhost/k8s-apparmor-example-deny-write
+      ANY:
+        parentJsonpathAttribute: "jsonpath:$.metadata.labels"
+        condition:
+          attribute: "jsonpath:$VALUE"
+          method: EQ
+          value: "HIJ"
+
 
     decision: block

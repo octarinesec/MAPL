@@ -899,9 +899,9 @@ func TestRuleValidationV2(t *testing.T) {
 		fmt.Println(err)
 		So(isvalid_all, ShouldEqual, false)
 
-		isvalid_all, err = test_RuleValidityV2("../files/rules/invalid_rules/invalid_rule_conditions_ANY4.yaml")
-		fmt.Println(err)
-		So(isvalid_all, ShouldEqual, false)
+//		isvalid_all, err = test_RuleValidityV2("../files/rules/invalid_rules/invalid_rule_conditions_ANY4.yaml") // this rule is valid since we do not require the parentAttribute to end with [:]!
+//		fmt.Println(err)
+//		So(isvalid_all, ShouldEqual, false)
 
 		//----------------------
 		isvalid_all, _ = test_RuleValidityV2("../files/rules/invalid_rules/valid_rule_RE.yaml")
@@ -1016,6 +1016,55 @@ func TestRulesWithPredefinedStrings(t *testing.T) {
 	})
 }
 
+
+func TestMaplEngineJsonConditionsKeyValue(t *testing.T) {
+
+	logging := false
+	if logging {
+		// setup a log outfile file
+		f, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777) //create your file with desired read/write permissions
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Sync()
+		defer f.Close()
+		log.SetOutput(f) //set output of logs to f
+	} else {
+		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
+	}
+
+	reporting.QuietMode()
+	Convey("tests", t, func() {
+
+		// test on arrays
+		str := "test jsonpath conditions with key/value attribute"
+		fmt.Println(str)
+
+		results, _ := test_CheckMessagesWithRawData_v2("../files/rules/key_value/rules_with_jsonpath_conditions_key1.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/key_value/rules_with_jsonpath_conditions_key2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/key_value/rules_with_jsonpath_conditions_key3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/key_value/rules_with_jsonpath_conditions_value1.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/key_value/rules_with_jsonpath_conditions_value2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/key_value/rules_with_jsonpath_conditions_value3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/key_value/rules_with_jsonpath_conditions_value_json.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/key_value/rules_with_jsonpath_conditions_value_json2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+	})
+}
 
 func TestRulesWithPredefinedStringsZooz(t *testing.T) {
 

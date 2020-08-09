@@ -424,9 +424,11 @@ func ConvertConditionStringToIntFloatRegexV2(condition *Condition) error { // TO
 		netConditionAttribute := condition.Attribute[i1:i2]
 
 		condition.AttributeIsJsonpathRelative = false
-		if strings.Index(netConditionAttribute, "$RELATIVE.") == 0 {
+		relativeKeywords:=[]string{"$RELATIVE.","$KEY","$VALUE"}
+		if SliceHasPrefix(relativeKeywords,netConditionAttribute){
 			condition.AttributeIsJsonpathRelative = true
 			netConditionAttribute = strings.Replace(netConditionAttribute, "$RELATIVE.", "$.", 1)
+			//netConditionAttribute = strings.Replace(netConditionAttribute, "$VALUE.", "$.", 1)
 		}
 
 		if netConditionAttribute[0] == '.' {
@@ -440,6 +442,17 @@ func ConvertConditionStringToIntFloatRegexV2(condition *Condition) error { // TO
 	}
 	return nil
 }
+
+
+func SliceHasPrefix(sl []string, v string) bool {
+	for _, vv := range sl {
+		if strings.HasPrefix(v,vv) {
+			return true
+		}
+	}
+	return false
+}
+
 
 func RuleToStringV2(rule RuleV2) string {
 
