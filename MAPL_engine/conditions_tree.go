@@ -134,6 +134,30 @@ func (o *Or) String() string {
 }
 
 //--------------------------------------
+type Not struct {
+	node Node
+}
+
+func (n *Not) Eval(message *MessageAttributes) bool {
+	flag := n.node.Eval(message)
+	return !flag
+}
+func (n *Not) Append(node Node) {
+	n.node = node
+}
+func (n *Not) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
+
+	err := n.node.PrepareAndValidate(stringsAndlists)
+	return err
+
+}
+func (n *Not) String() string {
+	str := fmt.Sprintf("!(%v)", n.node.String())
+	return str
+}
+
+//--------------------------------------
+
 type Any struct {
 	parentJsonpathAttribute         string
 	parentJsonpathAttributeOriginal string
@@ -408,6 +432,9 @@ func handleMapInterfaceInterface(v map[interface{}]interface{}, parentString str
 	case "ANY", "ALL":
 		anyAllNode, err := getAnyAllNode(v2, parentString)
 		return anyAllNode, err
+	case "NOT":
+		notNode, err := getNotNode(v2, parentString)
+		return notNode, err
 	default:
 		val, nodeType, err := getNodeValType(v2, parentString)
 		if err != nil {
@@ -477,6 +504,25 @@ func getAnyAllNode(v2 map[string]interface{}, parentString string) (Node, error)
 		}
 	}
 	return anyAllNode, nil
+}
+
+func getNotNode(v2 map[string]interface{}, parentString string) (Node, error) {
+
+	keys := getKeys(v2)
+	if len(keys) != 1 {
+		return nil, fmt.Errorf("map of size different than 1 [NOT node]")
+	}
+	val, nodeType, err := getNodeValType(v2, parentString)
+	if err != nil {
+		return nil, err
+	}
+	notNode := &Not{}
+	nodeInner, err := InterpretNode(val, nodeType) // recursion!
+	if err != nil {
+		return nil, err
+	}
+	notNode.Append(nodeInner)
+	return notNode, nil
 }
 
 func isValidParentJsonpathAttribute(parentJsonpathAttribute string) bool {
@@ -554,6 +600,9 @@ func getNodeByParentString(parentString string) (Node, error) {
 
 	case "OR":
 		return &Or{}, nil
+
+	case "NOT":
+		return &Not{}, nil
 
 	case "ANY", "ALL":
 		return nil, fmt.Errorf("node of type ANY/ALL not according to spec")

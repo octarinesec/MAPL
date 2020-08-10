@@ -1,14 +1,15 @@
 package mongo_plugin
 
 import (
+	"MAPL/MAPL_engine"
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"github.com/globalsign/mgo"
 	"github.com/go-bongo/bongo"
+	"github.com/globalsign/mgo/bson"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/smartystreets/goconvey/convey/reporting"
-	"golang.octarinesec.com/common"
-
 	"io/ioutil"
 	"log"
 
@@ -19,6 +20,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"github.com/ghodss/yaml"
+	"math/rand"
 )
 /*
 import (
@@ -29,6 +32,8 @@ var testDir = "/tmp/octarine.testing"
 const mongoPort = "33333"
 var host = "127.0.0.1"
 var DB = "plugin_test"
+var collectionName = "raw_data"
+var testIsDone = false
 
 var mongoConnStr string
 var mongoDbConnection *bongo.Connection
@@ -58,11 +63,6 @@ func init() {
 	// TODO - Find a better way of making sure the services are ready
 	time.Sleep(time.Second * 1)
 
-	retryCount := 2
-	retrySeconds := 2
-	common.SetRetry(retryCount, retrySeconds)
-
-	connection.
 
 }
 func startMongodb(mongodPath string, dbpath string, port string) {
@@ -145,10 +145,116 @@ func TestMongoPlugin(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
+		results,_ := test_plugin("../files/rules/with_jsonpath_conditions/rules_with_jsonpath_conditions_GT.yaml",  "../files/raw_json_data/basic_jsonpath/json_raw_data1.json")
+		So(results[0], ShouldEqual, true)
+
+
 		fmt.Println("123")
 
 	})
 }
+
+
+func TestMain(m *testing.M) {
+	testIsDone = false
+	testResult := m.Run()
+	testIsDone = true
+
+	time.Sleep(time.Second * 1)
+
+	stopMongodb()
+
+	os.Exit(testResult)
+}
+
+
+func test_plugin(rulesFilename,jsonRawFilename string) ([]bool,error){
+
+
+	rules, data, err := readRulesAndRawData(rulesFilename, jsonRawFilename)
+	if err != nil {
+		return []bool{}, err
+	}
+	fmt.Println(rules)
+	id:= randomString(8)
+	insertRawDataToMongo(id,data)
+
+	/*
+	outputResults := make([]bool, len(rules.Rules))
+	for i_rule, rule := range (rules.Rules) {
+
+		message.RequestJsonRaw = &data
+
+		result := GetDataFromMongo(mongo_query)
+		outputResults[i_rule] = result
+
+	}
+	return outputResults, nil
+	*/
+
+	deleteDocument(id)
+
+	return []bool{}, nil
+}
+
+func readRulesAndRawData(rulesFilename,jsonRawFilename string) (MAPL_engine.RulesV2,[]byte,error) {
+
+	rules, err := MAPL_engine.YamlReadRulesFromFileV2(rulesFilename)
+	if err != nil {
+		fmt.Printf("error: %v", err)
+		return MAPL_engine.RulesV2{}, []byte{}, err
+	}
+
+	data, err := MAPL_engine.ReadBinaryFile(jsonRawFilename)
+	if err != nil {
+		fmt.Printf("can't read json raw file")
+		return MAPL_engine.RulesV2{}, []byte{}, err
+	}
+	isYaml := strings.HasSuffix(jsonRawFilename, ".yaml")
+	if isYaml {
+		data2, err := yaml.YAMLToJSON(data)
+		if err != nil {
+			return MAPL_engine.RulesV2{}, []byte{}, err
+		}
+		data = data2
+	}
+
+	return rules, data, nil
+}
+
+type testDoc struct{
+	bongo.DocumentBase `bson:",inline"`
+	ID string
+	Raw interface{}
+}
+
+func insertRawDataToMongo(id string,data []byte)(error){
+
+	var raw interface{}
+	err:=json.Unmarshal(data,&raw)
+	if err!=nil{
+		return err
+	}
+
+	z := &testDoc{
+		ID: id,
+		Raw: raw,
+	}
+	err = mongoDbConnection.Collection(collectionName).Save(z)
+
+	return err
+
+}
+
+
+func deleteDocument(id string)(error){
+
+
+	err := mongoDbConnection.Collection(collectionName).DeleteOne(bson.M{"id":id})
+	return err
+
+}
+
 
 
 func DbConnect(Host,Port,DB string) (*bongo.Connection, error) {
@@ -172,4 +278,18 @@ func DbConnect(Host,Port,DB string) (*bongo.Connection, error) {
 
 		return conn, err
 
+}
+
+func randomString(length int) string {
+
+	rand.Seed(time.Now().UnixNano())
+	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ" +
+		"abcdefghijklmnopqrstuvwxyzåäö" +
+		"0123456789")
+	var b strings.Builder
+	for i := 0; i < length; i++ {
+		b.WriteRune(chars[rand.Intn(len(chars))])
+	}
+	str := b.String() // E.g. "ExcbsVQs"
+	return str
 }

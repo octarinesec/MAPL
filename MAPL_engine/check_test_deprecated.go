@@ -1,7 +1,7 @@
 package MAPL_engine
 
 import (
-	"bufio"
+
 	"fmt"
 	"github.com/ghodss/yaml"
 	. "github.com/smartystreets/goconvey/convey"
@@ -576,31 +576,6 @@ func test_RuleValidity(rulesFilename string) (bool, error) {
 	return true, nil
 }
 
-func read_binary_file(filename string) ([]byte, error) {
-
-	file, err := os.Open(filename)
-
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-
-	defer file.Close()
-
-	info, err := file.Stat()
-	if err != nil {
-		return nil, err
-	}
-
-	// calculate the bytes size
-	var size int64 = info.Size()
-	bytes := make([]byte, size)
-
-	// read into buffer
-	buffer := bufio.NewReader(file)
-	_, err = buffer.Read(bytes)
-	return bytes, err
-}
 
 func test_CheckMessagesWithJsonRaw(rulesFilename string, messagesFilename string, jsonRawFilename string) ([]int, error) {
 
@@ -613,7 +588,7 @@ func test_CheckMessagesWithJsonRaw(rulesFilename string, messagesFilename string
 	if err != nil {
 		return []int{}, err
 	}
-	data, err := read_binary_file(jsonRawFilename)
+	data, err := ReadBinaryFile(jsonRawFilename)
 	if err != nil {
 		log.Printf("can't read json raw file")
 		return []int{}, err
@@ -648,7 +623,7 @@ func test_CheckMessagesWithYamlRaw(rulesFilename string, messagesFilename string
 	if err != nil {
 		return []int{}, err
 	}
-	data, err := read_binary_file(yamlRawFilename)
+	data, err := ReadBinaryFile(yamlRawFilename)
 	if err != nil {
 		log.Printf("can't read json raw file")
 		return []int{}, err
@@ -688,7 +663,7 @@ func test_ConditionsWithJsonRaw(rulesFilename string, messagesFilename string, j
 	if err != nil {
 		return [][]bool{}, err
 	}
-	data, err := read_binary_file(jsonRawFilename)
+	data, err := ReadBinaryFile(jsonRawFilename)
 	if err != nil {
 		log.Printf("can't read json raw file")
 		return [][]bool{}, fmt.Errorf("can't read json raw file")

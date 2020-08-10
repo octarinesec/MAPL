@@ -1,0 +1,25 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "workload"
+    protocol: "*"
+    resource:
+      resourceType: "*"
+      resourceName: "*"
+    operation: "*"
+    conditions:
+      AND:
+      - attribute: jsonpath:$.metadata.labels['foo']
+        method: EQ
+        value: "bar"
+      - NOT:
+          attribute: jsonpath:$.metadata.labels['foofoo']
+          method: EQ
+          value: "barbar"
+
+    decision: block
