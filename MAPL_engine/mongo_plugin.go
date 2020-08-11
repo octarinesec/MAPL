@@ -8,15 +8,50 @@ import (
 )
 
 func (a *And) ToMongoQuery() (bson.M, error) {
-	return bson.M{}, fmt.Errorf("AND not supported yet")
+
+	q_array := []bson.M{}
+
+	for _, node := range a.nodes {
+		q, err := node.ToMongoQuery()
+		if err != nil {
+			return bson.M{}, err
+		}
+		q_array = append(q_array, q)
+	}
+
+	q_and := bson.M{"$and": q_array}
+
+	return q_and, nil
 }
 
 func (o *Or) ToMongoQuery() (bson.M, error) {
-	return bson.M{}, fmt.Errorf("OR not supported yet")
+
+	q_array := []bson.M{}
+
+	for _, node := range o.nodes {
+		q, err := node.ToMongoQuery()
+		if err != nil {
+			return bson.M{}, err
+		}
+		q_array = append(q_array, q)
+	}
+
+	q_or := bson.M{"$or": q_array}
+
+	return q_or, nil
 }
 
 func (n *Not) ToMongoQuery() (bson.M, error) {
-	return bson.M{}, fmt.Errorf("NOT not supported yet")
+
+	q, err := n.node.ToMongoQuery()
+	if err != nil {
+		return bson.M{}, err
+	}
+
+	q_not := bson.M{"$nor": []bson.M{q}} // to avoid "unknown top level operator: $not" we use $nor with a single condition
+
+
+	return q_not, nil
 }
 
 func (a *Any) ToMongoQuery() (bson.M, error) {

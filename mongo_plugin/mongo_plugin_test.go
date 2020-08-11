@@ -167,7 +167,7 @@ func killTcp4Process(name string, port string) {
 	}
 }
 
-func TestMongoPlugin(t *testing.T) {
+func TestMongoPluginBasic(t *testing.T) {
 
 	logging := false
 	if logging {
@@ -329,6 +329,78 @@ func TestMongoPlugin(t *testing.T) {
 	})
 }
 
+
+
+func TestMongoPluginAndOrNot(t *testing.T) {
+
+	logging := false
+	if logging {
+		// setup a log outfile file
+		f, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777) //create your file with desired read/write permissions
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Sync()
+		defer f.Close()
+		log.SetOutput(f) //set output of logs to f
+	} else {
+		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
+	}
+
+	reporting.QuietMode()
+	Convey("tests", t, func() {
+
+
+		// AND:
+		results, _ := test_plugin("../files/rules/mongo_plugin_and_or_not/rules_with_jsonpath_conditions_AND.yaml", "../files/raw_json_data/mongo_plugin_and_or_not/json_raw_data_foo_bar_replicas_2.json")
+		So(results[0], ShouldEqual, true)
+		results, _ = test_plugin("../files/rules/mongo_plugin_and_or_not/rules_with_jsonpath_conditions_AND.yaml", "../files/raw_json_data/mongo_plugin_and_or_not/json_raw_data_foo_bar_replicas_5.json")
+		So(results[0], ShouldEqual, false)
+		results, _ = test_plugin("../files/rules/mongo_plugin_and_or_not/rules_with_jsonpath_conditions_AND.yaml", "../files/raw_json_data/mongo_plugin_and_or_not/json_raw_data_foo_bar2_replicas_2.json")
+		So(results[0], ShouldEqual, false)
+		results, _ = test_plugin("../files/rules/mongo_plugin_and_or_not/rules_with_jsonpath_conditions_AND.yaml", "../files/raw_json_data/mongo_plugin_and_or_not/json_raw_data_foo_bar2_replicas_5.json")
+		So(results[0], ShouldEqual, false)
+		// OR:
+		results, _ = test_plugin("../files/rules/mongo_plugin_and_or_not/rules_with_jsonpath_conditions_OR.yaml", "../files/raw_json_data/mongo_plugin_and_or_not/json_raw_data_foo_bar_replicas_2.json")
+		So(results[0], ShouldEqual, true)
+		results, _ = test_plugin("../files/rules/mongo_plugin_and_or_not/rules_with_jsonpath_conditions_OR.yaml", "../files/raw_json_data/mongo_plugin_and_or_not/json_raw_data_foo_bar_replicas_5.json")
+		So(results[0], ShouldEqual, true)
+		results, _ = test_plugin("../files/rules/mongo_plugin_and_or_not/rules_with_jsonpath_conditions_OR.yaml", "../files/raw_json_data/mongo_plugin_and_or_not/json_raw_data_foo_bar2_replicas_2.json")
+		So(results[0], ShouldEqual, true)
+		results, _ = test_plugin("../files/rules/mongo_plugin_and_or_not/rules_with_jsonpath_conditions_OR.yaml", "../files/raw_json_data/mongo_plugin_and_or_not/json_raw_data_foo_bar2_replicas_5.json")
+		So(results[0], ShouldEqual, false)
+		// NOT:
+		results, _ = test_plugin("../files/rules/mongo_plugin_and_or_not/rules_with_jsonpath_conditions_NOT.yaml", "../files/raw_json_data/mongo_plugin_and_or_not/json_raw_data_foo_bar_replicas_2.json")
+		So(results[0], ShouldEqual, false)
+		results, _ = test_plugin("../files/rules/mongo_plugin_and_or_not/rules_with_jsonpath_conditions_NOT.yaml", "../files/raw_json_data/mongo_plugin_and_or_not/json_raw_data_foo_bar2_replicas_2.json")
+		So(results[0], ShouldEqual, true)
+
+		//Multilevel
+		// NOT-AND
+		results, _ = test_plugin("../files/rules/mongo_plugin_and_or_not/rules_with_jsonpath_conditions_NOT_AND.yaml", "../files/raw_json_data/mongo_plugin_and_or_not/json_raw_data_foo_bar_replicas_2.json")
+		So(results[0], ShouldEqual, false)
+		results, _ = test_plugin("../files/rules/mongo_plugin_and_or_not/rules_with_jsonpath_conditions_NOT_AND.yaml", "../files/raw_json_data/mongo_plugin_and_or_not/json_raw_data_foo_bar_replicas_5.json")
+		So(results[0], ShouldEqual, true)
+		results, _ = test_plugin("../files/rules/mongo_plugin_and_or_not/rules_with_jsonpath_conditions_NOT_AND.yaml", "../files/raw_json_data/mongo_plugin_and_or_not/json_raw_data_foo_bar2_replicas_2.json")
+		So(results[0], ShouldEqual, true)
+		results, _ = test_plugin("../files/rules/mongo_plugin_and_or_not/rules_with_jsonpath_conditions_NOT_AND.yaml", "../files/raw_json_data/mongo_plugin_and_or_not/json_raw_data_foo_bar2_replicas_5.json")
+		So(results[0], ShouldEqual, true)
+
+		//AND-NOT
+		results, _ = test_plugin("../files/rules/mongo_plugin_and_or_not/rules_with_jsonpath_conditions_AND_NOT.yaml", "../files/raw_json_data/mongo_plugin_and_or_not/json_raw_data_foo_bar_replicas_2.json")
+		So(results[0], ShouldEqual, false)
+		results, _ = test_plugin("../files/rules/mongo_plugin_and_or_not/rules_with_jsonpath_conditions_AND_NOT.yaml", "../files/raw_json_data/mongo_plugin_and_or_not/json_raw_data_foo_bar_replicas_5.json")
+		So(results[0], ShouldEqual, true)
+		results, _ = test_plugin("../files/rules/mongo_plugin_and_or_not/rules_with_jsonpath_conditions_AND_NOT.yaml", "../files/raw_json_data/mongo_plugin_and_or_not/json_raw_data_foo_bar2_replicas_2.json")
+		So(results[0], ShouldEqual, false)
+		results, _ = test_plugin("../files/rules/mongo_plugin_and_or_not/rules_with_jsonpath_conditions_AND_NOT.yaml", "../files/raw_json_data/mongo_plugin_and_or_not/json_raw_data_foo_bar2_replicas_5.json")
+		So(results[0], ShouldEqual, false)
+
+
+	})
+}
+
+
 func TestMain(m *testing.M) {
 	testIsDone = false
 	testResult := m.Run()
@@ -358,6 +430,11 @@ func test_plugin(rulesFilename, jsonRawFilename string) ([]bool, error) {
 		if err != nil {
 			return []bool{}, err
 		}
+
+		z,_:=json.Marshal(query)
+		fmt.Println(string(z))
+
+
 		result := getDataFromMongo(query)
 		outputResults[i_rule] = result
 
