@@ -54,13 +54,43 @@ func (n *Not) ToMongoQuery() (bson.M, error) {
 	return q_not, nil
 }
 
-func (a *Any) ToMongoQuery() (bson.M, error) {
-	return bson.M{}, fmt.Errorf("ANY not supported yet")
-}
 
 func (a *All) ToMongoQuery() (bson.M, error) {
-	return bson.M{}, fmt.Errorf("ALL not supported yet")
+
+
+	parentField := strings.Replace(a.parentJsonpathAttributeOriginal, "jsonpath:$.", "raw.", 1)
+	parentField = strings.Replace(parentField, "[:]", "", -1)
+
+	q,err:=a.node.ToMongoQuery()
+	if err != nil {
+		return bson.M{}, err
+	}
+
+	q_not := bson.M{"$nor": []bson.M{q}}
+	q_all_not:= bson.M{parentField: bson.M{"$elemMatch": q_not}}
+	q_not_all_not := bson.M{"$nor": []bson.M{q_all_not}}
+
+	return q_not_all_not, nil
+
 }
+
+
+func (a *Any) ToMongoQuery() (bson.M, error) {
+
+	// all == not(any(not(conditions))
+
+	parentField := strings.Replace(a.parentJsonpathAttributeOriginal, "jsonpath:$.", "raw.", 1)
+	parentField = strings.Replace(parentField, "[:]", "", -1)
+
+	q,err:=a.node.ToMongoQuery()
+	if err != nil {
+		return bson.M{}, err
+	}
+
+	q_all:= bson.M{parentField: bson.M{"$elemMatch": q}}
+	return q_all, nil
+}
+
 
 func (c *Condition) ToMongoQuery() (bson.M, error) {
 
@@ -70,7 +100,13 @@ func (c *Condition) ToMongoQuery() (bson.M, error) {
 		return bson.M{}, fmt.Errorf("attribute is not a jsonpath")
 	}
 
-	field := strings.Replace(c.OriginalAttribute, "jsonpath:$.", "raw.", 1)
+	var field string
+	if strings.HasPrefix(c.OriginalAttribute, "jsonpath:$RELATIVE"){
+		field = strings.Replace(c.OriginalAttribute, "jsonpath:$RELATIVE.", "", 1)
+	}
+	if strings.HasPrefix(c.OriginalAttribute, "jsonpath:$.") {
+		field = strings.Replace(c.OriginalAttribute, "jsonpath:$.", "raw.", 1)
+	}
 
 	field, err := removeQuotes(field)
 	if err != nil {
