@@ -8,6 +8,7 @@ import (
 	"github.com/toolkits/slice"
 	"sort"
 	"strings"
+	"github.com/globalsign/mgo/bson"
 )
 
 type ConditionsTree struct {
@@ -37,6 +38,7 @@ type Node interface {
 	Append(node Node)
 	PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error
 	String() string // to-do: order terms so that hash will be the same
+	ToMongoQuery() (bson.M,error)
 }
 
 type AnyAllNode interface {
@@ -46,6 +48,7 @@ type AnyAllNode interface {
 	String() string
 	SetParentJsonpathAttribute(parentJsonpathAttribute string)
 	GetParentJsonpathAttribute() string
+	ToMongoQuery() (bson.M,error)
 }
 
 //--------------------------------------
