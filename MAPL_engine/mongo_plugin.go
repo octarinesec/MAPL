@@ -7,110 +7,159 @@ import (
 	"strings"
 )
 
-func (a *And) ToMongoQuery() (bson.M, error) {
+func (a *And) ToMongoQuery(parentString string) (bson.M, []bson.M, error) { //parentString is irrelevant here
 
 	q_array := []bson.M{}
+	pipeline := []bson.M{}
 
 	for _, node := range a.nodes {
-		q, err := node.ToMongoQuery()
+		q, pipelineAppend, err := node.ToMongoQuery("")
 		if err != nil {
-			return bson.M{}, err
+			return bson.M{}, []bson.M{}, err
 		}
 		q_array = append(q_array, q)
+		for _, p := range pipelineAppend {
+			pipeline = append(pipeline, p)
+		}
 	}
 
 	q_and := bson.M{"$and": q_array}
 
-	return q_and, nil
+	return q_and, pipeline, nil
 }
 
-func (o *Or) ToMongoQuery() (bson.M, error) {
+func (o *Or) ToMongoQuery(parentString string) (bson.M, []bson.M, error) { //parentString is irrelevant here
 
 	q_array := []bson.M{}
-
+	pipeline := []bson.M{}
 	for _, node := range o.nodes {
-		q, err := node.ToMongoQuery()
+		q, pipelineAppend, err := node.ToMongoQuery("")
 		if err != nil {
-			return bson.M{}, err
+			return bson.M{}, []bson.M{}, err
 		}
 		q_array = append(q_array, q)
+		for _, p := range pipelineAppend {
+			pipeline = append(pipeline, p)
+		}
 	}
 
 	q_or := bson.M{"$or": q_array}
 
-	return q_or, nil
+	return q_or, pipeline, nil
 }
 
-func (n *Not) ToMongoQuery() (bson.M, error) {
+func (n *Not) ToMongoQuery(parentString string) (bson.M, []bson.M, error) { //parentString is irrelevant here
 
-	q, err := n.node.ToMongoQuery()
+	q, pipeline, err := n.node.ToMongoQuery("")
 	if err != nil {
-		return bson.M{}, err
+		return bson.M{}, []bson.M{}, err
 	}
 
 	q_not := bson.M{"$nor": []bson.M{q}} // to avoid "unknown top level operator: $not" we use $nor with a single condition
 
-
-	return q_not, nil
+	return q_not, pipeline, nil
 }
 
-
-func (a *All) ToMongoQuery() (bson.M, error) {
-
+func (a *All) ToMongoQuery(parentString string) (bson.M, []bson.M, error) { //parentString is irrelevant here
 
 	parentField := strings.Replace(a.parentJsonpathAttributeOriginal, "jsonpath:$.", "raw.", 1)
 	parentField = strings.Replace(parentField, "[:]", "", -1)
 
-	q,err:=a.node.ToMongoQuery()
+	q, pipeline, err := a.node.ToMongoQuery("")
 	if err != nil {
-		return bson.M{}, err
+		return bson.M{}, []bson.M{}, err
 	}
+	if len(pipeline)!=0{
+		return bson.M{}, []bson.M{}, fmt.Errorf("KEY/VALUE in ALL node is not supported")
+	}
+
 
 	q_not := bson.M{"$nor": []bson.M{q}}
-	q_all_not:= bson.M{parentField: bson.M{"$elemMatch": q_not}}
-	q_not_all_not := bson.M{"$nor": []bson.M{q_all_not}}
+	q_all_not := bson.M{parentField: bson.M{"$elemMatch": q_not}}
+	q_not_all_not := bson.M{"$nor": []bson.M{q_all_not}} // all == not(any(not(conditions))
 
-	return q_not_all_not, nil
+	return q_not_all_not, pipeline, nil
 
 }
 
-
-func (a *Any) ToMongoQuery() (bson.M, error) {
-
-	// all == not(any(not(conditions))
+func (a *Any) ToMongoQuery(parentString string) (bson.M, []bson.M, error) { //parentString is irrelevant here
 
 	parentField := strings.Replace(a.parentJsonpathAttributeOriginal, "jsonpath:$.", "raw.", 1)
 	parentField = strings.Replace(parentField, "[:]", "", -1)
 
-	q,err:=a.node.ToMongoQuery()
+	q, pipeline, err := a.node.ToMongoQuery(parentField)
 	if err != nil {
-		return bson.M{}, err
+		return bson.M{}, []bson.M{}, err
 	}
 
-	q_all:= bson.M{parentField: bson.M{"$elemMatch": q}}
-	return q_all, nil
+	var q_all bson.M
+	if len(pipeline)==0 {
+		q_all = bson.M{parentField: bson.M{"$elemMatch": q}}
+	}else{
+		q_all = q
+	}
+	return q_all, pipeline, nil
 }
 
-
-func (c *Condition) ToMongoQuery() (bson.M, error) {
+func (c *Condition) ToMongoQuery(parentString string) (bson.M, []bson.M, error) {
 
 	//see: https://docs.mongodb.com/manual/reference/operator/query/
 
+	initialSteps := []bson.M{}
+
 	if c.Attribute != "jsonpath" {
-		return bson.M{}, fmt.Errorf("attribute is not a jsonpath")
+		return bson.M{}, []bson.M{}, fmt.Errorf("attribute is not a jsonpath")
 	}
 
 	var field string
-	if strings.HasPrefix(c.OriginalAttribute, "jsonpath:$RELATIVE"){
+	if strings.HasPrefix(c.OriginalAttribute, "jsonpath:$RELATIVE") {
 		field = strings.Replace(c.OriginalAttribute, "jsonpath:$RELATIVE.", "", 1)
 	}
+
+	if strings.HasPrefix(c.OriginalAttribute, "jsonpath:$VALUE") {
+
+		if strings.Contains(parentString,"RELATIVE"){
+			return bson.M{}, []bson.M{}, fmt.Errorf("VALUE within array is not supported")
+		}
+		if strings.Contains(c.OriginalAttribute,"jsonpath:$VALUE."){
+			return bson.M{}, []bson.M{}, fmt.Errorf("json VALUE is not supported")
+		}
+
+		field0 := parentString
+		field1 := fmt.Sprintf("addedField.%v", field0)
+		field = fmt.Sprintf("%v.v", field1)
+
+		//{$addFields: {     "addedField.md": {$objectToArray: '$md'}  }}
+		addFieldStep := bson.M{"$addFields": bson.M{field1: bson.M{"$objectToArray": "$" + field0}}}
+
+		initialSteps = append(initialSteps, addFieldStep)
+	}
+
+	if strings.HasPrefix(c.OriginalAttribute, "jsonpath:$KEY") {
+
+		if strings.Contains(parentString,"RELATIVE"){
+			return bson.M{}, []bson.M{}, fmt.Errorf("KEY within array is not supported")
+		}
+		if strings.Contains(c.OriginalAttribute,"jsonpath:$KEY."){
+			return bson.M{}, []bson.M{}, fmt.Errorf("json KEY is not supported")
+		}
+
+		field0 := parentString
+		field1 := fmt.Sprintf("addedField.%v", field0)
+		field = fmt.Sprintf("%v.k", field1)
+
+		addFieldStep := bson.M{"$addFields": bson.M{field1: bson.M{"$objectToArray": "$" + field0}}}
+
+		initialSteps = append(initialSteps, addFieldStep)
+	}
+
 	if strings.HasPrefix(c.OriginalAttribute, "jsonpath:$.") {
 		field = strings.Replace(c.OriginalAttribute, "jsonpath:$.", "raw.", 1)
 	}
 
 	field, err := removeQuotes(field)
 	if err != nil {
-		return bson.M{}, err
+		return bson.M{}, []bson.M{}, err
 	}
 
 	isNumberFlag, num := isNumber(c.Value)
@@ -148,10 +197,10 @@ func (c *Condition) ToMongoQuery() (bson.M, error) {
 		q = bson.M{"$and": []bson.M{q1, q2}}
 		// db.raw_data.find({"$and":[{"raw.metadata.labels.foo":{"$not":{"$regex":"ar2"}}},{"raw.metadata.labels.foo":{"$exists":true}}]})
 	case "IN", "NIN":
-		return bson.M{}, fmt.Errorf("methods IN,NIN are not supported yet")
+		return bson.M{}, []bson.M{}, fmt.Errorf("methods IN,NIN are not supported yet")
 	}
 
-	return q, nil
+	return q, initialSteps, nil
 }
 
 func isNumber(str string) (bool, float64) {
@@ -191,3 +240,16 @@ func removeQuotes(str string) (string, error) {
 
 	return str, nil
 }
+
+/*
+func getQueryPipeline(rule RuleV2) ([]bson.M,error){
+
+	//key_value_step, err := rule.Conditions.ConditionsTree.KeyValueStep()
+
+	query, err := rule.Conditions.ConditionsTree.ToMongoQuery()
+	if err!=nil{
+		return nil,err
+	}
+	queryPipeline := []bson.M{bson.M{"$match":query}}
+}
+*/

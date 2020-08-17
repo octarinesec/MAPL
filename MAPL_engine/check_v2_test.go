@@ -1267,7 +1267,26 @@ func TestMaplEngineJsonConditionsKeyValue(t *testing.T) {
 
 		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/key_value/rules_with_jsonpath_conditions_value_json.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json")
 		So(results[0], ShouldEqual, BLOCK)
+
 		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/key_value/rules_with_jsonpath_conditions_value_json2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/key_value/rules_with_jsonpath_conditions_value_relative.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_labels_relative.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/key_value/rules_with_jsonpath_conditions_value_relative2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_labels_relative.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/key_value/rules_with_jsonpath_conditions_value_relative3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_labels_relative.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/key_value/rules_with_jsonpath_conditions_value_relative_ALL.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_labels_relative.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/key_value/rules_with_jsonpath_conditions_value_relative_ALL.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_labels_relative2.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, _ = test_CheckMessagesWithRawData_v2("../files/rules/key_value/rules_with_jsonpath_conditions_value_relative_ALL.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_labels_relative3.json")
 		So(results[0], ShouldEqual, DEFAULT)
 
 	})

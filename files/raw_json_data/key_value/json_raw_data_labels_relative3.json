@@ -1,0 +1,26 @@
+{
+  "apiVersion": "v1",
+  "kind": "Pod",
+  "spec": {
+    "containers": [
+      {
+        "metadata": {
+          "labels": {
+            "abc": "ABC",
+            "def": "def",
+            "xyz": "XYZ"
+          }
+        }
+      },
+      {
+        "metadata": {
+          "labels": {
+            "xxx": "XXX",
+            "yyy": "YYY",
+            "zzz": "ZZZ"
+          }
+        }
+      }
+    ]
+  }
+}

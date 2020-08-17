@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bhmj/jsonslice"
+	"github.com/globalsign/mgo/bson"
 	"github.com/toolkits/slice"
 	"sort"
 	"strings"
-	"github.com/globalsign/mgo/bson"
 )
 
 type ConditionsTree struct {
@@ -38,7 +38,7 @@ type Node interface {
 	Append(node Node)
 	PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error
 	String() string // to-do: order terms so that hash will be the same
-	ToMongoQuery() (bson.M,error)
+	ToMongoQuery(parentString string) (bson.M, []bson.M, error)
 }
 
 type AnyAllNode interface {
@@ -48,7 +48,7 @@ type AnyAllNode interface {
 	String() string
 	SetParentJsonpathAttribute(parentJsonpathAttribute string)
 	GetParentJsonpathAttribute() string
-	ToMongoQuery() (bson.M,error)
+	ToMongoQuery(parentString string) (bson.M, []bson.M, error)
 }
 
 //--------------------------------------
@@ -337,6 +337,9 @@ func (t True) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) erro
 func (t True) String() string {
 	return "true"
 }
+func (t True) ToMongoQuery(str string) (bson.M, []bson.M, error) {
+	return bson.M{}, []bson.M{}, fmt.Errorf("not supported")
+}
 
 //--------------------------------------
 type False struct{}
@@ -349,8 +352,11 @@ func (f False) Append(node Node) {
 func (f False) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
 	return nil
 }
-func (t False) String() string {
+func (f False) String() string {
 	return "false"
+}
+func (f False) ToMongoQuery(str string) (bson.M, []bson.M, error) {
+	return bson.M{}, []bson.M{}, fmt.Errorf("not supported")
 }
 
 //--------------------------------------
