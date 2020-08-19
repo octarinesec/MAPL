@@ -119,7 +119,7 @@ func (c *Condition) ToMongoQuery(parentString string) (bson.M, []bson.M, error) 
 	if strings.HasPrefix(c.OriginalAttribute, "jsonpath:$VALUE") {
 
 		if strings.Contains(parentString,"RELATIVE"){
-			return bson.M{}, []bson.M{}, fmt.Errorf("VALUE within array is not supported")
+			return bson.M{}, []bson.M{}, fmt.Errorf("VALUE within array is not supported") // if neccessary we can do [$unwind, $addFields, $merge] steps!
 		}
 		if strings.Contains(c.OriginalAttribute,"jsonpath:$VALUE."){
 			return bson.M{}, []bson.M{}, fmt.Errorf("json VALUE is not supported")
