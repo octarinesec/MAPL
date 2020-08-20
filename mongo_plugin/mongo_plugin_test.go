@@ -1,7 +1,7 @@
 package mongo_plugin
 
 import (
-	"MAPL/MAPL_engine"
+	"github.com/octarinesec/MAPL/MAPL_engine"
 	"bufio"
 	"encoding/json"
 	"errors"
