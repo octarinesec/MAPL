@@ -479,7 +479,7 @@ func TestMongoPluginKeyValue(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
-		/*
+
 		results, _ := test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_key1.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json")
 		So(results[0], ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_key2.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json")
@@ -506,16 +506,24 @@ func TestMongoPluginKeyValue(t *testing.T) {
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_key_value_AND3.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json")
 		So(results[0], ShouldEqual, true)
 
+		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_json.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json")
+		So(results[0], ShouldEqual, true)
+		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_json2.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json")
+		So(results[0], ShouldEqual, false)
+		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_json3.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json")
+		So(results[0], ShouldEqual, false)
+		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_json4.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json")
+		So(results[0], ShouldEqual, true)
 
-		results, err := test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_json.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json")
+
+		results, err := test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_key_json.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json")
 		strErr:=fmt.Sprintf("%v",err)
 		fmt.Println(strErr)
-		So(strErr, ShouldEqual, "json VALUE is not supported")
-*/
+		So(strErr, ShouldEqual, "jsonpath condition $KEY must not have a subfield [jsonpath:$KEY.def2]")
 
-		results, err := test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_relative.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json")
+		results, err = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_relative.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json")
 		fmt.Println(results)
-		strErr:=fmt.Sprintf("%v",err)
+		strErr=fmt.Sprintf("%v",err)
 		fmt.Println(strErr)
 		So(strErr, ShouldEqual, "VALUE within array is not supported")
 

@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func CheckV2(message *MessageAttributes, rules *RulesV2) (decision int, descisionString string, relevantRuleIndex int, results []int, appliedRulesIndices []int, ruleDescription string) {
+func CheckV2(message *MessageAttributes, rules *RulesV2) (decision int, descisionString string, relevantRuleIndex int, results []int, appliedRulesIndices []int, ruleDescription string, checkExtraData []string) {
 	//
 	// for each message we check its attributes against all of the rules and return a decision
 	//
@@ -20,12 +20,14 @@ func CheckV2(message *MessageAttributes, rules *RulesV2) (decision int, descisio
 
 	results = make([]int, N)
 	ruleDescriptions := make([]string, N)
+	checkExtraData = make([]string, N)
+
 	sem := make(chan int, N) // semaphore pattern
 	if false {               // check in parallel
 
 		for i, rule := range (rules.Rules) { // check all the rules in parallel
 			go func(in_i int, in_rule RuleV2) {
-				results[in_i] = CheckOneRuleV2(message, &in_rule)
+				results[in_i], checkExtraData[in_i] = CheckOneRuleV2(message, &in_rule)
 				if desc, ok := in_rule.Metadata["description"]; ok {
 					ruleDescriptions[in_i] = desc
 				} else {
@@ -44,7 +46,7 @@ func CheckV2(message *MessageAttributes, rules *RulesV2) (decision int, descisio
 	} else { // used for debugging
 
 		for in_i, in_rule := range (rules.Rules) {
-			results[in_i] = CheckOneRuleV2(message, &in_rule)
+			results[in_i], checkExtraData[in_i] = CheckOneRuleV2(message, &in_rule)
 			if desc, ok := in_rule.Metadata["description"]; ok {
 				ruleDescriptions[in_i] = desc
 			} else {
@@ -72,11 +74,11 @@ func CheckV2(message *MessageAttributes, rules *RulesV2) (decision int, descisio
 	decision = max_decision
 	descisionString = DecisionNames[decision]
 
-	return decision, descisionString, relevantRuleIndex, results, appliedRulesIndices, ruleDescription
+	return decision, descisionString, relevantRuleIndex, results, appliedRulesIndices, ruleDescription, checkExtraData
 }
 
 // CheckOneRules gives the result of testing the message attributes with of one rule
-func CheckOneRuleV2(message *MessageAttributes, rule *RuleV2) int {
+func CheckOneRuleV2(message *MessageAttributes, rule *RuleV2) (int, string) {
 	// ----------------------
 	// compare basic message attributes:
 
@@ -86,17 +88,17 @@ func CheckOneRuleV2(message *MessageAttributes, rule *RuleV2) int {
 
 	match := TestSenderV2(rule, message)
 	if !match {
-		return DEFAULT
+		return DEFAULT, ""
 	}
 
 	match = TestReceiverV2(rule, message)
 	if !match {
-		return DEFAULT
+		return DEFAULT, ""
 	}
 
 	match = rule.OperationRegex.Match([]byte(message.RequestMethod)) // supports wildcards
 	if !match {
-		return DEFAULT
+		return DEFAULT, ""
 	}
 
 	// ----------------------
@@ -104,22 +106,22 @@ func CheckOneRuleV2(message *MessageAttributes, rule *RuleV2) int {
 	if rule.Protocol == "tcp" {
 		match = rule.Resource.ResourceNameRegex.Match([]byte(message.DestinationPort))
 		if !match {
-			return DEFAULT
+			return DEFAULT, ""
 		}
 	} else {
 		if rule.Protocol != "*" {
 			if !strings.EqualFold(message.ContextProtocol, rule.Protocol) { // regardless of case // need to support wildcards!
-				return DEFAULT
+				return DEFAULT, ""
 			}
 
 			if rule.Resource.ResourceType != "*" {
 				if message.ContextType != rule.Resource.ResourceType { // need to support wildcards?
-					return DEFAULT
+					return DEFAULT, ""
 				}
 			}
 			match = rule.Resource.ResourceNameRegex.Match([]byte(message.RequestPath)) // supports wildcards
 			if !match {
-				return DEFAULT
+				return DEFAULT, ""
 			}
 		}
 	}
@@ -127,24 +129,25 @@ func CheckOneRuleV2(message *MessageAttributes, rule *RuleV2) int {
 	// ----------------------
 	// test conditions:
 	conditionsResult := true // if there are no conditions then we skip the test and return the rule.Decision
+	extraData := ""
 	if rule.Conditions.ConditionsTree != nil {
-		conditionsResult = TestConditionsV2(rule, message)
+		conditionsResult, extraData = TestConditionsV2(rule, message)
 	}
 	if conditionsResult == false {
-		return DEFAULT
+		return DEFAULT, ""
 	}
 
 	// ----------------------
 	// if we got here then the rule applies and we use the rule's decision
 	switch rule.Decision {
 	case "allow", "ALLOW", "Allow":
-		return ALLOW
+		return ALLOW, extraData
 	case "alert", "ALERT", "Alert":
-		return ALERT
+		return ALERT, extraData
 	case "block", "BLOCK", "Block":
-		return BLOCK
+		return BLOCK, extraData
 	}
-	return DEFAULT
+	return DEFAULT, ""
 }
 
 func TestSenderV2(rule *RuleV2, message *MessageAttributes) bool {
@@ -217,7 +220,7 @@ func TestReceiverV2(rule *RuleV2, message *MessageAttributes) bool {
 }
 
 // testConditions tests the conditions of the rule with the message attributes
-func TestConditionsV2(rule *RuleV2, message *MessageAttributes) bool { // to-do return error
+func TestConditionsV2(rule *RuleV2, message *MessageAttributes) (bool, string) { // to-do return error
 
 	if rule.AlreadyConvertedFieldsToRegexFlag == false {
 		ConvertFieldsToRegexV2(rule)
@@ -378,10 +381,10 @@ func testJsonPathCondition(c *Condition, message *MessageAttributes) bool {
 		if len(*message.RequestJsonRawRelative) == 0 { // how to protect against nil pointer?
 			return false // By definition. This will create a "change" if something is true in the a new deployment
 		}
-		if c.AttributeJsonpathQuery == "$KEY" || strings.HasPrefix(c.AttributeJsonpathQuery , "$VALUE") {
+		if c.AttributeJsonpathQuery == "$KEY" || strings.HasPrefix(c.AttributeJsonpathQuery, "$VALUE") {
 			valueToCompareBytes, err = getKeyValue(*message.RequestJsonRawRelative, c.AttributeJsonpathQuery)
-			if  strings.HasPrefix(c.AttributeJsonpathQuery , "$VALUE."){
-				tempQuery:=strings.Replace(c.AttributeJsonpathQuery,"$VALUE.","$.",1)
+			if strings.HasPrefix(c.AttributeJsonpathQuery, "$VALUE.") {
+				tempQuery := strings.Replace(c.AttributeJsonpathQuery, "$VALUE.", "$.", 1)
 				valueToCompareBytes, err = jsonslice.Get(valueToCompareBytes, tempQuery)
 			}
 		} else {

@@ -66,7 +66,7 @@ func validateAttribute(condition *Condition) (bool, error) {
 			}
 		}
 		if strings.HasPrefix(condition.Attribute, "jsonpath:$KEY."){
-			return false, fmt.Errorf("jsonpath condition $KEY must not have another field [%v]", condition.Attribute)
+			return false, fmt.Errorf("jsonpath condition $KEY must not have a subfield [%v]", condition.Attribute)
 		}
 		if strings.Contains(condition.Attribute, "[:]") {
 			return false, fmt.Errorf("jsonpath condition contains array reference. need to use parent node of type ANY/ALL")

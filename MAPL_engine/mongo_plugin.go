@@ -121,16 +121,15 @@ func (c *Condition) ToMongoQuery(parentString string) (bson.M, []bson.M, error) 
 		if strings.Contains(parentString,"RELATIVE"){
 			return bson.M{}, []bson.M{}, fmt.Errorf("VALUE within array is not supported") // if neccessary we can do [$unwind, $addFields, $merge] steps!
 		}
-		if strings.Contains(c.OriginalAttribute,"jsonpath:$VALUE."){
-			return bson.M{}, []bson.M{}, fmt.Errorf("json VALUE is not supported")
-		}
+		//if strings.Contains(c.OriginalAttribute,"jsonpath:$VALUE."){
+		//	return bson.M{}, []bson.M{}, fmt.Errorf("json VALUE is not supported")
+		//}
+		subField:=strings.Replace(c.OriginalAttribute,"jsonpath:$VALUE","",1)
+		addedField := fmt.Sprintf("addedField.%v", parentString)
+		field = fmt.Sprintf("%v.v%v", addedField,subField)
 
-		field0 := parentString
-		field1 := fmt.Sprintf("addedField.%v", field0)
-		field = fmt.Sprintf("%v.v", field1)
 
-		//{$addFields: {     "addedField.md": {$objectToArray: '$md'}  }}
-		addFieldStep := bson.M{"$addFields": bson.M{field1: bson.M{"$objectToArray": "$" + field0}}}
+		addFieldStep := bson.M{"$addFields": bson.M{addedField: bson.M{"$objectToArray": "$" + parentString}}}
 
 		initialSteps = append(initialSteps, addFieldStep)
 	}

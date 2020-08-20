@@ -1,0 +1,30 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "workload"
+    protocol: "*"
+    resource:
+      resourceType: "*"
+      resourceName: "*"
+    operation: "*"
+    conditions:
+      AND:
+      - ANY:
+         parentJsonpathAttribute: "jsonpath:$.metadata.labels"
+         condition:
+           attribute: "jsonpath:$VALUE.def2"
+           method: EQ
+           value: "DEF"
+      - ANY:
+          parentJsonpathAttribute: "jsonpath:$.metadata.labels"
+          condition:
+            attribute: "jsonpath:$VALUE"
+            method: EQ
+            value: "XYZ"
+
+    decision: block
