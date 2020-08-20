@@ -672,24 +672,24 @@ func test_plugin(rulesFilename, jsonRawFilename string) ([]bool, error) {
 	return outputResults, nil
 }
 
-func readRulesAndRawData(rulesFilename, jsonRawFilename string) (MAPL_engine.RulesV2, []byte, error) {
+func readRulesAndRawData(rulesFilename, jsonRawFilename string) (MAPL_engine.Rules, []byte, error) {
 
-	rules, err := MAPL_engine.YamlReadRulesFromFileV2(rulesFilename)
+	rules, err := MAPL_engine.YamlReadRulesFromFile(rulesFilename)
 	if err != nil {
 		fmt.Printf("error: %v", err)
-		return MAPL_engine.RulesV2{}, []byte{}, err
+		return MAPL_engine.Rules{}, []byte{}, err
 	}
 
 	data, err := MAPL_engine.ReadBinaryFile(jsonRawFilename)
 	if err != nil {
 		fmt.Printf("can't read json raw file")
-		return MAPL_engine.RulesV2{}, []byte{}, err
+		return MAPL_engine.Rules{}, []byte{}, err
 	}
 	isYaml := strings.HasSuffix(jsonRawFilename, ".yaml")
 	if isYaml {
 		data2, err := yaml.YAMLToJSON(data)
 		if err != nil {
-			return MAPL_engine.RulesV2{}, []byte{}, err
+			return MAPL_engine.Rules{}, []byte{}, err
 		}
 		data = data2
 	}

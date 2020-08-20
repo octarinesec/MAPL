@@ -1,11 +1,18 @@
 package MAPL_engine
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/toolkits/slice"
 	"net"
 	"regexp"
+	"strings"
 )
+
+type GeneralStruct interface {
+	// a general interface to structures.
+	ToJson() (string, error) // This function is used when comparing structures read from yaml files to the resulting fields in the structure.
+}
 
 //-------------------rules-------------------------------------
 type Sender struct {
@@ -22,18 +29,6 @@ type Receiver struct {
 	ReceiverList []ExpandedSenderReceiver `yaml:"-" json:"receiverList,omitempty" bson:"ReceiverList,omitempty" structs:"ReceiverList,omitempty"`
 }
 
-//
-type ExpandedSenderReceiver struct {
-	Name   string         `yaml:"-" json:"Name,omitempty" bson:"Name,omitempty"`
-	Type   string         `yaml:"-" json:"Type,omitempty" bson:"Type,omitempty"`
-	Regexp *regexp.Regexp `yaml:"-" json:"Regexp,omitempty" bson:"Regexp,omitempty"`
-	IsIP   bool           `yaml:"-" json:"IsIP,omitempty" bson:"IsIP,omitempty"`
-	IsCIDR bool           `yaml:"-" json:"IsCIDR,omitempty" bson:"IsCIDR,omitempty"`
-	CIDR   net.IPNet      `yaml:"-" json:"CIDR,omitempty"  bson:"CIDR,omitempty"`
-	IP     net.IP         `yaml:"-" json:"IP,omitempty" bson:"IP,omitempty"`
-}
-
-
 // Resource structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
 type Resource struct {
 	/* Examples: // pay attention that the resource type should match the protocol
@@ -46,7 +41,6 @@ type Resource struct {
 	ResourceName      string         `yaml:"resourceName,omitempty" json:"resourceName,omitempty" bson:"ResourceName,omitempty" structs:"ResourceName,omitempty"`
 	ResourceNameRegex *regexp.Regexp `yaml:"-" json:"-,omitempty" bson:"ResourceNameRegex,omitempty" structs:"ResourceNameRegex,omitempty"`
 }
-
 
 // Condition structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
 type Condition struct {
@@ -79,39 +73,6 @@ type Condition struct {
 	OriginalAttribute string `yaml:"-" json:"OriginalAttribute,omitempty" bson:"OriginalAttribute,omitempty" structs:"OriginalAttribute,omitempty"` // used in hash
 	OriginalValue     string `yaml:"-" json:"OriginalValue,omitempty" bson:"OriginalValue,omitempty" structs:"OriginalValue,omitempty"`             // used in hash
 }
-
-
-type Rule struct {
-	// rule syntax:
-	//	<sender, receiver, resource, operation> : <conditions> : <decision>
-	//
-	RuleID     string      `yaml:"rule_id,omitempty" json:"ruleID,omitempty" bson:"RuleID,omitempty" structs:"RuleID,omitempty"`
-	Sender     Sender      `yaml:"sender,omitempty" json:"sender,omitempty" bson:"Sender" structs:"Sender,omitempty"`
-	Receiver   Receiver    `yaml:"receiver,omitempty" json:"receiver,omitempty" bson:"Receiver" structs:"Receiver,omitempty"`
-	Protocol   string      `yaml:"protocol,omitempty" json:"protocol,omitempty" bson:"ResourceProtocol" structs:"Protocol,omitempty"`
-	Resource   Resource    `yaml:"resource,omitempty" json:"resource,omitempty" bson:"Resource" structs:"Resource,omitempty"`
-	Operation  string      `yaml:"operation,omitempty" json:"operation,omitempty" bson:"Operation" structs:"Operation,omitempty"`
-
-	//Conditions interface{} `yaml:"conditions,omitempty" json:"conditions,omitempty" bson:"conditions,omitempty" structs:"conditions,omitempty"`
-	//ConditionsTree Node `yaml:"conditionsTree,omitempty" json:"conditionsTree,omitempty" bson:"conditionsTree,omitempty" structs:"conditionsTree,omitempty"`
-
-	Conditions ConditionsTree `yaml:"conditions,omitempty" json:"conditions,omitempty" bson:"conditions,omitempty" structs:"conditions,omitempty"`
-
-	Decision string `yaml:"decision,omitempty" json:"decision,omitempty" bson:"Decision" structs:"Decision,omitempty"`
-
-	Metadata map[string]string `yaml:"metadata,omitempty" json:"metadata,omitempty" bson:"Metadata" structs:"Metadata,omitempty"`
-
-	Hash string `yaml:"hash,omitempty" json:"hash,omitempty" bson:"Hash" structs:"Hash,omitempty"`
-
-	OperationRegex                    *regexp.Regexp `yaml:"o,omitempty" json:"o,omitempty" bson:"OperationRegex,omitempty" structs:"OperationRegex,omitempty"`
-	AlreadyConvertedFieldsToRegexFlag bool           `yaml:"-,omitempty" json:"-,omitempty" bson:"-,omitempty" structs:"-,omitempty"` // default is false
-}
-
-// Rules structure contains a list of rules
-type Rules struct {
-	Rules []Rule `yaml:"rules,omitempty" json:"rules,omitempty"`
-}
-
 
 type ConditionNode struct {
 	Attribute string `yaml:"attribute,omitempty" json:"attribute" bson:"Attribute" structs:"Attribute,omitempty"`
@@ -157,7 +118,6 @@ func getKeys(v map[string]interface{}) ([]string) {
 	return keys
 }
 
-
 func isConditionNode(v map[string]interface{}) bool {
 	keys := getKeys(v)
 	flagAtt := slice.ContainsString(keys, "Attribute") || slice.ContainsString(keys, "attribute")
@@ -173,6 +133,106 @@ func isConditionNode(v map[string]interface{}) bool {
 	return false
 }
 
+// ANDConditions structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
+type ANDConditions struct {
+	ANDConditions []Condition `yaml:"ANDconditions,omitempty" json:"ANDConditions,omitempty" bson:"ANDConditions,omitempty"`
+}
+
+// Rule structure - as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
+type Rule struct {
+	// rule syntax:
+	//	<sender, receiver, resource, operation> : <conditions> : <decision>
+	//
+	RuleID        string          `yaml:"rule_id,omitempty" json:"ruleID,omitempty" bson:"RuleID,omitempty" structs:"RuleID,omitempty"`
+	Sender        Sender          `yaml:"sender,omitempty" json:"sender,omitempty" bson:"Sender" structs:"Sender,omitempty"`
+	Receiver      Receiver        `yaml:"receiver,omitempty" json:"receiver,omitempty" bson:"Receiver" structs:"Receiver,omitempty"`
+	Protocol      string          `yaml:"protocol,omitempty" json:"protocol,omitempty" bson:"ResourceProtocol" structs:"Protocol,omitempty"`
+	Resource      Resource        `yaml:"resource,omitempty" json:"resource,omitempty" bson:"Resource" structs:"Resource,omitempty"`
+	Operation     string          `yaml:"operation,omitempty" json:"operation,omitempty" bson:"Operation" structs:"Operation,omitempty"`
+	DNFConditions []ANDConditions `yaml:"DNFconditions,omitempty" json:"dnfConditions,omitempty" bson:"DNFConditions,omitempty" structs:"DNFConditions,omitempty"`
+	Decision      string          `yaml:"decision,omitempty" json:"decision,omitempty" bson:"Decision" structs:"Decision,omitempty"`
+
+	Metadata map[string]string `yaml:"metadata,omitempty" json:"metadata,omitempty" bson:"Metadata" structs:"Metadata,omitempty"`
+
+	Hash string `yaml:"hash,omitempty" json:"hash,omitempty" bson:"Hash" structs:"Hash,omitempty"`
+
+	OperationRegex                    *regexp.Regexp `yaml:"o,omitempty" json:"o,omitempty" bson:"OperationRegex,omitempty" structs:"OperationRegex,omitempty"`
+	AlreadyConvertedFieldsToRegexFlag bool           `yaml:"-,omitempty" json:"-,omitempty" bson:"-,omitempty" structs:"-,omitempty"` // default is false
+}
+
+// Rules structure contains a list of rules
+type Rules struct {
+	Rules []Rule `yaml:"rules,omitempty" json:"rules,omitempty"`
+}
+
+//
+type ExpandedSenderReceiver struct {
+	Name   string         `yaml:"-" json:"Name,omitempty" bson:"Name,omitempty"`
+	Type   string         `yaml:"-" json:"Type,omitempty" bson:"Type,omitempty"`
+	Regexp *regexp.Regexp `yaml:"-" json:"Regexp,omitempty" bson:"Regexp,omitempty"`
+	IsIP   bool           `yaml:"-" json:"IsIP,omitempty" bson:"IsIP,omitempty"`
+	IsCIDR bool           `yaml:"-" json:"IsCIDR,omitempty" bson:"IsCIDR,omitempty"`
+	CIDR   net.IPNet      `yaml:"-" json:"CIDR,omitempty"  bson:"CIDR,omitempty"`
+	IP     net.IP         `yaml:"-" json:"IP,omitempty" bson:"IP,omitempty"`
+}
+
+//-------------------------------------------
+type RuleAndExtras struct {
+	MaplRule                       Rule   `json:"maplRule" binding:"required,dive" bson:"MaplRule" structs:"maplRule"`
+	Account                        string `json:"account" bson:"account" structs:"account"`
+	Enabled                        *bool  `json:"enabled" bson:"enabled" structs:"enabled"`
+	Origin                         string `json:"origin" bson:"origin" structs:"origin"`
+	BasedOnActivityCoveredByRuleId string `json:"basedOnActivityCoveredByRuleId" bson:"basedOnActivityCoveredByRuleId" structs:"basedOnActivityCoveredByRuleId"`
+}
+
+type RulesAndExtras struct {
+	Rules []RuleAndExtras `json:"rules" binding:"required,dive" bson:"RulesAndExtras" structs:"rules"`
+}
+
+type RulesAndExtrasAndDeprecated struct {
+	Rules        []RuleAndExtras `json:"rules" binding:"required,dive" bson:"RulesAndExtras" structs:"rules"`
+	UpdatedRules []RuleAndExtras `json:"suggested_simple_rule_update" binding:"required,dive" bson:"UpdatedRules" structs:"suggested_simple_rule_update"`
+	Deprecated   []string        `json:"deprecated_rules" binding:"required,dive" bson:"Deprecated" structs:"deprecated_rules"`
+	NotUsed      []string        `json:"not_used_non_deprecatable_rules" binding:"required,dive" bson:"NotUsed" structs:"not_used_non_deprecatable_rules"`
+	Used         []string        `json:"used_rules" binding:"required,dive" bson:"Used" structs:"used_rules"`
+}
+
+type MAPLDb struct {
+	//bongo.DocumentBase `bson:",inline"`
+	Id            string `json:"id" `
+	Created       string `json:"created"`
+	RuleAndExtras `bson:",inline" bson:"RuleAndExtras"`
+	MaplRuleHash  string `json:"-" bson:"MaplRuleHash"`
+}
+
+//-------------------------------------------
+
+// ToJson converts a structure into a json string
+func (rule Rule) ToJson() (string, error) { // method of GeneralStruct interface
+	jsonBytes, err := json.MarshalIndent(rule, "", "  ")
+	if err != nil {
+		return "", err
+	}
+	return string(jsonBytes), nil
+}
+
+// ToJson converts a structure into a json string
+func (rule Rule) ToJsonNoIndent() (string, error) { // method of GeneralStruct interface
+	jsonBytes, err := json.Marshal(rule)
+	if err != nil {
+		return "", err
+	}
+	return string(jsonBytes), nil
+}
+
+// ToJson converts a structure into a json string
+func (rules Rules) ToJson() (string, error) { // method of GeneralStruct interface
+	jsonBytes, err := json.MarshalIndent(rules, "", "  ")
+	if err != nil {
+		return "", err
+	}
+	return string(jsonBytes), nil
+}
 
 func (s *Sender) String() string {
 	senderString := fmt.Sprintf("%v:%v", "{default type}:", s.SenderName)
@@ -201,4 +261,55 @@ func (r *Resource) String() string {
 func (c *Condition) String() string {
 	// return fmt.Sprintf("(%v %v %v)", c.Attribute, c.Method, c.Value)
 	return fmt.Sprintf("<%v-%v-%v>", c.OriginalAttribute, c.Method, c.Value)
+}
+
+func (andConditions *ANDConditions) String() string {
+	c_strings := []string{}
+	for _, condition := range (andConditions.ANDConditions) {
+		c_strings = append(c_strings, condition.String())
+	}
+	return fmt.Sprintf("{%v}", strings.Join(c_strings, " && "))
+}
+
+type RuleStrings struct {
+	RuleSetId        string
+	SenderString     string
+	ReceiverString   string
+	ProtocolString   string
+	ResourceString   string
+	OperationString  string
+	ConditionsString string
+	DecisionString   string
+}
+
+func GetRuleStrings(r *Rule) RuleStrings {
+	output := RuleStrings{}
+
+	output.SenderString = r.Sender.String()
+	output.ReceiverString = r.Receiver.String()
+
+	output.ProtocolString = "default"
+	if r.Protocol != "" {
+		output.ProtocolString = r.Protocol
+	}
+
+	output.ResourceString = r.Resource.String()
+
+	output.OperationString = "default"
+	if r.Operation != "" {
+		output.OperationString = r.Operation
+	}
+
+	output.DecisionString = "default"
+	if r.Decision != "" {
+		output.DecisionString = r.Decision
+	}
+
+	conditionsStrings := []string{}
+	for _, andConditions := range (r.DNFConditions) {
+		conditionsStrings = append(conditionsStrings, andConditions.String())
+	}
+	output.ConditionsString = strings.Join(conditionsStrings, " OR ")
+
+	return output
 }

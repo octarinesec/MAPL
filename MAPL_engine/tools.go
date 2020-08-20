@@ -2,9 +2,16 @@ package MAPL_engine
 
 import (
 	"fmt"
+	"net"
 	"regexp"
 	"strings"
 )
+
+
+type GeneralStruct interface {
+	// a general interface to structures.
+	ToJson() (string, error) // This function is used when comparing structures read from yaml files to the resulting fields in the structure.
+}
 
 // IsNumberOfFieldsEqual is used to compare the structures read from files (mostly while debugging).
 // We convert the structure into a string and count the number of non-empty "fields". Then we compare to the number of non empty fields in the original yaml string.
@@ -88,4 +95,87 @@ func compareJsonAndYaml(jsonString string, yamlString string) (bool, string) {
 	}
 
 	return true, ""
+}
+
+
+func isIpCIDR(str string) (isIP, isCIDR bool, IP_out net.IP, IPNet_out net.IPNet) {
+
+	_, IPNet_temp, error := net.ParseCIDR(str)
+	if error == nil {
+		isCIDR = true
+		isIP = false
+		IPNet_out = *IPNet_temp
+	} else {
+		//fmt.Println(error)
+		IP2 := net.ParseIP(str)
+		if IP2 != nil {
+			isCIDR = false
+			isIP = true
+			IP_out = IP2
+		}
+	}
+	//fmt.Println(IP_out,IPNet_out)
+	return isIP, isCIDR, IP_out, IPNet_out
+}
+
+// ----------------------------------
+// print rule
+
+
+type RuleStrings struct {
+	RuleSetId        string
+	SenderString     string
+	ReceiverString   string
+	ProtocolString   string
+	ResourceString   string
+	OperationString  string
+	ConditionsString string
+	DecisionString   string
+}
+
+func GetRuleStrings(r *Rule) RuleStrings {
+	output := RuleStrings{}
+
+	output.SenderString = r.Sender.String()
+	output.ReceiverString = r.Receiver.String()
+
+	output.ProtocolString = "default"
+	if r.Protocol != "" {
+		output.ProtocolString = r.Protocol
+	}
+
+	output.ResourceString = r.Resource.String()
+
+	output.OperationString = "default"
+	if r.Operation != "" {
+		output.OperationString = r.Operation
+	}
+
+	output.DecisionString = "default"
+	if r.Decision != "" {
+		output.DecisionString = r.Decision
+	}
+
+	output.ConditionsString = r.Conditions.ConditionsTree.String()
+
+	return output
+}
+
+
+
+
+// Print displays one rule
+func (r Rule) Print() {
+
+	maplRuleStrings := GetRuleStrings(&r)
+
+	fmt.Println("Sender (type:name):", maplRuleStrings.SenderString)
+	fmt.Println("Receiver (type:name):", maplRuleStrings.ReceiverString)
+	fmt.Println("Protocol:", maplRuleStrings.ProtocolString)
+	fmt.Println("Resource (type:name):", maplRuleStrings.ResourceString)
+	fmt.Println("Operation :", maplRuleStrings.OperationString)
+	if maplRuleStrings.ConditionsString != "" {
+		fmt.Println("Conditions :", maplRuleStrings.ConditionsString)
+	}
+	fmt.Println("Decision:", maplRuleStrings.DecisionString)
 }

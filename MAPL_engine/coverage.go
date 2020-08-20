@@ -28,7 +28,7 @@ func Coverage(messages *Messages, rules *Rules) (messageCoverage map[string]Mess
 
 	for _, message := range messages.Messages {
 
-		decision, _, _, decisions, appliedRulesIndices,_ := Check(&message, rules)
+		decision, _, _, decisions, appliedRulesIndices,_ ,_:= Check(&message, rules)
 		appliedRulesIds := []string{}
 		for i_rule := range appliedRulesIndices {
 			rule_index := int(appliedRulesIndices[i_rule])

@@ -2,17 +2,13 @@ package MAPL_engine
 
 import (
 	"crypto/md5"
-	"encoding/json"
 	"fmt"
 	"github.com/toolkits/slice"
-	"gopkg.in/getlantern/deepcopy.v1"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"math"
-	"net"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -27,43 +23,15 @@ func YamlReadRulesFromString(yamlString string) (Rules, error) {
 		return Rules{}, err
 	}
 
-	flag, outputString, err := IsNumberOfFieldsEqual(rules, yamlString)
+	//err = PrepareRules(&rules)
+	err = PrepareRulesWithPredefinedStrings(&rules, PredefinedStringsAndLists{})
 	if err != nil {
-		return Rules{}, err
-	}
-	if flag == false {
-		return Rules{}, fmt.Errorf("number of fields in rules does not match number of fields in yaml file:\n" + outputString)
-	}
-
-	err = PrepareRules(&rules)
-	if err != nil {
-		log.Printf("error: %v", err)
 		return Rules{}, err
 	}
 
 	return rules, nil
 }
 
-// JsonReadRulesFromString function reads rules from a json string
-func JsonReadRulesFromString(jsonString string) (error_ret bool, rules Rules) {
-
-	error_ret = false
-	err := json.Unmarshal([]byte(jsonString), &rules)
-	if err != nil {
-		log.Printf("Error parsing rules JSON: %v", err)
-		error_ret = true
-	}
-
-	err = PrepareRules(&rules)
-	if err != nil {
-		log.Printf("error: %v", err)
-		error_ret = true
-	}
-
-	return error_ret, rules
-}
-
-// YamlReadRulesFromFile function reads rules from a file
 func YamlReadRulesFromFile(filename string) (Rules, error) {
 
 	filename = strings.Replace(filename, "\\", "/", -1)
@@ -72,63 +40,71 @@ func YamlReadRulesFromFile(filename string) (Rules, error) {
 	if err != nil {
 		return Rules{}, err
 	}
+
+	err = testYaml(data)
+	if err != nil {
+		return Rules{}, err
+	}
+
 	rules, err := YamlReadRulesFromString(string(data))
 	return rules, err
 }
 
-/*
-//YamlReadOneRule function reads one rule from yaml string
-func YamlReadOneRule(yamlString string) Rule {
+func YamlReadRulesFromStringWithPredefinedStrings(yamlString string, stringsAndlists PredefinedStringsAndLists) (Rules, error) {
 
-	var rule Rule
-	err := yaml.Unmarshal([]byte(yamlString), &rule)
+	var rules Rules
+	err := yaml.Unmarshal([]byte(yamlString), &rules)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Printf("error: %v", err)
+		return Rules{}, err
 	}
-	//fmt.Printf("---values found:\n%+v\n\n", rule)
 
-	flag, outputString := IsNumberOfFieldsEqual(rule, yamlString)
-
-	if flag == false {
-		panic("number of fields in rule does not match number of fields in yaml file:\n" + outputString)
+	err = PrepareRulesWithPredefinedStrings(&rules, stringsAndlists)
+	if err != nil {
+		return Rules{}, err
 	}
-	return rule
+
+	return rules, nil
 }
-*/
 
-func isIpCIDR(str string) (isIP, isCIDR bool, IP_out net.IP, IPNet_out net.IPNet) {
+func YamlReadRulesFromFileWithPredefinedStrings(filename string, stringsAndlists PredefinedStringsAndLists) (Rules, error) {
 
-	_, IPNet_temp, error := net.ParseCIDR(str)
-	if error == nil {
-		isCIDR = true
-		isIP = false
-		IPNet_out = *IPNet_temp
-	} else {
-		//fmt.Println(error)
-		IP2 := net.ParseIP(str)
-		if IP2 != nil {
-			isCIDR = false
-			isIP = true
-			IP_out = IP2
-		}
+	filename = strings.Replace(filename, "\\", "/", -1)
+
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return Rules{}, err
 	}
-	//fmt.Println(IP_out,IPNet_out)
-	return isIP, isCIDR, IP_out, IPNet_out
+
+	err = testYaml(data)
+	if err != nil {
+		return Rules{}, err
+	}
+
+	rules, err := YamlReadRulesFromStringWithPredefinedStrings(string(data), stringsAndlists)
+	return rules, err
+}
+
+func testYaml(data []byte) error {
+	var z interface{}
+	return yaml.UnmarshalStrict(data, &z)
 }
 
 /*
-// convertFieldsToRegex converts some rule fields into regular expressions to be used later.
-// This enables use of wildcards in the sender, receiver names, etc... for array of rules
-func ConvertFieldsToRegexManyRules(rules *Rules) error {
-	// we replace wildcards with the corresponding regex
+func ParseAndValidateConditions(rule *Rule) error {
 
-	for i, _ := range (rules.Rules) {
-		err := ConvertFieldsToRegex(&rules.Rules[i])
-		if err != nil {
-			return err
-		}
-
+	if rule.Conditions.ConditionsTree == nil {
+		return nil
 	}
+	c := rule.Conditions
+
+	conditionsTree, err := ParseConditionsTree(c)
+	if err != nil {
+		return err
+	}
+
+	rule.Conditions.ConditionsTree = conditionsTree
+
 	return nil
 }
 */
@@ -170,6 +146,304 @@ func ConvertFieldsToRegex(rule *Rule) error {
 
 }
 
+func PrepareRules(rules *Rules) error {
+
+	for i, _ := range (rules.Rules) {
+		err := PrepareOneRule(&rules.Rules[i])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func PrepareOneRule(rule *Rule) error {
+	// prepare the rules for use (when loading from json not all the fields are ready...)
+	// also do some validation on fields other than the conditions
+
+	err := ConvertFieldsToRegex(rule)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func PrepareRulesWithPredefinedStrings(rules *Rules, stringsAndLists PredefinedStringsAndLists) error {
+
+	for i, _ := range (rules.Rules) {
+		err := PrepareOneRuleWithPredefinedStrings(&rules.Rules[i], stringsAndLists)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func PrepareOneRuleWithPredefinedStrings(rule *Rule, stringsAndLists PredefinedStringsAndLists) error {
+	// prepare the rules for use (when loading from json not all the fields are ready...)
+	// also do some validation on fields other than the conditions
+
+	if rule.Conditions.ConditionsTree != nil {
+		err := rule.Conditions.ConditionsTree.PrepareAndValidate(stringsAndLists)
+		if err != nil {
+			return err
+		}
+	}
+
+	err := ReplaceStringsAndListsInOneRule(rule, stringsAndLists)
+	if err != nil {
+		return err
+	}
+	err = ConvertFieldsToRegex(rule)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+/*
+func ReplaceStringsAndListsInRules(rules *Rules, stringsAndlists PredefinedStringsAndLists) error {
+
+	for i, _ := range (rules.Rules) {
+		err := ReplaceStringsAndListsInOneRule(&rules.Rules[i], stringsAndlists)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+*/
+func ReplaceStringsAndListsInOneRule(rule *Rule, stringsAndLists PredefinedStringsAndLists) error {
+
+	newList, ok, isReplaceable := isReplaceableList(rule.Sender.SenderName, stringsAndLists)
+	if ok {
+		rule.Sender.SenderName = convertListToString(newList)
+	} else {
+		val, ok := isReplaceableString(rule.Sender.SenderName, stringsAndLists)
+		if ok {
+			rule.Sender.SenderName = val
+		}
+		if isReplaceable && !ok {
+			return fmt.Errorf("sender name is not predefined [%v]", rule.Sender.SenderName)
+		}
+	}
+
+	newList, ok, isReplaceable = isReplaceableList(rule.Receiver.ReceiverName, stringsAndLists)
+	if ok {
+		rule.Receiver.ReceiverName = convertListToString(newList)
+	} else {
+		val, ok := isReplaceableString(rule.Receiver.ReceiverName, stringsAndLists)
+		if ok {
+			rule.Receiver.ReceiverName = val
+		}
+		if isReplaceable && !ok {
+			return fmt.Errorf("receiver name is not predefined [%v]", rule.Receiver.ReceiverName)
+		}
+	}
+	return nil
+}
+func ReplaceStringsAndListsInCondition(c *Condition, stringsAndlists PredefinedStringsAndLists) error {
+	newList, ok, isReplaceable := isReplaceableList(c.Value, stringsAndlists)
+	if ok {
+		newValue := ""
+		if c.Method == "RE" || c.Method == "NRE" {
+			newValue = convertListToRegexString(newList)
+			_, err := regexp.Compile(newValue)
+			if err != nil {
+				return err
+			}
+		} else {
+			newValue = convertListToString(newList)
+		}
+		c.Value = newValue
+	} else {
+		newValue, ok := isReplaceableString(c.Value, stringsAndlists)
+		if ok {
+			c.Value = newValue
+		} else {
+			if isReplaceable {
+				return fmt.Errorf("condition value is not predefined [%v]", c.Value)
+			}
+		}
+	}
+	return nil
+}
+func convertListToString(list []string) string {
+	str := strings.Join(list, ",")
+	return str
+}
+
+func convertListToRegexString(list []string) string {
+	str := strings.Join(list, "|")
+	return str
+}
+
+func isReplaceableString(x string, stringsAndlists PredefinedStringsAndLists) (string, bool) {
+	if strings.HasPrefix(x, "#") {
+		x = strings.Replace(x, "#", "", 1)
+		val, ok := stringsAndlists.PredefinedStrings[x]
+		if ok {
+			return val, ok
+		}
+	}
+	return "", false
+}
+/*
+func isReplacebleListOld(x string, stringsAndlists PredefinedStringsAndLists) ([]string, bool, bool) {
+	if strings.HasPrefix(x, "#") {
+		x = strings.Replace(x, "#", "", 1)
+		keys, ok := stringsAndlists.PredefinedLists[x]
+		if ok {
+			list := []string{}
+			for _, key := range (keys) {
+				list = append(list, stringsAndlists.PredefinedStrings[key])
+			}
+			return list, ok, true
+		} else {
+			return []string{}, false, true
+		}
+	}
+	return []string{}, false, false
+}
+*/
+func isReplaceableList(x string, stringsAndlists PredefinedStringsAndLists) ([]string, bool, bool) {
+	if strings.HasPrefix(x, "#") {
+		x = strings.Replace(x, "#", "", 1)
+		list, ok := stringsAndlists.PredefinedListsWithoutRefs[x]
+		if ok {
+			return list, ok, true
+		} else {
+			return []string{}, false, true
+		}
+	}
+	return []string{}, false, false
+}
+
+func ConvertConditionStringToIntFloatRegex(condition *Condition) error { // TO-DO: cut to sub-functions
+
+	originalAttribute := condition.Attribute
+
+	if condition.Method == "IN" || condition.Method == "NIN" || condition.Method == "IS" {
+
+		tempString := strings.Replace(condition.Value, "[", "", -1)
+		tempString = strings.Replace(tempString, "]", "", -1)
+		tempString = strings.Replace(tempString, ",", "$|^", -1)
+		tempString = "^" + tempString + "$"
+		if condition.Method == "IN" || condition.Method == "IS"{
+			condition.Method = "RE"
+		}
+		if condition.Method == "NIN" {
+			condition.Method = "NRE"
+		}
+		condition.Value = tempString
+		condition.Value = tempString
+	}
+
+	tempString, factor := convertStringWithUnits(condition.Value)
+	valFloat, err := strconv.ParseFloat(tempString, 64)
+	valFloat = valFloat * factor
+	if err == nil {
+		condition.ValueFloat = valFloat
+	}
+	valInt, err := strconv.ParseInt(condition.Value, 10, 64)
+	if err == nil {
+		condition.ValueInt = valInt
+	}
+
+	re, err := regexp.Compile(condition.Value)
+	if err == nil {
+		condition.ValueRegex = re.Copy() // this is used in RE,NRE
+	}
+	if err != nil && slice.ContainsString(regexSlice, condition.Method) {
+		return fmt.Errorf("invalid regex string in condition")
+	}
+
+	re, err = regexp.Compile(ConvertStringToRegex(condition.Value))
+	if err == nil {
+		condition.ValueStringRegex = re.Copy() // this is used in EQ,NEQ
+	} else {
+		return fmt.Errorf("condition.Value could not be converted to regex")
+	}
+
+	if strings.Index(condition.Attribute, "senderLabel[") == 0 { // test if ATTRIBUTE is of type senderLabel
+		condition.AttributeIsSenderLabel = true
+		i1 := strings.Index(condition.Attribute, "[") + 1
+		i2 := strings.Index(condition.Attribute, "]")
+
+		condition.AttributeSenderLabelKey = condition.Attribute[i1:i2]
+		condition.Attribute = "senderLabel"
+		condition.OriginalAttribute = originalAttribute // used in hash
+	}
+	if strings.Index(condition.Attribute, "receiverLabel[") == 0 { // test if ATTRIBUTE is of type receiverLabel
+		condition.AttributeIsReceiverLabel = true
+		i1 := strings.Index(condition.Attribute, "[") + 1
+		i2 := strings.Index(condition.Attribute, "]")
+
+		condition.AttributeReceiverLabelKey = condition.Attribute[i1:i2]
+		condition.Attribute = "receiverLabel"
+		condition.OriginalAttribute = originalAttribute // used in hash
+	}
+
+	if strings.Index(condition.Value, "receiverLabel[") == 0 { // test if VALUE is of type receiverLabel (used to compare attribute senderLabel[key1] to value receiverLabel[key2])
+		condition.ValueIsReceiverLabel = true
+		i1 := strings.Index(condition.Value, "[") + 1
+		i2 := strings.Index(condition.Value, "]")
+
+		condition.ValueReceiverLabelKey = condition.Value[i1:i2]
+		condition.Value = "receiverLabel"
+		condition.OriginalValue = originalAttribute // used in hash
+	}
+
+	if strings.HasPrefix(condition.Attribute, "$sender.") { // test if ATTRIBUTE is of type sender object
+		condition.AttributeIsSenderObject = true
+		i1 := strings.Index(condition.Attribute, ".") + 1
+		condition.AttributeSenderObjectAttribute = condition.Attribute[i1:]
+		condition.Attribute = "$sender"
+		condition.OriginalAttribute = originalAttribute // used in hash
+	}
+
+	if strings.HasPrefix(condition.Attribute, "$receiver.") { // test if ATTRIBUTE is of type receiver object
+		condition.AttributeIsReceiverObject = true
+		i1 := strings.Index(condition.Attribute, ".") + 1
+		condition.AttributeReceiverObjectAttribute = condition.Attribute[i1:]
+		condition.Attribute = "$receiver"
+		condition.OriginalAttribute = originalAttribute // used in hash
+	}
+
+	if strings.HasPrefix(condition.Value, "$receiver.") { // test if VALUE is of type receiver object (used to compare attribute of sender object to value of receiver object)
+		condition.ValueIsReceiverObject = true
+		i1 := strings.Index(condition.Value, ".") + 1
+		condition.ValueReceiverObject = condition.Value[i1:]
+		condition.Value = "$receiver"
+		condition.OriginalValue = originalAttribute // used in hash
+	}
+
+	if strings.Index(condition.Attribute, "jsonpath:") == 0 { // test if ATTRIBUTE is of type jsonpath
+		condition.AttributeIsJsonpath = true
+		i1 := strings.Index(condition.Attribute, ":") + 1
+		i2 := len(condition.Attribute)
+		netConditionAttribute := condition.Attribute[i1:i2]
+
+		condition.AttributeIsJsonpathRelative = false
+		relativeKeywords:=[]string{"$RELATIVE.","$KEY","$VALUE"}
+		if SliceHasPrefix(relativeKeywords,netConditionAttribute){
+			condition.AttributeIsJsonpathRelative = true
+			netConditionAttribute = strings.Replace(netConditionAttribute, "$RELATIVE.", "$.", 1)
+			//netConditionAttribute = strings.Replace(netConditionAttribute, "$VALUE.", "$.", 1)
+		}
+
+		if netConditionAttribute[0] == '.' {
+			netConditionAttribute = "$" + netConditionAttribute
+		}
+
+		netConditionAttribute = strings.Replace(netConditionAttribute, "\"", "'", -1)
+		condition.AttributeJsonpathQuery = netConditionAttribute
+		condition.Attribute = "jsonpath"
+		condition.OriginalAttribute = originalAttribute // used in hash
+	}
+	return nil
+}
+
 // convertStringToRegex function converts one string to regex. Remove spaces, handle special characters and wildcards.
 func ConvertStringToRegex(str_in string) string {
 
@@ -195,6 +469,7 @@ func ConvertStringToRegex(str_in string) string {
 	str_out += ")"
 	return str_out
 }
+
 
 func ConvertStringToExpandedSenderReceiver(str_in string, type_in string) ([]ExpandedSenderReceiver, error) {
 	var output []ExpandedSenderReceiver
@@ -233,6 +508,7 @@ func ConvertStringToExpandedSenderReceiver(str_in string, type_in string) ([]Exp
 	return output, nil
 }
 
+
 // convertOperationStringToRegex function converts the operations string to regex.
 // this is a special case of convertStringToRegex
 func ConvertOperationStringToRegex(str_in string) string {
@@ -251,17 +527,39 @@ func ConvertOperationStringToRegex(str_in string) string {
 	return str_out
 }
 
-// ConvertConditionStringToIntFloatRegexManyRules convert values in strings in the conditions to integers, floats and regex
-// (or keep them default in case of failure) for array of rules
-func ConvertConditionStringToIntFloatRegexManyRules(rules *Rules) (err error) {
 
-	for i_rule, _ := range (rules.Rules) {
-		err := ConvertConditionStringToIntFloatRegex(&rules.Rules[i_rule])
-		if err != nil {
-			return err
+
+func SliceHasPrefix(sl []string, v string) bool {
+	for _, vv := range sl {
+		if strings.HasPrefix(v,vv) {
+			return true
 		}
 	}
-	return nil
+	return false
+}
+
+
+func RuleToString(rule Rule) string {
+
+	strMainPart := "<" + strings.ToLower(rule.Decision) + ">-<" + strings.ToLower(rule.Sender.SenderType) + ":" + rule.Sender.SenderName + ">-<" + strings.ToLower(rule.Receiver.ReceiverType) +
+		":" + rule.Receiver.ReceiverName + ">-" + strings.ToLower(rule.Operation) + "-" + strings.ToLower(rule.Protocol) + "-<" + rule.Resource.ResourceType + "-" + rule.Resource.ResourceName + ">"
+
+	ruleStr := strMainPart
+	if rule.Conditions.ConditionsTree != nil {
+		conditionsString := rule.Conditions.ConditionsTree.String()
+		ruleStr += "-" + conditionsString
+	}
+
+	return ruleStr
+}
+
+func RuleMD5Hash(rule Rule) (md5hash string) {
+
+	ruleStr := RuleToString(rule)
+	data := []byte(ruleStr)
+	md5hash = fmt.Sprintf("%x", md5.Sum(data))
+
+	return md5hash
 }
 
 func convertStringWithUnits(inputString string) (string, float64) {
@@ -284,406 +582,4 @@ func convertStringWithUnits(inputString string) (string, float64) {
 	}
 	return inputString, 1.0
 
-}
-
-// ConvertConditionStringToIntFloatRegexManyRules convert values in strings in the conditions to integers, floats and regex
-// (or keep them default in case of failure)
-func ConvertConditionStringToIntFloatRegex(r *Rule) (err error) {
-
-	r2 := Rule{}
-	err = deepcopy.Copy(&r2, r)
-	if err != nil {
-		return fmt.Errorf("can't test validity of rule conditions")
-	}
-	isValid, err := ValidateRuleConditions(r2)
-	if err != nil {
-		return err
-	}
-	if !isValid {
-		return fmt.Errorf("rule conditions are invalid")
-	}
-
-	regexSlice := []string{"re", "nre", "RE", "NRE"}
-
-	for i_dnf, andConditions := range (r.DNFConditions) {
-		for i_and, condition := range (andConditions.ANDConditions) {
-
-			if condition.Method == "IN" || condition.Method == "NIN" {
-
-				tempString := strings.Replace(condition.Value, "[", "", -1)
-				tempString = strings.Replace(tempString, "]", "", -1)
-				tempString = strings.Replace(tempString, ",", "$|^", -1)
-				tempString = "^" + tempString + "$"
-				if condition.Method == "IN" {
-					r.DNFConditions[i_dnf].ANDConditions[i_and].Method = "RE"
-				}
-				if condition.Method == "NIN" {
-					r.DNFConditions[i_dnf].ANDConditions[i_and].Method = "NRE"
-				}
-				r.DNFConditions[i_dnf].ANDConditions[i_and].Value = tempString
-				condition.Value = tempString
-			}
-
-			tempString, factor := convertStringWithUnits(condition.Value)
-			valFloat, err := strconv.ParseFloat(tempString, 64)
-			valFloat = valFloat * factor
-			if err == nil {
-				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueFloat = valFloat
-			}
-			valInt, err := strconv.ParseInt(condition.Value, 10, 64)
-			if err == nil {
-				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueInt = valInt
-			}
-
-			re, err := regexp.Compile(condition.Value)
-			if err == nil {
-				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueRegex = re.Copy() // this is used in RE,NRE
-			}
-			if err != nil && slice.ContainsString(regexSlice, condition.Method) {
-				return fmt.Errorf("invalid regex string in condition")
-			}
-
-			re, err = regexp.Compile(ConvertStringToRegex(condition.Value))
-			if err == nil {
-				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueStringRegex = re.Copy() // this is used in EQ,NEQ
-			} else {
-				return fmt.Errorf("condition.Value could not be converted to regex")
-			}
-
-			if strings.Index(condition.Attribute, "senderLabel[") == 0 { // test if ATTRIBUTE is of type senderLabel
-				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeIsSenderLabel = true
-				i1 := strings.Index(condition.Attribute, "[") + 1
-				i2 := strings.Index(condition.Attribute, "]")
-
-				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeSenderLabelKey = condition.Attribute[i1:i2]
-				r.DNFConditions[i_dnf].ANDConditions[i_and].Attribute = "senderLabel"
-				r.DNFConditions[i_dnf].ANDConditions[i_and].OriginalAttribute = condition.Attribute // used in hash
-			}
-			if strings.Index(condition.Attribute, "receiverLabel[") == 0 { // test if ATTRIBUTE is of type receiverLabel
-				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeIsReceiverLabel = true
-				i1 := strings.Index(condition.Attribute, "[") + 1
-				i2 := strings.Index(condition.Attribute, "]")
-
-				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeReceiverLabelKey = condition.Attribute[i1:i2]
-				r.DNFConditions[i_dnf].ANDConditions[i_and].Attribute = "receiverLabel"
-				r.DNFConditions[i_dnf].ANDConditions[i_and].OriginalAttribute = condition.Attribute // used in hash
-			}
-
-			if strings.Index(condition.Value, "receiverLabel[") == 0 { // test if VALUE is of type receiverLabel (used to compare attribute senderLabel[key1] to value receiverLabel[key2])
-				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueIsReceiverLabel = true
-				i1 := strings.Index(condition.Value, "[") + 1
-				i2 := strings.Index(condition.Value, "]")
-
-				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueReceiverLabelKey = condition.Value[i1:i2]
-				r.DNFConditions[i_dnf].ANDConditions[i_and].Value = "receiverLabel"
-				r.DNFConditions[i_dnf].ANDConditions[i_and].OriginalValue = condition.Value // used in hash
-			}
-
-			if strings.HasPrefix(condition.Attribute, "$sender.") { // test if ATTRIBUTE is of type sender object
-				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeIsSenderObject = true
-				i1 := strings.Index(condition.Attribute, ".") + 1
-				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeSenderObjectAttribute = condition.Attribute[i1:]
-				r.DNFConditions[i_dnf].ANDConditions[i_and].Attribute = "$sender"
-				r.DNFConditions[i_dnf].ANDConditions[i_and].OriginalAttribute = condition.Attribute // used in hash
-			}
-
-			if strings.HasPrefix(condition.Attribute, "$receiver.") { // test if ATTRIBUTE is of type receiver object
-				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeIsReceiverObject = true
-				i1 := strings.Index(condition.Attribute, ".") + 1
-				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeReceiverObjectAttribute = condition.Attribute[i1:]
-				r.DNFConditions[i_dnf].ANDConditions[i_and].Attribute = "$receiver"
-				r.DNFConditions[i_dnf].ANDConditions[i_and].OriginalAttribute = condition.Attribute // used in hash
-			}
-
-			if strings.HasPrefix(condition.Value, "$receiver.") { // test if VALUE is of type receiver object (used to compare attribute of sender object to value of receiver object)
-				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueIsReceiverObject = true
-				i1 := strings.Index(condition.Value, ".") + 1
-				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueReceiverObject = condition.Value[i1:]
-				r.DNFConditions[i_dnf].ANDConditions[i_and].Value = "$receiver"
-				r.DNFConditions[i_dnf].ANDConditions[i_and].OriginalValue = condition.Value // used in hash
-			}
-
-			if strings.Index(condition.Attribute, "jsonpath:") == 0 { // test if ATTRIBUTE is of type jsonpath
-				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeIsJsonpath = true
-				i1 := strings.Index(condition.Attribute, ":") + 1
-				i2 := len(condition.Attribute)
-				netConditionAttribute := condition.Attribute[i1:i2]
-				if netConditionAttribute[0] == '.' {
-					netConditionAttribute = "$" + netConditionAttribute
-				}
-				netConditionAttribute = strings.Replace(netConditionAttribute, "\"", "'", -1)
-				r.DNFConditions[i_dnf].ANDConditions[i_and].AttributeJsonpathQuery = netConditionAttribute
-				r.DNFConditions[i_dnf].ANDConditions[i_and].Attribute = "jsonpath"
-				r.DNFConditions[i_dnf].ANDConditions[i_and].OriginalAttribute = condition.Attribute // used in hash
-			}
-		}
-	}
-	return nil
-}
-
-// ValidateRuleConditions as much as possible
-func ValidateRuleConditions(r Rule) (bool, error) {
-
-	supportedMethodsSlice := []string{"ge", "GE", "gt", "GT", "le", "LE", "lt", "LT", "re", "RE", "nre", "NRE", "in", "IN", "nin", "NIN", "eq", "EQ", "neq", "NEQ", "ne", "NE", "ex", "EX", "nex", "NEX"}
-	regexSlice := []string{"re", "nre", "RE", "NRE"}
-	numberMethodSlice := []string{"ge", "GE", "gt", "GT", "le", "LE", "lt", "LT"}
-	supportedAttributesPrefixes := []string{"$sender.", "$receiver.", "senderLabel[", "receiverLabel[", "jsonpath:"}
-	supportedAttributesExact := []string{"true", "TRUE", "false", "FALSE", "payloadSize", "requestUseragent", "utcHoursFromMidnight", "minuteParity", "encryptionType", "encryptionVersion", "domain"}
-	allowedEncryptionVersionOperation := []string{"eq", "lt", "le", "gt", "ge", "EQ", "LT", "LE", "GT", "GE"}
-
-	for i_dnf, andConditions := range (r.DNFConditions) {
-		for i_and, condition := range (andConditions.ANDConditions) {
-
-			if !slice.ContainsString(supportedMethodsSlice, condition.Method) {
-				return false, fmt.Errorf("invalid method in condition [%v]", condition.Method)
-			}
-			flagAtt := false
-			for _, att := range supportedAttributesExact {
-				if condition.Attribute == att {
-					flagAtt = true
-				}
-			}
-			for _, att := range supportedAttributesPrefixes {
-				if strings.Index(condition.Attribute, att) == 0 {
-					flagAtt = true
-				}
-			}
-			if !flagAtt {
-				return false, fmt.Errorf("invalid attribute in condition [%v]", condition.Attribute)
-			}
-			if condition.Attribute == "encryptionVersion" {
-				if !slice.ContainsString(allowedEncryptionVersionOperation, condition.Method) {
-					return false, fmt.Errorf("invalid method for attribute 'EncryptionVersion'")
-				}
-			}
-			if strings.HasPrefix(condition.Attribute, "jsonpath:") && (!strings.HasPrefix(condition.Attribute, "jsonpath:$") && !strings.HasPrefix(condition.Attribute, "jsonpath:.")) {
-				return false, fmt.Errorf("jsonpath condition must start with '$' or '.'")
-			}
-
-			if condition.Method == "IN" || condition.Method == "NIN" {
-				L := len(condition.Value)
-				if L == -0 {
-					return false, fmt.Errorf("test membership in empty array")
-				}
-				tempString := strings.Replace(condition.Value, "[", "", -1)
-				tempString = strings.Replace(tempString, "]", "", -1)
-				tempString = strings.Replace(tempString, ",", "$|^", -1)
-				tempString = "^" + tempString + "$"
-
-				_, err := regexp.Compile(tempString)
-				if err != nil {
-					return false, fmt.Errorf("condition.Value is not a valid array")
-				}
-			}
-
-			tempString, factor := convertStringWithUnits(condition.Value)
-			isNum := false
-			valFloat, err := strconv.ParseFloat(tempString, 64)
-			valFloat = valFloat * factor
-			if err == nil {
-				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueFloat = valFloat
-				isNum = true
-			}
-			valInt, err := strconv.ParseInt(condition.Value, 10, 64)
-			if err == nil {
-				r.DNFConditions[i_dnf].ANDConditions[i_and].ValueInt = valInt
-				isNum = true
-			}
-
-			if isNum == false && slice.ContainsString(numberMethodSlice, condition.Method) {
-				return false, fmt.Errorf("invalid numerical value in condition")
-			}
-
-			_, err = regexp.Compile(condition.Value)
-			if err != nil && slice.ContainsString(regexSlice, condition.Method) {
-				return false, fmt.Errorf("invalid regex string in condition")
-			}
-
-			/*
-				_, err = regexp.Compile(ConvertStringToRegex(condition.Value))
-				if err != nil slice.ContainsString(regexSlice, condition.Method){
-					return false, fmt.Errorf("condition.Value could not be converted to regex")
-				}
-			*/
-
-			if strings.Index(condition.Attribute, "senderLabel[") == 0 { // test if ATTRIBUTE is of type senderLabel
-				i2 := strings.Index(condition.Attribute, "]")
-				if i2 < len(condition.Attribute)-1 {
-					return false, fmt.Errorf("senderLabel has a wrong format")
-				}
-				if slice.ContainsString(numberMethodSlice, condition.Method) {
-					return false, fmt.Errorf("numerical method with senderLabel")
-				}
-			}
-			if strings.Index(condition.Attribute, "receiverLabel[") == 0 { // test if ATTRIBUTE is of type receiverLabel
-				i2 := strings.Index(condition.Attribute, "]")
-				if i2 < len(condition.Attribute)-1 {
-					return false, fmt.Errorf("receiverLabel has a wrong format")
-				}
-				if slice.ContainsString(numberMethodSlice, condition.Method) {
-					return false, fmt.Errorf("numerical method with receiverLabel")
-				}
-			}
-
-			if strings.Index(condition.Value, "receiverLabel[") == 0 { // test if VALUE is of type receiverLabel (used to compare attribute senderLabel[key1] to value receiverLabel[key2])
-				i2 := strings.Index(condition.Value, "]")
-				if i2 < len(condition.Value)-1 {
-					return false, fmt.Errorf("value receiverLabel has a wrong format")
-				}
-			}
-
-			if strings.HasPrefix(condition.Attribute, "$sender.") { // test if ATTRIBUTE is of type sender object
-				if slice.ContainsString(numberMethodSlice, condition.Method) {
-					return false, fmt.Errorf("numerical method with $sender")
-				}
-			}
-
-			if strings.HasPrefix(condition.Attribute, "$receiver.") { // test if ATTRIBUTE is of type receiver object
-				if slice.ContainsString(numberMethodSlice, condition.Method) {
-					return false, fmt.Errorf("numerical method with $receiver")
-				}
-			}
-		}
-	}
-	return true, nil
-}
-
-func ValidateRule(rule *Rule) error {
-
-	rule2 := Rule{}
-	err := deepcopy.Copy(&rule2, rule)
-	if err != nil {
-		return fmt.Errorf("can't test validity of rule conditions")
-	}
-	err = ConvertFieldsToRegex(&rule2)
-	if err != nil {
-		return err
-	}
-	isValid, err := ValidateRuleConditions(rule2)
-	if err != nil {
-		return err
-	}
-	if !isValid {
-		return fmt.Errorf("rule conditions are invalid")
-	}
-	return nil
-}
-
-func PrepareRules(rules *Rules) error {
-
-	for i, _ := range (rules.Rules) {
-		err := PrepareOneRule(&rules.Rules[i])
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func PrepareOneRule(rule *Rule) error {
-	// prepare the rules for use (when loading from json not all the fields are ready...)
-	err := ValidateRule(rule)
-	if err != nil {
-		return err
-	}
-	err = ConvertFieldsToRegex(rule)
-	if err != nil {
-		return err
-	}
-	err = ConvertConditionStringToIntFloatRegex(rule) // prepare the label conditions
-	return err
-}
-
-func RuleConditionsToString(rule Rule) string {
-	dnfStrings := []string{}
-	for _, andConditions := range rule.DNFConditions {
-		andStrings := []string{}
-		for _, condition := range andConditions.ANDConditions {
-			tempStr1 := condition.OriginalAttribute
-			if len(tempStr1) == 0 {
-				tempStr1 = condition.Attribute
-			}
-			tempStr2 := condition.OriginalValue
-			if len(tempStr2) == 0 {
-				tempStr2 = condition.Value
-			}
-			andStrings = append(andStrings, "<"+tempStr1+":"+condition.Method+":"+tempStr2+">")
-		}
-		sort.Strings(andStrings)
-		andStr := ""
-		for _, str := range (andStrings) {
-			andStr += str + "&"
-		}
-		andStr = andStr[:len(andStr)-1]
-		dnfStrings = append(dnfStrings, andStr)
-	}
-	sort.Strings(dnfStrings)
-	totalDNFstring := "("
-	for _, str := range (dnfStrings) {
-		totalDNFstring += str + ")|("
-	}
-	if len(dnfStrings) > 0 {
-		totalDNFstring = totalDNFstring[:len(totalDNFstring)-2]
-	} else {
-		totalDNFstring = "no conditions"
-	}
-	return totalDNFstring
-}
-
-func RuleToString(rule Rule) string {
-
-	strMainPart := "<" + strings.ToLower(rule.Decision) + ">-<" + strings.ToLower(rule.Sender.SenderType) + ":" + rule.Sender.SenderName + ">-<" + strings.ToLower(rule.Receiver.ReceiverType) +
-		":" + rule.Receiver.ReceiverName + ">-" + strings.ToLower(rule.Operation) + "-" + strings.ToLower(rule.Protocol) + "-<" + rule.Resource.ResourceType + "-" + rule.Resource.ResourceName + ">"
-
-	totalDNFstring := RuleConditionsToString(rule)
-
-	ruleStr := strMainPart + "-" + totalDNFstring
-	return ruleStr
-}
-
-func RuleMD5Hash(rule Rule) (md5hash string) {
-
-	ruleStr := RuleToString(rule)
-	data := []byte(ruleStr)
-	md5hash = fmt.Sprintf("%x", md5.Sum(data))
-
-	return md5hash
-}
-
-func RuleMD5HashConditions(rule Rule) (md5hash string) {
-
-	totalDNFstring := RuleConditionsToString(rule)
-	data := []byte(totalDNFstring)
-	md5hash = fmt.Sprintf("%x", md5.Sum(data))
-
-	return md5hash
-}
-
-func (r Rule) ConditionsEqual(rule Rule) bool {
-	return RuleMD5HashConditions(r) == RuleMD5HashConditions(rule)
-}
-
-// Print displays one rule
-func (r Rule) Print() {
-
-	maplRuleStrings := GetRuleStrings(&r)
-
-	fmt.Println("Sender (type:name):", maplRuleStrings.SenderString)
-	fmt.Println("Receiver (type:name):", maplRuleStrings.ReceiverString)
-	fmt.Println("Protocol:", maplRuleStrings.ProtocolString)
-	fmt.Println("Resource (type:name):", maplRuleStrings.ResourceString)
-	fmt.Println("Operation :", maplRuleStrings.OperationString)
-	if maplRuleStrings.ConditionsString != "" {
-		fmt.Println("Conditions :", maplRuleStrings.ConditionsString)
-	}
-	fmt.Println("Decision:", maplRuleStrings.DecisionString)
-}
-
-func (rule *Rule) ToLower() {
-	rule.Sender.SenderType = strings.ToLower(rule.Sender.SenderType)
-	rule.Receiver.ReceiverType = strings.ToLower(rule.Receiver.ReceiverType)
-	rule.Resource.ResourceType = strings.ToLower(rule.Resource.ResourceType)
-	rule.Protocol = strings.ToLower(rule.Protocol)
-	rule.Operation = strings.ToLower(rule.Operation)
-	rule.Decision = strings.ToLower(rule.Decision)
 }

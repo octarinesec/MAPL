@@ -241,7 +241,7 @@ func removeQuotes(str string) (string, error) {
 }
 
 /*
-func getQueryPipeline(rule RuleV2) ([]bson.M,error){
+func getQueryPipeline(rule Rule) ([]bson.M,error){
 
 	//key_value_step, err := rule.Conditions.ConditionsTree.KeyValueStep()
 

@@ -423,7 +423,7 @@ func (c *Condition) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists
 		return fmt.Errorf("error in validating condition [%+v]", c)
 	}
 
-	err = ConvertConditionStringToIntFloatRegexV2(c)
+	err = ConvertConditionStringToIntFloatRegex(c)
 	if err != nil {
 		return err
 	}
@@ -634,12 +634,7 @@ func prepareOneConditionNode(cond ConditionNode) (Node, error) {
 	if !valid {
 		return nil, fmt.Errorf("error in validating condition [%+v]", cond)
 	}
-	/*
-		err = ConvertConditionStringToIntFloatRegexV2(&c)
-		if err != nil {
-			return nil, err
-		}
-	*/
+
 	return &c, nil
 }
 
