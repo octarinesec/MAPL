@@ -1,0 +1,24 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "*"
+    protocol: HTTP
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: GET
+    conditions:
+      condition:
+      - attribute: encryptionType
+        method: EQ
+        value: TLS
+      - attribute: encryptionVersion
+        method: GE
+        value: 1.3
+
+    decision: allow

@@ -11,11 +11,9 @@ import (
 // - rules that are written with conditions on labels are converted to be using only the service names
 //
 
-const NoComplyingSender = "NO_SENDER_COMPLYING_WITH_RULE"
-const NoComplyingReceiver = "NO_RECEIVER_COMPLYING_WITH_RULE"
-
 // this is an empty message populated later with message.SenderLabels and message.DestinationLabels to test the rule conditions on the message.
 var message_attributes MAPL_engine.MessageAttributes
+
 
 // function RemoveLabelConditionsFromRule is the main function for translation of conditions on Sender and Receiver Labels to
 // the equivalent Sender/Receiver names

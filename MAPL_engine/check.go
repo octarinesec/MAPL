@@ -437,8 +437,11 @@ func testJsonPathCondition(c *Condition, message *MessageAttributes) bool {
 		return false // default test result is false on an empty jsonpath result
 	}
 
+
 	valueToCompareString = strings.Replace(valueToCompareString, "[[", "[", -1)
 	valueToCompareString = strings.Replace(valueToCompareString, "]]", "]", -1)
+	valueToCompareString = strings.Replace(valueToCompareString, "[\"", "\"", -1)
+	valueToCompareString = strings.Replace(valueToCompareString, "\"]", "\"", -1)
 	if valueToCompareString == "[]" {
 		valueToCompareString = ""
 	}

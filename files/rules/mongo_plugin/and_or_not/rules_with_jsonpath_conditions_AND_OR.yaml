@@ -14,14 +14,14 @@ rules:
   operation: "*"
   conditions:
     AND:
-     -  OR:
-    - attribute: "jsonpath:$.metadata.labels.foo"
-      method: EQ
-      value: bar
+    - OR:
+      - attribute: "jsonpath:$.metadata.labels.foo"
+        method: EQ
+        value: bar
 
-    - attribute: "jsonpath:$.spec.replicas"
-      method: LT
-      value: 4
+      - attribute: "jsonpath:$.spec.replicas"
+        method: LT
+        value: 4
 
 
   decision: block

@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"github.com/toolkits/slice"
+	"gopkg.in/getlantern/deepcopy.v1"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
@@ -49,7 +50,18 @@ func YamlReadRulesFromFile(filename string) (Rules, error) {
 	rules, err := YamlReadRulesFromString(string(data))
 	return rules, err
 }
+/*
+func (r *Rule) UnmarshalJSON(data []byte) error {
 
+	dataYaml,err:=ghodssYaml.JSONToYAML(data)
+	if err!=nil{
+		return err
+	}
+
+	err=yaml.Unmarshal(dataYaml,r)
+	return err
+}
+*/
 func YamlReadRulesFromStringWithPredefinedStrings(yamlString string, stringsAndlists PredefinedStringsAndLists) (Rules, error) {
 
 	var rules Rules
@@ -288,6 +300,7 @@ func isReplaceableString(x string, stringsAndlists PredefinedStringsAndLists) (s
 	}
 	return "", false
 }
+
 /*
 func isReplacebleListOld(x string, stringsAndlists PredefinedStringsAndLists) ([]string, bool, bool) {
 	if strings.HasPrefix(x, "#") {
@@ -329,7 +342,7 @@ func ConvertConditionStringToIntFloatRegex(condition *Condition) error { // TO-D
 		tempString = strings.Replace(tempString, "]", "", -1)
 		tempString = strings.Replace(tempString, ",", "$|^", -1)
 		tempString = "^" + tempString + "$"
-		if condition.Method == "IN" || condition.Method == "IS"{
+		if condition.Method == "IN" || condition.Method == "IS" {
 			condition.Method = "RE"
 		}
 		if condition.Method == "NIN" {
@@ -425,8 +438,8 @@ func ConvertConditionStringToIntFloatRegex(condition *Condition) error { // TO-D
 		netConditionAttribute := condition.Attribute[i1:i2]
 
 		condition.AttributeIsJsonpathRelative = false
-		relativeKeywords:=[]string{"$RELATIVE.","$KEY","$VALUE"}
-		if SliceHasPrefix(relativeKeywords,netConditionAttribute){
+		relativeKeywords := []string{"$RELATIVE.", "$KEY", "$VALUE"}
+		if SliceHasPrefix(relativeKeywords, netConditionAttribute) {
 			condition.AttributeIsJsonpathRelative = true
 			netConditionAttribute = strings.Replace(netConditionAttribute, "$RELATIVE.", "$.", 1)
 			//netConditionAttribute = strings.Replace(netConditionAttribute, "$VALUE.", "$.", 1)
@@ -470,7 +483,6 @@ func ConvertStringToRegex(str_in string) string {
 	return str_out
 }
 
-
 func ConvertStringToExpandedSenderReceiver(str_in string, type_in string) ([]ExpandedSenderReceiver, error) {
 	var output []ExpandedSenderReceiver
 
@@ -508,7 +520,6 @@ func ConvertStringToExpandedSenderReceiver(str_in string, type_in string) ([]Exp
 	return output, nil
 }
 
-
 // convertOperationStringToRegex function converts the operations string to regex.
 // this is a special case of convertStringToRegex
 func ConvertOperationStringToRegex(str_in string) string {
@@ -527,30 +538,33 @@ func ConvertOperationStringToRegex(str_in string) string {
 	return str_out
 }
 
-
-
 func SliceHasPrefix(sl []string, v string) bool {
 	for _, vv := range sl {
-		if strings.HasPrefix(v,vv) {
+		if strings.HasPrefix(v, vv) {
 			return true
 		}
 	}
 	return false
 }
 
-
 func RuleToString(rule Rule) string {
 
 	strMainPart := "<" + strings.ToLower(rule.Decision) + ">-<" + strings.ToLower(rule.Sender.SenderType) + ":" + rule.Sender.SenderName + ">-<" + strings.ToLower(rule.Receiver.ReceiverType) +
 		":" + rule.Receiver.ReceiverName + ">-" + strings.ToLower(rule.Operation) + "-" + strings.ToLower(rule.Protocol) + "-<" + rule.Resource.ResourceType + "-" + rule.Resource.ResourceName + ">"
 
-	ruleStr := strMainPart
-	if rule.Conditions.ConditionsTree != nil {
-		conditionsString := rule.Conditions.ConditionsTree.String()
-		ruleStr += "-" + conditionsString
-	}
+	ruleStr := strMainPart + "-" + RuleConditionsToString(rule)
 
 	return ruleStr
+}
+
+
+func RuleConditionsToString(rule Rule) string {
+	if rule.Conditions.ConditionsTree != nil {
+		conditionsString := rule.Conditions.ConditionsTree.String()
+		return conditionsString
+	} else {
+		return "no conditions"
+	}
 }
 
 func RuleMD5Hash(rule Rule) (md5hash string) {
@@ -560,6 +574,19 @@ func RuleMD5Hash(rule Rule) (md5hash string) {
 	md5hash = fmt.Sprintf("%x", md5.Sum(data))
 
 	return md5hash
+}
+
+func RuleMD5HashConditions(rule Rule) (md5hash string) {
+
+	totalDNFstring := RuleConditionsToString(rule)
+	data := []byte(totalDNFstring)
+	md5hash = fmt.Sprintf("%x", md5.Sum(data))
+
+	return md5hash
+}
+
+func (r Rule) ConditionsEqual(rule Rule) bool {
+	return RuleMD5HashConditions(r) == RuleMD5HashConditions(rule)
 }
 
 func convertStringWithUnits(inputString string) (string, float64) {
@@ -582,4 +609,34 @@ func convertStringWithUnits(inputString string) (string, float64) {
 	}
 	return inputString, 1.0
 
+}
+
+func (rule *Rule) ToLower() {
+	rule.Sender.SenderType = strings.ToLower(rule.Sender.SenderType)
+	rule.Receiver.ReceiverType = strings.ToLower(rule.Receiver.ReceiverType)
+	rule.Resource.ResourceType = strings.ToLower(rule.Resource.ResourceType)
+	rule.Protocol = strings.ToLower(rule.Protocol)
+	rule.Operation = strings.ToLower(rule.Operation)
+	rule.Decision = strings.ToLower(rule.Decision)
+}
+
+func ValidateRule(rule *Rule) error {
+
+	rule2 := Rule{}
+	err := deepcopy.Copy(&rule2, rule)
+	if err != nil {
+		return fmt.Errorf("can't test validity of rule conditions")
+	}
+	err = ConvertFieldsToRegex(&rule2)
+	if err != nil {
+		return err
+	}
+
+	if rule2.Conditions.ConditionsTree!=nil {
+		err = rule2.Conditions.ConditionsTree.PrepareAndValidate(PredefinedStringsAndLists{})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

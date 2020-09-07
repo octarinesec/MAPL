@@ -12,7 +12,7 @@ func (a *And) ToMongoQuery(parentString string) (bson.M, []bson.M, error) { //pa
 	q_array := []bson.M{}
 	pipeline := []bson.M{}
 
-	for _, node := range a.nodes {
+	for _, node := range a.Nodes {
 		q, pipelineAppend, err := node.ToMongoQuery("")
 		if err != nil {
 			return bson.M{}, []bson.M{}, err
@@ -32,7 +32,7 @@ func (o *Or) ToMongoQuery(parentString string) (bson.M, []bson.M, error) { //par
 
 	q_array := []bson.M{}
 	pipeline := []bson.M{}
-	for _, node := range o.nodes {
+	for _, node := range o.Nodes {
 		q, pipelineAppend, err := node.ToMongoQuery("")
 		if err != nil {
 			return bson.M{}, []bson.M{}, err
@@ -50,7 +50,7 @@ func (o *Or) ToMongoQuery(parentString string) (bson.M, []bson.M, error) { //par
 
 func (n *Not) ToMongoQuery(parentString string) (bson.M, []bson.M, error) { //parentString is irrelevant here
 
-	q, pipeline, err := n.node.ToMongoQuery("")
+	q, pipeline, err := n.Node.ToMongoQuery("")
 	if err != nil {
 		return bson.M{}, []bson.M{}, err
 	}
@@ -62,10 +62,10 @@ func (n *Not) ToMongoQuery(parentString string) (bson.M, []bson.M, error) { //pa
 
 func (a *All) ToMongoQuery(parentString string) (bson.M, []bson.M, error) { //parentString is irrelevant here
 
-	parentField := strings.Replace(a.parentJsonpathAttributeOriginal, "jsonpath:$.", "raw.", 1)
+	parentField := strings.Replace(a.ParentJsonpathAttributeOriginal, "jsonpath:$.", "raw.", 1)
 	parentField = strings.Replace(parentField, "[:]", "", -1)
 
-	q, pipeline, err := a.node.ToMongoQuery("")
+	q, pipeline, err := a.Node.ToMongoQuery("")
 	if err != nil {
 		return bson.M{}, []bson.M{}, err
 	}
@@ -84,10 +84,10 @@ func (a *All) ToMongoQuery(parentString string) (bson.M, []bson.M, error) { //pa
 
 func (a *Any) ToMongoQuery(parentString string) (bson.M, []bson.M, error) { //parentString is irrelevant here
 
-	parentField := strings.Replace(a.parentJsonpathAttributeOriginal, "jsonpath:$.", "raw.", 1)
+	parentField := strings.Replace(a.ParentJsonpathAttributeOriginal, "jsonpath:$.", "raw.", 1)
 	parentField = strings.Replace(parentField, "[:]", "", -1)
 
-	q, pipeline, err := a.node.ToMongoQuery(parentField)
+	q, pipeline, err := a.Node.ToMongoQuery(parentField)
 	if err != nil {
 		return bson.M{}, []bson.M{}, err
 	}

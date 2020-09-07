@@ -163,6 +163,8 @@ func isConditionNode(v map[string]interface{}) bool {
 	flagAtt := slice.ContainsString(keys, "Attribute") || slice.ContainsString(keys, "attribute")
 	flagMethod := slice.ContainsString(keys, "Method") || slice.ContainsString(keys, "method")
 	flagValue := slice.ContainsString(keys, "Value") || slice.ContainsString(keys, "value")
+	flagValue2 := slice.ContainsString(keys, "ValueInt") || slice.ContainsString(keys, "valueInt")
+	flagValue3 := slice.ContainsString(keys, "ValueFloat") || slice.ContainsString(keys, "valueFloat")
 
 	if len(keys) == 2 && flagAtt && flagMethod {
 		return true
@@ -170,6 +172,16 @@ func isConditionNode(v map[string]interface{}) bool {
 	if len(keys) == 3 && flagAtt && flagMethod && flagValue {
 		return true
 	}
+	if len(keys) == 4 && flagAtt && flagMethod && flagValue && flagValue2 {
+		return true
+	}
+	if len(keys) == 4 && flagAtt && flagMethod && flagValue && flagValue3 {
+		return true
+	}
+	if len(keys) == 5 && flagAtt && flagMethod && flagValue && flagValue2 && flagValue3 {
+		return true
+	}
+
 	return false
 }
 
