@@ -276,8 +276,6 @@ func isReplaceableList(x string, stringsAndlists PredefinedStringsAndLists) ([]s
 
 func ConvertConditionStringToIntFloatRegex(condition *Condition) error { // TO-DO: cut to sub-functions
 
-
-
 	if condition.Method == "IN" || condition.Method == "NIN" || condition.Method == "IS" {
 
 		tempString := strings.Replace(condition.Value, "[", "", -1)

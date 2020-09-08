@@ -34,7 +34,6 @@ type ExpandedSenderReceiver struct {
 	IP     net.IP         `yaml:"-" json:"IP,omitempty" bson:"IP,omitempty"`
 }
 
-
 // Resource structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
 type Resource struct {
 	/* Examples: // pay attention that the resource type should match the protocol
@@ -47,7 +46,6 @@ type Resource struct {
 	ResourceName      string         `yaml:"resourceName,omitempty" json:"resourceName,omitempty" bson:"ResourceName,omitempty" structs:"ResourceName,omitempty"`
 	ResourceNameRegex *regexp.Regexp `yaml:"-" json:"-,omitempty" bson:"ResourceNameRegex,omitempty" structs:"ResourceNameRegex,omitempty"`
 }
-
 
 // Condition structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
 type Condition struct {
@@ -81,17 +79,16 @@ type Condition struct {
 	OriginalValue     string `yaml:"-" json:"OriginalValue,omitempty" bson:"OriginalValue,omitempty" structs:"OriginalValue,omitempty"`             // used in hash
 }
 
-
 type Rule struct {
 	// rule syntax:
 	//	<sender, receiver, resource, operation> : <conditions> : <decision>
 	//
-	RuleID     string      `yaml:"rule_id,omitempty" json:"ruleID,omitempty" bson:"RuleID,omitempty" structs:"RuleID,omitempty"`
-	Sender     Sender      `yaml:"sender,omitempty" json:"sender,omitempty" bson:"Sender" structs:"Sender,omitempty"`
-	Receiver   Receiver    `yaml:"receiver,omitempty" json:"receiver,omitempty" bson:"Receiver" structs:"Receiver,omitempty"`
-	Protocol   string      `yaml:"protocol,omitempty" json:"protocol,omitempty" bson:"ResourceProtocol" structs:"Protocol,omitempty"`
-	Resource   Resource    `yaml:"resource,omitempty" json:"resource,omitempty" bson:"Resource" structs:"Resource,omitempty"`
-	Operation  string      `yaml:"operation,omitempty" json:"operation,omitempty" bson:"Operation" structs:"Operation,omitempty"`
+	RuleID    string   `yaml:"rule_id,omitempty" json:"ruleID,omitempty" bson:"RuleID,omitempty" structs:"RuleID,omitempty"`
+	Sender    Sender   `yaml:"sender,omitempty" json:"sender,omitempty" bson:"Sender" structs:"Sender,omitempty"`
+	Receiver  Receiver `yaml:"receiver,omitempty" json:"receiver,omitempty" bson:"Receiver" structs:"Receiver,omitempty"`
+	Protocol  string   `yaml:"protocol,omitempty" json:"protocol,omitempty" bson:"ResourceProtocol" structs:"Protocol,omitempty"`
+	Resource  Resource `yaml:"resource,omitempty" json:"resource,omitempty" bson:"Resource" structs:"Resource,omitempty"`
+	Operation string   `yaml:"operation,omitempty" json:"operation,omitempty" bson:"Operation" structs:"Operation,omitempty"`
 
 	Conditions ConditionsTree `yaml:"conditions,omitempty" json:"conditions,omitempty" bson:"conditions,omitempty" structs:"conditions,omitempty"`
 
@@ -109,7 +106,6 @@ type Rule struct {
 type Rules struct {
 	Rules []Rule `yaml:"rules,omitempty" json:"rules,omitempty"`
 }
-
 
 type ConditionNode struct {
 	Attribute string `yaml:"attribute,omitempty" json:"attribute" bson:"Attribute" structs:"Attribute,omitempty"`
@@ -155,7 +151,6 @@ func getKeys(v map[string]interface{}) ([]string) {
 	return keys
 }
 
-
 func isConditionNode(v map[string]interface{}) bool {
 	keys := getKeys(v)
 	flagAtt := slice.ContainsString(keys, "Attribute") || slice.ContainsString(keys, "attribute")
@@ -183,7 +178,6 @@ func isConditionNode(v map[string]interface{}) bool {
 	return false
 }
 
-
 func (s *Sender) String() string {
 	senderString := fmt.Sprintf("%v:%v", "{default type}:", s.SenderName)
 	if s.SenderType != "" {
@@ -210,24 +204,33 @@ func (r *Resource) String() string {
 
 func (c *Condition) String() string {
 	// return fmt.Sprintf("(%v %v %v)", c.Attribute, c.Method, c.Value)
-	return fmt.Sprintf("<%v-%v-%v>", c.OriginalAttribute, c.Method, c.Value)
+
+	stringAttribute := c.Attribute
+	if len(c.OriginalAttribute) > 0 {
+		stringAttribute = c.OriginalAttribute
+	}
+	stringValue := c.Value
+	if len(c.OriginalValue) > 0 {
+		stringValue = c.OriginalValue
+	}
+	return fmt.Sprintf("<%v-%v-%v>", stringAttribute, c.Method, stringValue)
 }
 
-func (c *Condition) MarshalJSON() ([]byte, error){
+func (c *Condition) MarshalJSON() ([]byte, error) {
 
-	attributeString:=c.Attribute
-	if len(c.OriginalAttribute)>0{
-		attributeString=c.OriginalAttribute
+	attributeString := c.Attribute
+	if len(c.OriginalAttribute) > 0 {
+		attributeString = c.OriginalAttribute
 	}
-	attributeString=strings.Replace(attributeString,"\"","\\\"",-1)
+	attributeString = strings.Replace(attributeString, "\"", "\\\"", -1)
 
-	valueString:=c.Value
-	if len(c.OriginalValue)>0{
-		valueString=c.OriginalValue
+	valueString := c.Value
+	if len(c.OriginalValue) > 0 {
+		valueString = c.OriginalValue
 	}
-	valueString=strings.Replace(valueString,"\"","\\\"",-1)
+	valueString = strings.Replace(valueString, "\"", "\\\"", -1)
 
-	str:=fmt.Sprintf(`{"condition":{"attribute":"%v","method":"%v","value":"%v"}}`,attributeString,c.Method,valueString)
+	str := fmt.Sprintf(`{"condition":{"attribute":"%v","method":"%v","value":"%v"}}`, attributeString, c.Method, valueString)
 
 	return []byte(str), nil
 }
