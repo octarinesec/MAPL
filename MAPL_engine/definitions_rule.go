@@ -92,9 +92,6 @@ type Rule struct {
 	Resource   Resource    `yaml:"resource,omitempty" json:"resource,omitempty" bson:"Resource" structs:"Resource,omitempty"`
 	Operation  string      `yaml:"operation,omitempty" json:"operation,omitempty" bson:"Operation" structs:"Operation,omitempty"`
 
-	//Conditions interface{} `yaml:"conditions,omitempty" json:"conditions,omitempty" bson:"conditions,omitempty" structs:"conditions,omitempty"`
-	//ConditionsTree Node `yaml:"conditionsTree,omitempty" json:"conditionsTree,omitempty" bson:"conditionsTree,omitempty" structs:"conditionsTree,omitempty"`
-
 	Conditions ConditionsTree `yaml:"conditions,omitempty" json:"conditions,omitempty" bson:"conditions,omitempty" structs:"conditions,omitempty"`
 
 	Decision string `yaml:"decision,omitempty" json:"decision,omitempty" bson:"Decision" structs:"Decision,omitempty"`

@@ -12,7 +12,9 @@ import (
 
 
 )
-
+//-----------------------
+// ConditionTree
+//-----------------------
 type ConditionsTree struct {
 	ConditionsTree Node `yaml:"conditionsTree,omitempty" json:"conditionsTree,omitempty" bson:"conditionsTree,omitempty" structs:"conditionsTree,omitempty"`
 }
@@ -34,17 +36,7 @@ func (c *ConditionsTree) UnmarshalYAML(unmarshal func(interface{}) error) error 
 
 }
 
-
 func (c *ConditionsTree) UnmarshalJSON(data []byte) error {
-	/*dataYaml,err:=ghodssYaml.JSONToYAML(data)
-	if err!=nil{
-		return nil
-	}
-	fmt.Println(string(dataYaml))
-	err=yaml.Unmarshal(dataYaml,&r)
-	return err
-	*/
-	//fmt.Println("MarshalJSON is overriden")
 
 	if len(data) == 2 {
 		if data[0] == 123 && data[1] == 125 {
@@ -68,8 +60,8 @@ func (c *ConditionsTree) UnmarshalJSON(data []byte) error {
 
 }
 
-
-
+//--------------------------------------
+// Node Interface
 //--------------------------------------
 type Node interface {
 	Eval(message *MessageAttributes) (bool, string)
@@ -80,18 +72,16 @@ type Node interface {
 }
 
 type AnyAllNode interface {
-	//Eval(message *MessageAttributes) (bool, string)
-	//Append(node Node)
-	//PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error
-	//String() string
+
 	Node
 	SetParentJsonpathAttribute(parentJsonpathAttribute string)
 	GetParentJsonpathAttribute() string
 	SetReturnValueJsonpath(returnValueJsonpath string)
 	GetReturnValueJsonpath() string
-	//ToMongoQuery(parentString string) (bson.M, []bson.M, error)
 }
 
+//--------------------------------------
+// And Node
 //--------------------------------------
 type And struct {
 	Nodes []Node `yaml:"AND,omitempty" json:"AND,omitempty" bson:"AND,omitempty" structs:"AND,omitempty"`
@@ -150,7 +140,8 @@ func AndOrString(a_nodes []Node, andOrStr string) string {
 	str += ")"
 	return str
 }
-
+//--------------------------------------
+// Or Node
 //--------------------------------------
 type Or struct {
 	Nodes []Node `yaml:"OR,omitempty" json:"OR,omitempty" bson:"OR,omitempty" structs:"OR,omitempty"`
@@ -183,6 +174,8 @@ func (o *Or) String() string {
 }
 
 //--------------------------------------
+// Not Node
+//--------------------------------------
 type Not struct {
 	Node Node `yaml:"NOT,omitempty" json:"NOT,omitempty" bson:"NOT,omitempty" structs:"NOT,omitempty"`
 }
@@ -204,9 +197,9 @@ func (n *Not) String() string {
 	str := fmt.Sprintf("!(%v)", n.Node.String())
 	return str
 }
-
 //--------------------------------------
-
+// Any Node
+//--------------------------------------
 type Any struct {
 	ParentJsonpathAttribute         string
 	ParentJsonpathAttributeOriginal string
@@ -310,71 +303,8 @@ func (a *Any) GetReturnValueJsonpath() string {
 	return a.ReturnValueJsonpathOriginal
 }
 
-func getArrayOfJsons(a AnyAllNode, message *MessageAttributes) ([][]byte, error) {
-
-	arrayData := []byte{}
-	err := errors.New("error")
-	parentJsonpath := a.GetParentJsonpathAttribute()
-	if strings.HasPrefix(parentJsonpath, "$RELATIVE.") || strings.HasPrefix(parentJsonpath, "$KEY.") || strings.HasPrefix(parentJsonpath, "$VALUE.") { // to-do: create a flag once when parsing!
-		parentJsonpath = strings.Replace(parentJsonpath, "$RELATIVE.", "$.", 1)
-		parentJsonpath = strings.Replace(parentJsonpath, "$KEY.", "$.", 1)
-		parentJsonpath = strings.Replace(parentJsonpath, "$VALUE.", "$.", 1)
-		arrayData, err = jsonslice.Get(*message.RequestJsonRawRelative, parentJsonpath)
-	} else {
-		arrayData, err = jsonslice.Get(*message.RequestJsonRaw, parentJsonpath)
-	}
-
-	if err != nil {
-		return [][]byte{}, err
-	}
-
-	arrayJson, err := getArrayOfJsonsFromInterfaceArray(arrayData)
-	if err != nil {
-		arrayJson, err := getArrayOfJsonsFromMapStringInterface(arrayData)
-		if err != nil {
-			return [][]byte{}, err
-		}
-		return arrayJson, nil
-	}
-	return arrayJson, nil
-}
-
-func getArrayOfJsonsFromInterfaceArray(arrayData []byte) ([][]byte, error) {
-	var arrayInterface []interface{}
-	arrayJson := [][]byte{}
-	err := json.Unmarshal([]byte(arrayData), &arrayInterface)
-	if err != nil {
-		return [][]byte{}, err
-	}
-	for _, x := range (arrayInterface) {
-		y, err := json.Marshal(x)
-		if err != nil {
-			return [][]byte{}, err
-		}
-		arrayJson = append(arrayJson, y)
-	}
-	return arrayJson, nil
-}
-
-func getArrayOfJsonsFromMapStringInterface(arrayData []byte) ([][]byte, error) {
-	var arrayInterface map[string]interface{}
-	arrayJson := [][]byte{}
-	err := json.Unmarshal([]byte(arrayData), &arrayInterface)
-	if err != nil {
-		return [][]byte{}, err
-	}
-	for i_x, x := range (arrayInterface) {
-		z := map[string]interface{}{}
-		z[i_x] = x
-		y, err := json.Marshal(z)
-		if err != nil {
-			return [][]byte{}, err
-		}
-		arrayJson = append(arrayJson, y)
-	}
-	return arrayJson, nil
-}
-
+//--------------------------------------
+// All Node
 //--------------------------------------
 type All struct {
 	ParentJsonpathAttribute         string
@@ -464,6 +394,8 @@ func (a *All) GetReturnValueJsonpath() string {
 }
 
 //--------------------------------------
+// True Node (used in unit tests)
+//--------------------------------------
 type True struct{}
 
 func (t True) Eval(message *MessageAttributes) (bool, string) {
@@ -482,6 +414,8 @@ func (t True) ToMongoQuery(str string) (bson.M, []bson.M, error) {
 }
 
 //--------------------------------------
+// False Node (used in unit tests)
+//--------------------------------------
 type False struct{}
 
 func (f False) Eval(message *MessageAttributes) (bool, string) {
@@ -499,6 +433,8 @@ func (f False) ToMongoQuery(str string) (bson.M, []bson.M, error) {
 	return bson.M{}, []bson.M{}, fmt.Errorf("not supported")
 }
 
+//--------------------------------------
+// Basic Condition Node
 //--------------------------------------
 func (c *Condition) Eval(message *MessageAttributes) (bool, string) {
 	return testOneCondition(c, message), ""
@@ -526,13 +462,6 @@ func (c *Condition) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists
 
 }
 
-/*
-func (c *Condition) String() string {
-	//return c.String()
-	return fmt.Sprintf("<%v-%v-%v>", c.OriginalAttribute, c.Method, c.Value)
-}
-*/
-
 //--------------------------------------
 // parsing utilities
 //--------------------------------------
@@ -559,9 +488,10 @@ func InterpretNode(node interface{}, parentString string) (Node, error) {
 	case []interface{}: // array of nodes
 		if parentString==""{
 			if len(v)!=1{
-				return nil, fmt.Errorf("can't parse conditions %+v", v)
+				return nil, fmt.Errorf("node type not supported. possible error: array of conditions without AND,OR (etc) parent")
+				//return nil, fmt.Errorf("can't parse conditions %+v", v)
 			}
-			return InterpretNode(v[0],"")
+			return InterpretNode(v[0],"") // recursion
 		}else {
 			return handleInterfaceArray(node, parentString)
 		}
@@ -633,11 +563,7 @@ func getNodeCondition(v map[string]interface{}, parentString string) (Node, erro
 		nodes.Append(c)
 		return nodes, nil
 	} else {
-		if parentString == "conditionsTree"{
-			return c,nil
-		}else { // just return the node
-			return c, nil
-		}
+		return c, nil
 	}
 }
 

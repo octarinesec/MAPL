@@ -99,6 +99,8 @@ func TestConditionsTree2(t *testing.T) {
 		condString = "(((<jsonpath:$.abc-EQ-ABC> && <jsonpath:$.def-EQ-DEF>) || <jsonpath:$.kind-EQ-Deployment>) && (<jsonpath:$.xyz-EQ-XYZ> && <jsonpath:$.zzz-EQ-ZZZ>))"
 		So(rules.Rules[0].Conditions.ConditionsTree.String(), ShouldEqual, condString)
 
+
+
 		rules, err = YamlReadRulesFromFile("../files/rules/basic_rules/invalid_rules_basic_v2c.yaml")
 		errStr := fmt.Sprintf("%v", err)
 		So(errStr, ShouldEqual, "node type not supported. possible error: array of conditions without AND,OR (etc) parent")
@@ -118,8 +120,10 @@ func TestConditionsTree2(t *testing.T) {
 		So(condString, ShouldEqual, condStringExpected)
 
 		rules, err = YamlReadRulesFromFile("../files/rules/basic_rules/rules_basic_v2e1.yaml")
-		errStr = fmt.Sprintf("%v", err)
-		So(errStr, ShouldEqual, "node type not supported. possible error: array of conditions without AND,OR (etc) parent")
+		So(err, ShouldEqual, nil)
+		condStringExpected = "<jsonpath:$.abc-EQ-ABC>"
+		condString = rules.Rules[0].Conditions.ConditionsTree.String()
+		So(condString, ShouldEqual, condStringExpected)
 
 		rules, err = YamlReadRulesFromFile("../files/rules/basic_rules/rules_basic_v2e2.yaml")
 		So(err, ShouldEqual, nil)

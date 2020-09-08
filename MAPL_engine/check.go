@@ -4,7 +4,6 @@ package MAPL_engine
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/bhmj/jsonslice"
 	"log"
 	"regexp"
@@ -20,6 +19,7 @@ const (
 	BLOCK
 	NONE
 )
+
 var DecisionNames = [...]string{
 	DEFAULT: "rules do not apply to message - block by default",
 	ALLOW:   "allow",
@@ -27,7 +27,6 @@ var DecisionNames = [...]string{
 	BLOCK:   "block",
 	NONE:    "none",
 }
-
 
 func Check(message *MessageAttributes, rules *Rules) (decision int, descisionString string, relevantRuleIndex int, results []int, appliedRulesIndices []int, ruleDescription string, checkExtraData []string) {
 	//
@@ -41,7 +40,7 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 	checkExtraData = make([]string, N)
 
 	sem := make(chan int, N) // semaphore pattern
-	if false {               // check in parallel
+	if true {                // check in parallel
 
 		for i, rule := range (rules.Rules) { // check all the rules in parallel
 			go func(in_i int, in_rule Rule) {
@@ -243,18 +242,16 @@ func TestConditions(rule *Rule, message *MessageAttributes) (bool, string) { // 
 	if rule.AlreadyConvertedFieldsToRegexFlag == false {
 		ConvertFieldsToRegex(rule)
 	}
-	return rule.Conditions.ConditionsTree.Eval(message)
+	if rule.Conditions.ConditionsTree!=nil {
+		return rule.Conditions.ConditionsTree.Eval(message)
+	}
+	return false,"nil conditions"
 
 }
 
 // testOneCondition tests one condition of the rule with the message attributes
 func testOneCondition(c *Condition, message *MessageAttributes) bool {
-	// ---------------
-	// currently we support the following attributes:
-	// payloadSize
-	// requestUseragent
-	// utcHoursFromMidnight
-	// ---------------
+
 	var valueToCompareInt int64
 	var valueToCompareFloat float64
 	var valueToCompareString string
@@ -264,11 +261,14 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 	switch (c.Attribute) {
 	case "true", "TRUE":
 		result = true
+
 	case "false", "FALSE":
 		result = false
+
 	case ("payloadSize"):
 		valueToCompareInt = message.RequestSize
 		result = compareIntFunc(valueToCompareInt, c.Method, c.ValueInt)
+
 	case ("requestUseragent"):
 		valueToCompareString = message.RequestUseragent
 		if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
@@ -276,13 +276,10 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		} else {
 			result = compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex)
 		}
-	case ("utcHoursFromMidnight"):
+
+	case ("utcHoursFromMidnight"): // used for debugging conditions
 		valueToCompareFloat = message.RequestTimeHoursFromMidnightUTC
 		result = compareFloatFunc(valueToCompareFloat, c.Method, c.ValueFloat)
-	case ("minuteParity"):
-		valueToCompareInt = message.RequestTimeMinutesParity
-		result = compareIntFunc(valueToCompareInt, c.Method, c.ValueInt)
-		fmt.Println("message.RequestTimeMinutesParity=", message.RequestTimeMinutesParity, valueToCompareInt, c.Method, c.ValueInt)
 
 	case ("encryptionType"):
 		valueToCompareString = message.EncryptionType
@@ -291,80 +288,10 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		} else {
 			result = compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex)
 		}
+
 	case ("encryptionVersion"):
 		valueToCompareFloat = *message.EncryptionVersion
 		result = compareFloatFunc(valueToCompareFloat, c.Method, c.ValueFloat)
-
-	case ("$sender"):
-
-		attributeSender := getAttribute("$sender", c.AttributeSenderObjectAttribute, *message)
-
-		if c.ValueIsReceiverObject {
-			valReceiver := getAttribute("$receiver", c.ValueReceiverObject, *message)
-			if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
-				log.Println("wrong method with comparison of sender and receiver objects")
-				return false
-			}
-			result = compareStringFunc(attributeSender, c.Method, valReceiver) // string comparison without wildcards
-		} else {
-			if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
-				result = compareRegexFunc(attributeSender, c.Method, c.ValueRegex)
-			} else {
-				result = compareStringWithWildcardsFunc(attributeSender, c.Method, c.ValueStringRegex) // string comparison with wildcards
-			}
-		}
-
-	case ("$receiver"):
-		attributeReceiver := getAttribute("$receiver", c.AttributeReceiverObjectAttribute, *message)
-
-		if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
-			result = compareRegexFunc(attributeReceiver, c.Method, c.ValueRegex)
-		} else {
-			result = compareStringWithWildcardsFunc(attributeReceiver, c.Method, c.ValueStringRegex) // string comparison with wildcards
-		}
-
-	case ("senderLabel"):
-		if c.AttributeIsSenderLabel == false {
-			log.Println("senderLabel without the correct format")
-			return false
-		}
-		if valueToCompareString1, ok := message.SourceLabels[c.AttributeSenderLabelKey]; ok { // enter the block only if the key exists
-			if c.ValueIsReceiverLabel {
-				if valueToCompareString2, ok2 := message.DestinationLabels[c.ValueReceiverLabelKey]; ok2 {
-					if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
-						log.Println("wrong method with comparison of two labels")
-						return false
-					}
-					result = compareStringFunc(valueToCompareString1, c.Method, valueToCompareString2) // string comparison without wildcards
-				}
-			} else {
-				if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
-					result = compareRegexFunc(valueToCompareString1, c.Method, c.ValueRegex)
-				} else {
-					if c.Method == "EX" || c.Method == "ex" { // just test the existence of the key
-						result = true
-					} else {
-						result = compareStringWithWildcardsFunc(valueToCompareString1, c.Method, c.ValueStringRegex) // string comparison with wildcards
-					}
-				}
-			}
-		}
-	case ("receiverLabel"):
-		if c.AttributeIsReceiverLabel == false {
-			log.Println("receiverLabel without the correct format")
-			return false
-		}
-		if valueToCompareString1, ok := message.DestinationLabels[c.AttributeReceiverLabelKey]; ok { // enter the block only if the key exists
-			if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
-				result = compareRegexFunc(valueToCompareString1, c.Method, c.ValueRegex)
-			} else {
-				if c.Method == "EX" || c.Method == "ex" { // just test the existence of the key
-					result = true
-				} else {
-					result = compareStringWithWildcardsFunc(valueToCompareString1, c.Method, c.ValueStringRegex) // compare strings with wildcards
-				}
-			}
-		}
 
 	case ("domain"):
 		valueToCompareString = message.Domain
@@ -374,12 +301,110 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 			result = compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex)
 		}
 
+	case ("$sender"):
+		return testSenderAttributeCondition(c, message)
+
+	case ("$receiver"):
+		return testReceiverAttributeCondition(c, message)
+
+	case ("senderLabel"):
+		return testSenderLabelCondition(c, message)
+
+	case ("receiverLabel"):
+		return testReceiverLabelCondition(c, message)
+
 	case ("jsonpath"):
 		return testJsonPathCondition(c, message)
 
 	default:
 		log.Printf("condition keyword not supported: %+v\n", c) // was log.Fatalf
 		return false
+	}
+	return result
+}
+
+func testSenderAttributeCondition(c *Condition, message *MessageAttributes) bool {
+
+	result := false
+	attributeSender := getAttribute("$sender", c.AttributeSenderObjectAttribute, *message)
+
+	if c.ValueIsReceiverObject {
+		valReceiver := getAttribute("$receiver", c.ValueReceiverObject, *message)
+		if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
+			log.Println("wrong method with comparison of sender and receiver objects")
+			return false
+		}
+		result = compareStringFunc(attributeSender, c.Method, valReceiver) // string comparison without wildcards
+	} else {
+		if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
+			result = compareRegexFunc(attributeSender, c.Method, c.ValueRegex)
+		} else {
+			result = compareStringWithWildcardsFunc(attributeSender, c.Method, c.ValueStringRegex) // string comparison with wildcards
+		}
+	}
+	return result
+
+}
+
+func testReceiverAttributeCondition(c *Condition, message *MessageAttributes) bool {
+
+	result := false
+	attributeReceiver := getAttribute("$receiver", c.AttributeReceiverObjectAttribute, *message)
+
+	if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
+		result = compareRegexFunc(attributeReceiver, c.Method, c.ValueRegex)
+	} else {
+		result = compareStringWithWildcardsFunc(attributeReceiver, c.Method, c.ValueStringRegex) // string comparison with wildcards
+	}
+	return result
+}
+
+func testSenderLabelCondition(c *Condition, message *MessageAttributes) bool {
+	result:=false
+	if c.AttributeIsSenderLabel == false {
+		log.Println("senderLabel without the correct format")
+		return false
+	}
+	if valueToCompareString1, ok := message.SourceLabels[c.AttributeSenderLabelKey]; ok { // enter the block only if the key exists
+		if c.ValueIsReceiverLabel {
+			if valueToCompareString2, ok2 := message.DestinationLabels[c.ValueReceiverLabelKey]; ok2 {
+				if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
+					log.Println("wrong method with comparison of two labels")
+					return false
+				}
+				result = compareStringFunc(valueToCompareString1, c.Method, valueToCompareString2) // string comparison without wildcards
+			}
+		} else {
+			if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
+				result = compareRegexFunc(valueToCompareString1, c.Method, c.ValueRegex)
+			} else {
+				if c.Method == "EX" || c.Method == "ex" { // just test the existence of the key
+					result = true
+				} else {
+					result = compareStringWithWildcardsFunc(valueToCompareString1, c.Method, c.ValueStringRegex) // string comparison with wildcards
+				}
+			}
+		}
+	}
+	return result
+}
+
+func testReceiverLabelCondition(c *Condition, message *MessageAttributes) bool {
+	result:=false
+	if c.AttributeIsReceiverLabel == false {
+		log.Println("receiverLabel without the correct format")
+		return false
+	}
+	if valueToCompareString1, ok := message.DestinationLabels[c.AttributeReceiverLabelKey]; ok { // enter the block only if the key exists
+		if c.Method == "RE" || c.Method == "re" || c.Method == "NRE" || c.Method == "nre" {
+			result = compareRegexFunc(valueToCompareString1, c.Method, c.ValueRegex)
+		} else {
+			if c.Method == "EX" || c.Method == "ex" { // just test the existence of the key
+				result = true
+			} else {
+				result = compareStringWithWildcardsFunc(valueToCompareString1, c.Method, c.ValueStringRegex) // compare strings with wildcards
+			}
+		}
 	}
 	return result
 }
@@ -429,28 +454,13 @@ func testJsonPathCondition(c *Condition, message *MessageAttributes) bool {
 	}
 
 	valueToCompareString := string(valueToCompareBytes)
-
 	if len(valueToCompareString) == 0 {
-		if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
-			return true
-		}
-		return false // default test result is false on an empty jsonpath result
+		return whatToReturnInCaseOfEmptyResult(*c)
 	}
 
-
-	valueToCompareString = strings.Replace(valueToCompareString, "[[", "[", -1)
-	valueToCompareString = strings.Replace(valueToCompareString, "]]", "]", -1)
-	valueToCompareString = strings.Replace(valueToCompareString, "[\"", "\"", -1)
-	valueToCompareString = strings.Replace(valueToCompareString, "\"]", "\"", -1)
-	if valueToCompareString == "[]" {
-		valueToCompareString = ""
-	}
-
+	valueToCompareString=removeQuotesAndBrackets(valueToCompareString)
 	if len(valueToCompareString) == 0 {
-		if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
-			return true
-		}
-		return false // default test result is false on an empty jsonpath result
+		return whatToReturnInCaseOfEmptyResult(*c)
 	}
 
 	result := false
@@ -514,6 +524,24 @@ func testJsonPathCondition(c *Condition, message *MessageAttributes) bool {
 	return result
 }
 
+func whatToReturnInCaseOfEmptyResult(c Condition) bool {
+	if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
+		return true
+	}
+	return false // default test result is false on an empty jsonpath result
+}
+
+func removeQuotesAndBrackets(valueToCompareString string) string {
+	valueToCompareString = strings.Replace(valueToCompareString, "[[", "[", -1)
+	valueToCompareString = strings.Replace(valueToCompareString, "]]", "]", -1)
+	valueToCompareString = strings.Replace(valueToCompareString, "[\"", "\"", -1)
+	valueToCompareString = strings.Replace(valueToCompareString, "\"]", "\"", -1)
+	if valueToCompareString == "[]" {
+		valueToCompareString = ""
+	}
+	return valueToCompareString
+}
+
 func getKeyValue(jsonRaw []byte, attribute string) ([]byte, error) {
 
 	valueToCompareBytes := []byte{}
@@ -537,7 +565,6 @@ func getKeyValue(jsonRaw []byte, attribute string) ([]byte, error) {
 	}
 	return valueToCompareBytes, nil
 }
-
 
 func getAttribute(sender_receiver, attribute string, message MessageAttributes) string {
 	switch attribute {
@@ -612,7 +639,7 @@ func compareStringFunc(value1 string, method string, value2 string) bool {
 func compareStringWithWildcardsFunc(value1 string, method string, value2 *regexp.Regexp) bool {
 	//log.Printf("%v ?%v? %v",value1,method,value2)
 
-	if value2==nil{
+	if value2 == nil {
 		switch (method) {
 		case "EQ", "eq":
 			return false
@@ -639,7 +666,7 @@ func compareStringWithWildcardsFunc(value1 string, method string, value2 *regexp
 // compareRegexFunc compares one string value according the regular expression string.
 func compareRegexFunc(value1 string, method string, value2 *regexp.Regexp) bool { //value2 is the reference value from the rule
 
-	if value2 == nil{
+	if value2 == nil {
 		switch (method) {
 		case "RE", "re":
 			return false
@@ -655,4 +682,73 @@ func compareRegexFunc(value1 string, method string, value2 *regexp.Regexp) bool 
 		return !(value2.MatchString(value1))
 	}
 	return false
+}
+
+
+//-------------------------------
+// functions for Any/All Node
+//-------------------------------
+func getArrayOfJsons(a AnyAllNode, message *MessageAttributes) ([][]byte, error) {
+	// used in eval of ANY/ALL node (getting the data from the message attributes by the parentJsonpath)
+	arrayData := []byte{}
+	err := errors.New("error")
+	parentJsonpath := a.GetParentJsonpathAttribute()
+	if strings.HasPrefix(parentJsonpath, "$RELATIVE.") || strings.HasPrefix(parentJsonpath, "$KEY.") || strings.HasPrefix(parentJsonpath, "$VALUE.") { // to-do: create a flag once when parsing!
+		parentJsonpath = strings.Replace(parentJsonpath, "$RELATIVE.", "$.", 1)
+		parentJsonpath = strings.Replace(parentJsonpath, "$KEY.", "$.", 1)
+		parentJsonpath = strings.Replace(parentJsonpath, "$VALUE.", "$.", 1)
+		arrayData, err = jsonslice.Get(*message.RequestJsonRawRelative, parentJsonpath)
+	} else {
+		arrayData, err = jsonslice.Get(*message.RequestJsonRaw, parentJsonpath)
+	}
+
+	if err != nil {
+		return [][]byte{}, err
+	}
+
+	arrayJson, err := getArrayOfJsonsFromInterfaceArray(arrayData)
+	if err != nil {
+		arrayJson, err := getArrayOfJsonsFromMapStringInterface(arrayData)
+		if err != nil {
+			return [][]byte{}, err
+		}
+		return arrayJson, nil
+	}
+	return arrayJson, nil
+}
+
+func getArrayOfJsonsFromInterfaceArray(arrayData []byte) ([][]byte, error) {
+	var arrayInterface []interface{}
+	arrayJson := [][]byte{}
+	err := json.Unmarshal([]byte(arrayData), &arrayInterface)
+	if err != nil {
+		return [][]byte{}, err
+	}
+	for _, x := range (arrayInterface) {
+		y, err := json.Marshal(x)
+		if err != nil {
+			return [][]byte{}, err
+		}
+		arrayJson = append(arrayJson, y)
+	}
+	return arrayJson, nil
+}
+
+func getArrayOfJsonsFromMapStringInterface(arrayData []byte) ([][]byte, error) {
+	var arrayInterface map[string]interface{}
+	arrayJson := [][]byte{}
+	err := json.Unmarshal([]byte(arrayData), &arrayInterface)
+	if err != nil {
+		return [][]byte{}, err
+	}
+	for i_x, x := range (arrayInterface) {
+		z := map[string]interface{}{}
+		z[i_x] = x
+		y, err := json.Marshal(z)
+		if err != nil {
+			return [][]byte{}, err
+		}
+		arrayJson = append(arrayJson, y)
+	}
+	return arrayJson, nil
 }

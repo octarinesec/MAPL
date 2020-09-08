@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-// YamlReadMessagesFromString function reads messages from a yaml string
 func YamlReadStringListsFromString(yamlString string) (PredefinedStringsAndLists, error) {
 
 	var predefinedStringsAndLists PredefinedStringsAndLists

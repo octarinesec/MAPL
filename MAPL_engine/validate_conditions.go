@@ -12,7 +12,7 @@ var supportedMethodsSlice = []string{"ge", "GE", "gt", "GT", "le", "LE", "lt", "
 var regexSlice = []string{"re", "nre", "RE", "NRE"}
 var numberMethodSlice = []string{"ge", "GE", "gt", "GT", "le", "LE", "lt", "LT"}
 var supportedAttributesPrefixes = []string{"$sender.", "$receiver.", "senderLabel[", "receiverLabel[", "jsonpath:"}
-var supportedAttributesExact = []string{"true", "TRUE", "false", "FALSE", "payloadSize", "requestUseragent", "utcHoursFromMidnight", "minuteParity", "encryptionType", "encryptionVersion", "domain"}
+var supportedAttributesExact = []string{"true", "TRUE", "false", "FALSE", "payloadSize", "requestUseragent", "utcHoursFromMidnight", "encryptionType", "encryptionVersion", "domain"}
 var allowedEncryptionVersionOperation = []string{"eq", "lt", "le", "gt", "ge", "EQ", "LT", "LE", "GT", "GE"}
 
 // ValidateRuleConditions as much as possible

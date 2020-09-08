@@ -20,7 +20,6 @@ func YamlReadMessageAttributes(yamlString string) (MessageAttributes, error) {
 		log.Printf("error: %v", err)
 		return MessageAttributes{}, err
 	}
-	//fmt.Printf("---values found:\n%+v\n\n", rule)
 
 	flag, outputString, err := IsNumberOfFieldsEqual(messageAttributes, yamlString)
 	if err != nil {
@@ -53,17 +52,6 @@ func YamlReadMessagesFromString(yamlString string) (Messages, error) {
 	AddNetIpToMessages(&messages)
 	parseLabelsJsonOfMessages(&messages)
 
-	/*
-	flag, outputString, err := IsNumberOfFieldsEqual(messages, yamlString)
-	if err != nil {
-		return Messages{}, err
-	}
-	if flag == false {
-		err_str := "number of fields in rules does not match number of fields in yaml file:\n" + outputString
-		log.Printf("error: %s", err_str)
-		return Messages{}, fmt.Errorf(err_str)
-	}
-	 */
 	return messages, nil
 }
 
@@ -126,8 +114,6 @@ func AddTimeInfoToMessage(message *MessageAttributes) error {
 	message.RequestTimeMinutesFromMidnightUTC = nanosecondsFromMidnight / 1e9 / 60
 	message.RequestTimeHoursFromMidnightUTC = nanosecondsFromMidnight / 1e9 / 60 / 60
 
-	message.RequestTimeMinutesParity = (int64(message.RequestTimeMinutesFromMidnightUTC) % 60) % 2
-
 	return nil
 }
 
@@ -160,14 +146,6 @@ func AddNetIpToMessages(messages *Messages) {
 
 // parseLabelsJsonOfMessage converts json string of labels to map[string]string
 func parseLabelsJsonOfMessage(message *MessageAttributes) {
-
-	/*
-		str:="{key1:abc,key2:def ,key3 : xyz}"
-		str=addQuotesToJsonString(str)
-		z:=make(map[string]string)
-		json.Unmarshal([]byte(str),&z)
-		fmt.Println(z)
-	*/
 
 	str := addQuotesToJsonString(message.SourceLabelsJson)
 	json.Unmarshal([]byte(str), &message.SourceLabels)

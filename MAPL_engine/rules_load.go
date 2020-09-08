@@ -50,18 +50,7 @@ func YamlReadRulesFromFile(filename string) (Rules, error) {
 	rules, err := YamlReadRulesFromString(string(data))
 	return rules, err
 }
-/*
-func (r *Rule) UnmarshalJSON(data []byte) error {
 
-	dataYaml,err:=ghodssYaml.JSONToYAML(data)
-	if err!=nil{
-		return err
-	}
-
-	err=yaml.Unmarshal(dataYaml,r)
-	return err
-}
-*/
 func YamlReadRulesFromStringWithPredefinedStrings(yamlString string, stringsAndlists PredefinedStringsAndLists) (Rules, error) {
 
 	var rules Rules
@@ -101,25 +90,6 @@ func testYaml(data []byte) error {
 	var z interface{}
 	return yaml.UnmarshalStrict(data, &z)
 }
-
-/*
-func ParseAndValidateConditions(rule *Rule) error {
-
-	if rule.Conditions.ConditionsTree == nil {
-		return nil
-	}
-	c := rule.Conditions
-
-	conditionsTree, err := ParseConditionsTree(c)
-	if err != nil {
-		return err
-	}
-
-	rule.Conditions.ConditionsTree = conditionsTree
-
-	return nil
-}
-*/
 
 // convertFieldsToRegex converts some rule fields into regular expressions to be used later.
 // This enables use of wildcards in the sender, receiver names, etc...
@@ -213,18 +183,6 @@ func PrepareOneRuleWithPredefinedStrings(rule *Rule, stringsAndLists PredefinedS
 	return nil
 }
 
-/*
-func ReplaceStringsAndListsInRules(rules *Rules, stringsAndlists PredefinedStringsAndLists) error {
-
-	for i, _ := range (rules.Rules) {
-		err := ReplaceStringsAndListsInOneRule(&rules.Rules[i], stringsAndlists)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-*/
 func ReplaceStringsAndListsInOneRule(rule *Rule, stringsAndLists PredefinedStringsAndLists) error {
 
 	newList, ok, isReplaceable := isReplaceableList(rule.Sender.SenderName, stringsAndLists)
@@ -254,6 +212,7 @@ func ReplaceStringsAndListsInOneRule(rule *Rule, stringsAndLists PredefinedStrin
 	}
 	return nil
 }
+
 func ReplaceStringsAndListsInCondition(c *Condition, stringsAndlists PredefinedStringsAndLists) error {
 	newList, ok, isReplaceable := isReplaceableList(c.Value, stringsAndlists)
 	if ok {
@@ -280,6 +239,7 @@ func ReplaceStringsAndListsInCondition(c *Condition, stringsAndlists PredefinedS
 	}
 	return nil
 }
+
 func convertListToString(list []string) string {
 	str := strings.Join(list, ",")
 	return str
@@ -301,24 +261,6 @@ func isReplaceableString(x string, stringsAndlists PredefinedStringsAndLists) (s
 	return "", false
 }
 
-/*
-func isReplacebleListOld(x string, stringsAndlists PredefinedStringsAndLists) ([]string, bool, bool) {
-	if strings.HasPrefix(x, "#") {
-		x = strings.Replace(x, "#", "", 1)
-		keys, ok := stringsAndlists.PredefinedLists[x]
-		if ok {
-			list := []string{}
-			for _, key := range (keys) {
-				list = append(list, stringsAndlists.PredefinedStrings[key])
-			}
-			return list, ok, true
-		} else {
-			return []string{}, false, true
-		}
-	}
-	return []string{}, false, false
-}
-*/
 func isReplaceableList(x string, stringsAndlists PredefinedStringsAndLists) ([]string, bool, bool) {
 	if strings.HasPrefix(x, "#") {
 		x = strings.Replace(x, "#", "", 1)
@@ -334,7 +276,7 @@ func isReplaceableList(x string, stringsAndlists PredefinedStringsAndLists) ([]s
 
 func ConvertConditionStringToIntFloatRegex(condition *Condition) error { // TO-DO: cut to sub-functions
 
-	originalAttribute := condition.Attribute
+
 
 	if condition.Method == "IN" || condition.Method == "NIN" || condition.Method == "IS" {
 
@@ -378,7 +320,17 @@ func ConvertConditionStringToIntFloatRegex(condition *Condition) error { // TO-D
 		return fmt.Errorf("condition.Value could not be converted to regex")
 	}
 
-	if strings.Index(condition.Attribute, "senderLabel[") == 0 { // test if ATTRIBUTE is of type senderLabel
+	// now, handle attributes of types senderLabel,receiverLabel, $sender, $receiver, jsonpath
+	handleSenderReceiverLabelsAttribute(condition)
+	handleSenderReceiverAttributes(condition)
+	handleJsonpathAttribute(condition)
+
+	return nil
+}
+
+func handleSenderReceiverLabelsAttribute(condition *Condition) {
+	originalAttribute := condition.Attribute
+	if strings.HasPrefix(condition.Attribute, "senderLabel[") { // test if ATTRIBUTE is of type senderLabel
 		condition.AttributeIsSenderLabel = true
 		i1 := strings.Index(condition.Attribute, "[") + 1
 		i2 := strings.Index(condition.Attribute, "]")
@@ -387,7 +339,7 @@ func ConvertConditionStringToIntFloatRegex(condition *Condition) error { // TO-D
 		condition.Attribute = "senderLabel"
 		condition.OriginalAttribute = originalAttribute // used in hash
 	}
-	if strings.Index(condition.Attribute, "receiverLabel[") == 0 { // test if ATTRIBUTE is of type receiverLabel
+	if strings.HasPrefix(condition.Attribute, "receiverLabel[") { // test if ATTRIBUTE is of type receiverLabel
 		condition.AttributeIsReceiverLabel = true
 		i1 := strings.Index(condition.Attribute, "[") + 1
 		i2 := strings.Index(condition.Attribute, "]")
@@ -397,7 +349,7 @@ func ConvertConditionStringToIntFloatRegex(condition *Condition) error { // TO-D
 		condition.OriginalAttribute = originalAttribute // used in hash
 	}
 
-	if strings.Index(condition.Value, "receiverLabel[") == 0 { // test if VALUE is of type receiverLabel (used to compare attribute senderLabel[key1] to value receiverLabel[key2])
+	if strings.HasPrefix(condition.Value, "receiverLabel[") { // test if VALUE is of type receiverLabel (used to compare attribute senderLabel[key1] to value receiverLabel[key2])
 		condition.ValueIsReceiverLabel = true
 		i1 := strings.Index(condition.Value, "[") + 1
 		i2 := strings.Index(condition.Value, "]")
@@ -406,7 +358,10 @@ func ConvertConditionStringToIntFloatRegex(condition *Condition) error { // TO-D
 		condition.Value = "receiverLabel"
 		condition.OriginalValue = originalAttribute // used in hash
 	}
+}
 
+func handleSenderReceiverAttributes(condition *Condition) {
+	originalAttribute := condition.Attribute
 	if strings.HasPrefix(condition.Attribute, "$sender.") { // test if ATTRIBUTE is of type sender object
 		condition.AttributeIsSenderObject = true
 		i1 := strings.Index(condition.Attribute, ".") + 1
@@ -430,8 +385,12 @@ func ConvertConditionStringToIntFloatRegex(condition *Condition) error { // TO-D
 		condition.Value = "$receiver"
 		condition.OriginalValue = originalAttribute // used in hash
 	}
+}
 
-	if strings.Index(condition.Attribute, "jsonpath:") == 0 { // test if ATTRIBUTE is of type jsonpath
+
+func handleJsonpathAttribute(condition *Condition) {
+	originalAttribute := condition.Attribute
+	if strings.HasPrefix(condition.Attribute, "jsonpath:") { // test if ATTRIBUTE is of type jsonpath
 		condition.AttributeIsJsonpath = true
 		i1 := strings.Index(condition.Attribute, ":") + 1
 		i2 := len(condition.Attribute)
@@ -454,7 +413,6 @@ func ConvertConditionStringToIntFloatRegex(condition *Condition) error { // TO-D
 		condition.Attribute = "jsonpath"
 		condition.OriginalAttribute = originalAttribute // used in hash
 	}
-	return nil
 }
 
 // convertStringToRegex function converts one string to regex. Remove spaces, handle special characters and wildcards.

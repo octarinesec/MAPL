@@ -36,11 +36,6 @@ func Coverage(messages *Messages, rules *Rules) (messageCoverage map[string]Mess
 			ruleCoverage[rules.Rules[rule_index].RuleID] = append(ruleCoverage[rules.Rules[rule_index].RuleID], message.MessageID)
 		}
 
-		//if decision > 0 {
-		//	fmt.Printf("#%v : %v ; %v ; %v ; %v ; %v ; %+v\n", i_message, decision, descisionString, relevantRuleIndex, decisions, appliedRulesIds, message)
-		//} else {
-		//fmt.Printf("#%v : %v ; %v ; %v ; %v ; %v \n", i_message, decision, descisionString, relevantRuleIndex, decisions, appliedRulesIds)
-		//}
 
 		_, nonDefaultDecisions := findNonDefaultDecisions(decisions)
 

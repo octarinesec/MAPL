@@ -240,15 +240,3 @@ func removeQuotes(str string) (string, error) {
 	return str, nil
 }
 
-/*
-func getQueryPipeline(rule Rule) ([]bson.M,error){
-
-	//key_value_step, err := rule.Conditions.ConditionsTree.KeyValueStep()
-
-	query, err := rule.Conditions.ConditionsTree.ToMongoQuery()
-	if err!=nil{
-		return nil,err
-	}
-	queryPipeline := []bson.M{bson.M{"$match":query}}
-}
-*/
