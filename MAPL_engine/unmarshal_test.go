@@ -40,7 +40,7 @@ func TestJsonUnmarhshal(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
-		testUnmarshalForOneFile("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY2.yaml")
+		testUnmarshalForOneFile("../files/rules/with_jsonpath_conditions/rules_with_jsonpath_conditions_annotations_EQ.yaml")
 
 		testUnmarshalForOneFile("../files/rules/with_conditions/rules_with_conditions.yaml")
 

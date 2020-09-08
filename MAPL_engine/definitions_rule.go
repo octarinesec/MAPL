@@ -5,6 +5,7 @@ import (
 	"github.com/toolkits/slice"
 	"net"
 	"regexp"
+	"strings"
 )
 
 //-------------------rules-------------------------------------
@@ -210,4 +211,23 @@ func (r *Resource) String() string {
 func (c *Condition) String() string {
 	// return fmt.Sprintf("(%v %v %v)", c.Attribute, c.Method, c.Value)
 	return fmt.Sprintf("<%v-%v-%v>", c.OriginalAttribute, c.Method, c.Value)
+}
+
+func (c *Condition) MarshalJSON() ([]byte, error){
+
+	attributeString:=c.Attribute
+	if len(c.OriginalAttribute)>0{
+		attributeString=c.OriginalAttribute
+	}
+	attributeString=strings.Replace(attributeString,"\"","\\\"",-1)
+
+	valueString:=c.Value
+	if len(c.OriginalValue)>0{
+		valueString=c.OriginalValue
+	}
+	valueString=strings.Replace(valueString,"\"","\\\"",-1)
+
+	str:=fmt.Sprintf(`{"condition":{"attribute":"%v","method":"%v","value":"%v"}}`,attributeString,c.Method,valueString)
+
+	return []byte(str), nil
 }
