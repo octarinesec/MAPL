@@ -1,4 +1,4 @@
-module github.com/octarinesec/MAPL/MAPL_engine
+module github.com/octarinesec/MAPL
 
 go 1.13
 

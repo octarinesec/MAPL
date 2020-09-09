@@ -275,9 +275,11 @@ func isReplaceableList(x string, stringsAndlists PredefinedStringsAndLists) ([]s
 }
 
 func ConvertConditionStringToIntFloatRegex(condition *Condition) error { // TO-DO: cut to sub-functions
+	condition.OriginalAttribute = condition.Attribute
+	condition.OriginalMethod = condition.Method
+	condition.OriginalValue = condition.Value
 
 	if condition.Method == "IN" || condition.Method == "NIN" || condition.Method == "IS" {
-
 		tempString := strings.Replace(condition.Value, "[", "", -1)
 		tempString = strings.Replace(tempString, "]", "", -1)
 		tempString = strings.Replace(tempString, ",", "$|^", -1)
@@ -327,7 +329,8 @@ func ConvertConditionStringToIntFloatRegex(condition *Condition) error { // TO-D
 }
 
 func handleSenderReceiverLabelsAttribute(condition *Condition) {
-	originalAttribute := condition.Attribute
+	//originalAttribute := condition.Attribute
+	//originalValue := condition.Value
 	if strings.HasPrefix(condition.Attribute, "senderLabel[") { // test if ATTRIBUTE is of type senderLabel
 		condition.AttributeIsSenderLabel = true
 		i1 := strings.Index(condition.Attribute, "[") + 1
@@ -335,7 +338,7 @@ func handleSenderReceiverLabelsAttribute(condition *Condition) {
 
 		condition.AttributeSenderLabelKey = condition.Attribute[i1:i2]
 		condition.Attribute = "senderLabel"
-		condition.OriginalAttribute = originalAttribute // used in hash
+		//condition.OriginalAttribute = originalAttribute // used in hash
 	}
 	if strings.HasPrefix(condition.Attribute, "receiverLabel[") { // test if ATTRIBUTE is of type receiverLabel
 		condition.AttributeIsReceiverLabel = true
@@ -344,7 +347,7 @@ func handleSenderReceiverLabelsAttribute(condition *Condition) {
 
 		condition.AttributeReceiverLabelKey = condition.Attribute[i1:i2]
 		condition.Attribute = "receiverLabel"
-		condition.OriginalAttribute = originalAttribute // used in hash
+		//condition.OriginalAttribute = originalAttribute // used in hash
 	}
 
 	if strings.HasPrefix(condition.Value, "receiverLabel[") { // test if VALUE is of type receiverLabel (used to compare attribute senderLabel[key1] to value receiverLabel[key2])
@@ -354,18 +357,19 @@ func handleSenderReceiverLabelsAttribute(condition *Condition) {
 
 		condition.ValueReceiverLabelKey = condition.Value[i1:i2]
 		condition.Value = "receiverLabel"
-		condition.OriginalValue = originalAttribute // used in hash
+		//condition.OriginalValue = originalValue // used in hash
 	}
 }
 
 func handleSenderReceiverAttributes(condition *Condition) {
-	originalAttribute := condition.Attribute
+	//originalAttribute := condition.Attribute
+	//originalValue := condition.Value
 	if strings.HasPrefix(condition.Attribute, "$sender.") { // test if ATTRIBUTE is of type sender object
 		condition.AttributeIsSenderObject = true
 		i1 := strings.Index(condition.Attribute, ".") + 1
 		condition.AttributeSenderObjectAttribute = condition.Attribute[i1:]
 		condition.Attribute = "$sender"
-		condition.OriginalAttribute = originalAttribute // used in hash
+		//condition.OriginalAttribute = originalAttribute // used in hash
 	}
 
 	if strings.HasPrefix(condition.Attribute, "$receiver.") { // test if ATTRIBUTE is of type receiver object
@@ -373,7 +377,7 @@ func handleSenderReceiverAttributes(condition *Condition) {
 		i1 := strings.Index(condition.Attribute, ".") + 1
 		condition.AttributeReceiverObjectAttribute = condition.Attribute[i1:]
 		condition.Attribute = "$receiver"
-		condition.OriginalAttribute = originalAttribute // used in hash
+		//condition.OriginalAttribute = originalAttribute // used in hash
 	}
 
 	if strings.HasPrefix(condition.Value, "$receiver.") { // test if VALUE is of type receiver object (used to compare attribute of sender object to value of receiver object)
@@ -381,13 +385,13 @@ func handleSenderReceiverAttributes(condition *Condition) {
 		i1 := strings.Index(condition.Value, ".") + 1
 		condition.ValueReceiverObject = condition.Value[i1:]
 		condition.Value = "$receiver"
-		condition.OriginalValue = originalAttribute // used in hash
+		//condition.OriginalValue = originalValue // used in hash
 	}
 }
 
 
 func handleJsonpathAttribute(condition *Condition) {
-	originalAttribute := condition.Attribute
+	//originalAttribute := condition.Attribute
 	if strings.HasPrefix(condition.Attribute, "jsonpath:") { // test if ATTRIBUTE is of type jsonpath
 		condition.AttributeIsJsonpath = true
 		i1 := strings.Index(condition.Attribute, ":") + 1
@@ -409,7 +413,7 @@ func handleJsonpathAttribute(condition *Condition) {
 		netConditionAttribute = strings.Replace(netConditionAttribute, "\"", "'", -1)
 		condition.AttributeJsonpathQuery = netConditionAttribute
 		condition.Attribute = "jsonpath"
-		condition.OriginalAttribute = originalAttribute // used in hash
+		//condition.OriginalAttribute = originalAttribute // used in hash
 	}
 }
 

@@ -76,6 +76,7 @@ type Condition struct {
 	AttributeJsonpathQuery      string `yaml:"-" json:"AttributeJsonpathQuery,omitempty" bson:"AttributeJsonpathQuery,omitempty" structs:"AttributeJsonpathQuery,omitempty"`
 
 	OriginalAttribute string `yaml:"-" json:"OriginalAttribute,omitempty" bson:"OriginalAttribute,omitempty" structs:"OriginalAttribute,omitempty"` // used in hash
+	OriginalMethod     string `yaml:"-" json:"OriginalMethod,omitempty" bson:"OriginalMethod,omitempty" structs:"OriginalMethod,omitempty"`             // used in hash
 	OriginalValue     string `yaml:"-" json:"OriginalValue,omitempty" bson:"OriginalValue,omitempty" structs:"OriginalValue,omitempty"`             // used in hash
 }
 
@@ -209,11 +210,16 @@ func (c *Condition) String() string {
 	if len(c.OriginalAttribute) > 0 {
 		stringAttribute = c.OriginalAttribute
 	}
+	stringMethod := c.Method
+	if len(c.OriginalMethod) > 0 {
+		stringMethod = c.OriginalMethod
+	}
+
 	stringValue := c.Value
 	if len(c.OriginalValue) > 0 {
 		stringValue = c.OriginalValue
 	}
-	return fmt.Sprintf("<%v-%v-%v>", stringAttribute, c.Method, stringValue)
+	return fmt.Sprintf("<%v-%v-%v>", stringAttribute, stringMethod, stringValue)
 }
 
 func (c *Condition) MarshalJSON() ([]byte, error) {
@@ -222,15 +228,22 @@ func (c *Condition) MarshalJSON() ([]byte, error) {
 	if len(c.OriginalAttribute) > 0 {
 		attributeString = c.OriginalAttribute
 	}
+	attributeString = strings.Replace(attributeString, "\\", "\\\\", -1)
 	attributeString = strings.Replace(attributeString, "\"", "\\\"", -1)
+
+	methodString := c.Method
+	if len(c.OriginalMethod) > 0 {
+		methodString = c.OriginalMethod
+	}
 
 	valueString := c.Value
 	if len(c.OriginalValue) > 0 {
 		valueString = c.OriginalValue
 	}
+	valueString = strings.Replace(valueString, "\\", "\\\\", -1)
 	valueString = strings.Replace(valueString, "\"", "\\\"", -1)
 
-	str := fmt.Sprintf(`{"condition":{"attribute":"%v","method":"%v","value":"%v"}}`, attributeString, c.Method, valueString)
+	str := fmt.Sprintf(`{"condition":{"attribute":"%v","method":"%v","value":"%v"}}`, attributeString, methodString, valueString)
 
 	return []byte(str), nil
 }

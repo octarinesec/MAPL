@@ -1275,7 +1275,8 @@ func TestRulesWithPredefinedStrings(t *testing.T) {
 		for _,f:=range(predefined_lists) {
 			results, rules, _ = test_CheckMessagesWithRawDataAndPredefinedStrings("../files/rules/predefined_strings/rules_with_condition_translation_list.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/predefined_strings/json_raw_workload_dep.json", f)
 			z := rules.Rules[0].Conditions.ConditionsTree.String()
-			So(z, ShouldEqual, "<jsonpath:$.kind-RE-^Deployment$|^Pod$>")
+			//So(z, ShouldEqual, "<jsonpath:$.kind-RE-^Deployment$|^Pod$>")
+			So(z, ShouldEqual, "<jsonpath:$.kind-IN-Deployment,Pod>")
 			So(results[0], ShouldEqual, ALLOW)
 
 			results, rules, _ = test_CheckMessagesWithRawDataAndPredefinedStrings("../files/rules/predefined_strings/rules_with_condition_translation_list.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/predefined_strings/json_raw_workload_pod.json", f)
