@@ -6,10 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/globalsign/mgo"
+	//"github.com/globalsign/mgo"
 	//"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/globalsign/mgo/bson"
+	bson2 "gopkg.in/mgo.v2/bson"
+	mgo2 "gopkg.in/mgo.v2"
 
 	//bson2 "go.mongodb.org/mongo-driver/bson"
 	//"go.mongodb.org/mongo-driver/bson/primitive"
@@ -723,7 +725,7 @@ func insertRawDataToMongo(id string, data []byte) (error) {
 
 func deleteDocument(id string) (error) {
 
-	err := mongoDbConnection.Collection(collectionName).DeleteOne(bson.M{"id": id})
+	err := mongoDbConnection.Collection(collectionName).DeleteOne(bson2.M{"id": id})
 	return err
 
 }
@@ -774,7 +776,7 @@ func DbConnect(Host, Port, DB string) (*bongo.Connection, error) {
 
 	conn, err := bongo.Connect(dbconfig)
 	if err == nil {
-		conn.Session.SetMode(mgo.Strong, true)
+		conn.Session.SetMode(mgo2.Strong, true)
 
 	}
 	return conn, err
