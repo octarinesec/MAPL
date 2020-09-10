@@ -516,7 +516,9 @@ func RuleToString(rule Rule) string {
 
 	return ruleStr
 }
-
+func (rule Rule) String() string {
+	return RuleToString(rule)
+}
 
 func RuleConditionsToString(rule Rule) string {
 	if rule.Conditions.ConditionsTree != nil {

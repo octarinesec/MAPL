@@ -135,7 +135,7 @@ func TestJsonUnmarhshalWithPredefinedStrings(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
-/*
+
 		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_sender_translation.yaml", "../files/lists/predefined_string.yaml")
 		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_receiver_translation.yaml", "../files/lists/predefined_string.yaml")
 		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_sender_translation_list.yaml", "../files/lists/predefined_list.yaml")
@@ -153,7 +153,7 @@ func TestJsonUnmarhshalWithPredefinedStrings(t *testing.T) {
 
 		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_condition_translation_foo_regex_list.yaml", "../files/lists/predefined_list_allowed_labels.yaml")
 		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_condition_translation_foo_regex_list2.yaml", "../files/lists/predefined_list_allowed_labels.yaml")
-*/
+
 		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rule_zooz.yaml","../files/lists/predefined_password_list.yaml")
 
 

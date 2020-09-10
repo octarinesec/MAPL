@@ -59,6 +59,23 @@ func (c *ConditionsTree) UnmarshalJSON(data []byte) error {
 	return nil
 
 }
+// SetBSON implements bson.Setter.
+// we actually use the json unmarshaller
+func (c *ConditionsTree) SetBSON(raw bson.Raw) error {
+
+	var i interface{}
+	bsonErr := raw.Unmarshal(&i)
+	if bsonErr != nil {
+		return bsonErr
+	}
+	data, err := json.Marshal(i)
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(data))
+	err=json.Unmarshal(data,c)
+	return err
+}
 
 //--------------------------------------
 // Node Interface
