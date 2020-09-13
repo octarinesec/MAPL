@@ -9,9 +9,8 @@ import (
 	"github.com/toolkits/slice"
 	"sort"
 	"strings"
-
-
 )
+
 //-----------------------
 // ConditionTree
 //-----------------------
@@ -39,14 +38,14 @@ func (c *ConditionsTree) UnmarshalYAML(unmarshal func(interface{}) error) error 
 func (c *ConditionsTree) UnmarshalJSON(data []byte) error {
 
 	if len(data) == 2 {
-		if data[0] == 123 && data[1] == 125 {
+		if data[0] == '{' && data[1] == '}' {
 			c.ConditionsTree = nil
 			return nil
 		}
 	}
 
 	var aux interface{}
-	if err := json.Unmarshal(data,&aux); err != nil {
+	if err := json.Unmarshal(data, &aux); err != nil {
 		return err
 	}
 	var n Node
@@ -59,6 +58,7 @@ func (c *ConditionsTree) UnmarshalJSON(data []byte) error {
 	return nil
 
 }
+
 // SetBSON implements bson.Setter.
 // we actually use the json unmarshaller
 func (c *ConditionsTree) SetBSON(raw bson.Raw) error {
@@ -72,8 +72,7 @@ func (c *ConditionsTree) SetBSON(raw bson.Raw) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(data))
-	err=json.Unmarshal(data,c)
+	err = json.Unmarshal(data, c)
 	return err
 }
 
@@ -85,11 +84,10 @@ type Node interface {
 	Append(node Node)
 	PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error
 	String() string // to-do: order terms so that hash will be the same
-	ToMongoQuery(parentString string) (bson.M, []bson.M, error)
+	ToMongoQuery(base string, parentString string) (bson.M, []bson.M, error)
 }
 
 type AnyAllNode interface {
-
 	Node
 	SetParentJsonpathAttribute(parentJsonpathAttribute string)
 	GetParentJsonpathAttribute() string
@@ -157,6 +155,7 @@ func AndOrString(a_nodes []Node, andOrStr string) string {
 	str += ")"
 	return str
 }
+
 //--------------------------------------
 // Or Node
 //--------------------------------------
@@ -214,6 +213,7 @@ func (n *Not) String() string {
 	str := fmt.Sprintf("!(%v)", n.Node.String())
 	return str
 }
+
 //--------------------------------------
 // Any Node
 //--------------------------------------
@@ -225,28 +225,28 @@ type Any struct {
 	Node                            Node `yaml:"condition,omitempty" json:"condition,omitempty" bson:"condition,omitempty" structs:"condition,omitempty"`
 }
 
-func (a *Any) MarshalJSON() ([]byte, error){
+func (a *Any) MarshalJSON() ([]byte, error) {
 
-	parentJsonpathAttributeString:=a.ParentJsonpathAttribute
-	if len(a.ParentJsonpathAttributeOriginal)>0{
-		parentJsonpathAttributeString=a.ParentJsonpathAttributeOriginal
+	parentJsonpathAttributeString := a.ParentJsonpathAttribute
+	if len(a.ParentJsonpathAttributeOriginal) > 0 {
+		parentJsonpathAttributeString = a.ParentJsonpathAttributeOriginal
 	}
 
-	returnValueJsonpath:=a.ReturnValueJsonpath
-	if len(a.ReturnValueJsonpathOriginal)>0{
-		returnValueJsonpath=a.ReturnValueJsonpathOriginal
+	returnValueJsonpath := a.ReturnValueJsonpath
+	if len(a.ReturnValueJsonpathOriginal) > 0 {
+		returnValueJsonpath = a.ReturnValueJsonpathOriginal
 	}
 
-	str:=fmt.Sprintf(`{"ANY":{"parentJsonpathAttribute":"%v",`,parentJsonpathAttributeString)
-	if len(returnValueJsonpath)>0{
-		str=fmt.Sprintf(`%v"returnValueJsonpath":"%v",`,str,returnValueJsonpath)
+	str := fmt.Sprintf(`{"ANY":{"parentJsonpathAttribute":"%v",`, parentJsonpathAttributeString)
+	if len(returnValueJsonpath) > 0 {
+		str = fmt.Sprintf(`%v"returnValueJsonpath":"%v",`, str, returnValueJsonpath)
 	}
 
-	conditionBytes,err:=json.Marshal(a.Node)
-	if err!=nil{
-		return []byte{},err
+	conditionBytes, err := json.Marshal(a.Node)
+	if err != nil {
+		return []byte{}, err
 	}
-	str=fmt.Sprintf(`%v"condition":%v}}`,str,string(conditionBytes))
+	str = fmt.Sprintf(`%v"condition":%v}}`, str, string(conditionBytes))
 
 	return []byte(str), nil
 }
@@ -331,29 +331,28 @@ type All struct {
 	Node                            Node `yaml:"condition,omitempty" json:"condition,omitempty" bson:"condition,omitempty" structs:"condition,omitempty"`
 }
 
+func (a *All) MarshalJSON() ([]byte, error) {
 
-func (a *All) MarshalJSON() ([]byte, error){
-
-	parentJsonpathAttributeString:=a.ParentJsonpathAttribute
-	if len(a.ParentJsonpathAttributeOriginal)>0{
-		parentJsonpathAttributeString=a.ParentJsonpathAttributeOriginal
+	parentJsonpathAttributeString := a.ParentJsonpathAttribute
+	if len(a.ParentJsonpathAttributeOriginal) > 0 {
+		parentJsonpathAttributeString = a.ParentJsonpathAttributeOriginal
 	}
 
-	returnValueJsonpath:=a.ReturnValueJsonpath
-	if len(a.ReturnValueJsonpathOriginal)>0{
-		returnValueJsonpath=a.ReturnValueJsonpathOriginal
+	returnValueJsonpath := a.ReturnValueJsonpath
+	if len(a.ReturnValueJsonpathOriginal) > 0 {
+		returnValueJsonpath = a.ReturnValueJsonpathOriginal
 	}
 
-	str:=fmt.Sprintf(`{"ALL":{"parentJsonpathAttribute":"%v",`,parentJsonpathAttributeString)
-	if len(returnValueJsonpath)>0{
-		str=fmt.Sprintf(`%v"returnValueJsonpath":"%v",`,str,returnValueJsonpath)
+	str := fmt.Sprintf(`{"ALL":{"parentJsonpathAttribute":"%v",`, parentJsonpathAttributeString)
+	if len(returnValueJsonpath) > 0 {
+		str = fmt.Sprintf(`%v"returnValueJsonpath":"%v",`, str, returnValueJsonpath)
 	}
 
-	conditionBytes,err:=json.Marshal(a.Node)
-	if err!=nil{
-		return []byte{},err
+	conditionBytes, err := json.Marshal(a.Node)
+	if err != nil {
+		return []byte{}, err
 	}
-	str=fmt.Sprintf(`%v"condition":%v}}`,str,string(conditionBytes))
+	str = fmt.Sprintf(`%v"condition":%v}}`, str, string(conditionBytes))
 
 	return []byte(str), nil
 }
@@ -426,7 +425,7 @@ func (t True) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) erro
 func (t True) String() string {
 	return "true"
 }
-func (t True) ToMongoQuery(str string) (bson.M, []bson.M, error) {
+func (t True) ToMongoQuechery(base, str string) (bson.M, []bson.M, error) {
 	return bson.M{}, []bson.M{}, fmt.Errorf("not supported")
 }
 
@@ -446,7 +445,7 @@ func (f False) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) err
 func (f False) String() string {
 	return "false"
 }
-func (f False) ToMongoQuery(str string) (bson.M, []bson.M, error) {
+func (f False) ToMongoQuery(base, str string) (bson.M, []bson.M, error) {
 	return bson.M{}, []bson.M{}, fmt.Errorf("not supported")
 }
 
@@ -503,13 +502,13 @@ func InterpretNode(node interface{}, parentString string) (Node, error) {
 		return handleMapInterfaceInterface(v, parentString)
 
 	case []interface{}: // array of nodes
-		if parentString==""{
-			if len(v)!=1{
+		if parentString == "" {
+			if len(v) != 1 {
 				return nil, fmt.Errorf("node type not supported. possible error: array of conditions without AND,OR (etc) parent")
 				//return nil, fmt.Errorf("can't parse conditions %+v", v)
 			}
-			return InterpretNode(v[0],"") // recursion
-		}else {
+			return InterpretNode(v[0], "") // recursion
+		} else {
 			return handleInterfaceArray(node, parentString)
 		}
 
@@ -522,7 +521,7 @@ func InterpretNode(node interface{}, parentString string) (Node, error) {
 func handleMapInterfaceInterface(v map[interface{}]interface{}, parentString string) (Node, error) {
 
 	v2 := mapInterfaceToMapString(v)
-	return handleMapStringInterface(v2,parentString)
+	return handleMapStringInterface(v2, parentString)
 
 }
 
@@ -570,7 +569,6 @@ func getNodeCondition(v map[string]interface{}, parentString string) (Node, erro
 	if err != nil {
 		return nil, err
 	}
-
 
 	if parentString != "" && parentString != "condition" && parentString != "conditionsTree" { // add the condition to a AND,OR etc... Node
 		nodes, err := getNodeByParentString(parentString)

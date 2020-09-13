@@ -518,7 +518,7 @@ func TestMongoPluginKeyValue(t *testing.T) {
 		So(results[0], ShouldEqual, true)
 
 
-		results, err := test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_key_json.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json")
+		results, err := test_plugin("../files/rules/mongo_plugin/key_value/invalid_rules_with_jsonpath_conditions_key_json.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json")
 		strErr:=fmt.Sprintf("%v",err)
 		fmt.Println(strErr)
 		So(strErr, ShouldEqual, "jsonpath condition $KEY must not have a subfield [jsonpath:$KEY.def2]")
@@ -633,7 +633,7 @@ func test_plugin(rulesFilename, jsonRawFilename string) ([]bool, error) {
 	outputResults := make([]bool, len(rules.Rules))
 	for i_rule, rule := range (rules.Rules) {
 
-		query, added_pipeline,err := rule.Conditions.ConditionsTree.ToMongoQuery("")
+		query, added_pipeline,err := rule.Conditions.ConditionsTree.ToMongoQuery("raw","")
 		if err!=nil{
 			return []bool{}, err
 		}
@@ -783,11 +783,6 @@ func DbConnect(Host, Port, DB string) (*bongo.Connection, error) {
 
 }
 
-func mongoConvertNumberString() bson.JavaScript {
-
-	return bson.JavaScript{Code: functionConvertNumberString}
-}
-
 func randomString(length int) string {
 
 	rand.Seed(time.Now().UnixNano())
@@ -801,83 +796,3 @@ func randomString(length int) string {
 	str := b.String() // E.g. "ExcbsVQs"
 	return str
 }
-
-/* javascript code:
-
-
-db.system.js.save({_id: "convertNumberString",
-                  value: function convertNumberString(inputString) {
-
-    var strVec = ["e3", "e6", "e9", "e12", "e15", "e18", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "K", "M", "G", "T", "P", "E", "m"];
-    var factorVec = [1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 1024, Math.pow(1024, 2), Math.pow(1024, 3), Math.pow(1024, 4), Math.pow(1024, 5), Math.pow(1024, 6), 1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 0.001];
-
-    var outputString = inputString;
-    var i;
-    var factor=1.0;
-    for (i = 0; i < strVec.length; i++) {
-
-        var unit = strVec[i];
-        var f = factorVec[i];
-
-        var flag1 = inputString.endsWith(unit);
-        var flag2 = false;
-        if (flag1) {
-            var count = (inputString.match(unit) || []).length;
-            flag2 = (count == 1);
-        }
-        if (flag1 && flag2) {
-            outputString = inputString.replace(unit, "");
-            factor=f;
-            break;
-        }
-    }
-
-    return Number(outputString)*factor;
-
-}
-})
-
-
-db.eval("return convertNumberString(500m);");
-
-
- */
-/*
-var functionConvertNumberString = `function (inputString) {
-
-var strVec = ["e3", "e6", "e9", "e12", "e15", "e18", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "K", "M", "G", "T", "P", "E", "m"];
-var factorVec = [1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 1024, Math.pow(1024, 2), Math.pow(1024, 3), Math.pow(1024, 4), Math.pow(1024, 5), Math.pow(1024, 6), 1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 0.001];
-
-var outputString = inputString;
-var i;
-var factor=1.0;
-for (i = 0; i < strVec.length; i++) {
-
-var unit = strVec[i];
-var f = factorVec[i];
-
-var flag1 = inputString.endsWith(unit);
-var flag2 = false;
-if (flag1) {
-var count = (inputString.match(unit) || []).length;
-flag2 = (count == 1);
-}
-if (flag1 && flag2) {
-outputString = inputString.replace(unit, "");
-factor=f;
-break;
-}
-}
-
-return Number(outputString)*factor;
-
-}
-})`
-*/
-var functionConvertNumberString = `function (inputString) {var strVec = ["e3", "e6", "e9", "e12", "e15", "e18", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "K", "M", "G", "T", "P", "E", "m"];var factorVec = [1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 1024, Math.pow(1024, 2), Math.pow(1024, 3), Math.pow(1024, 4), Math.pow(1024, 5), Math.pow(1024, 6), 1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 0.001];var outputString = inputString;var i;var factor=1.0;for (i = 0; i < strVec.length; i++) {var unit = strVec[i];var f = factorVec[i];var flag1 = inputString.endsWith(unit);var flag2 = false;if (flag1) {var count = (inputString.match(unit) || []).length;flag2 = (count == 1);}if (flag1 && flag2) {outputString = inputString.replace(unit, "");factor=f;break;}} return Number(outputString)*factor;}`
-
-// key val:
-// db.products.insert({    "name" : "AAA",         "quantity" : 4,         "price" : 3.5 ,"md":{"a":"b","c":"d"}})
-// db.products.insert({    "name" : "BBB",         "quantity" : 2,         "price" : 5.5 ,"md":{"x":"b","y":"z"}})
-// db.products.insert({    "name" : "CCC",         "quantity" : 1,         "price" : 5.5 ,"arr":[{"md":{"x":"b","y":"z"}},{"md":{"A":"A","B":"B"}}]})
-// db.products.aggregate({$addFields: {     array: {$objectToArray: '$md'}  }},  {$match: {'array.v': 'b',price:{$lt:5}}})

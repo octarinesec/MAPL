@@ -447,9 +447,6 @@ func testJsonPathCondition(c *Condition, message *MessageAttributes) bool {
 		if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
 			return true
 		}
-		if c.Method == "EX" || c.Method == "ex" { // just test the existence of the key
-			return false
-		}
 		return false
 	}
 
