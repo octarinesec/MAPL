@@ -48,7 +48,7 @@ type Resource struct {
 }
 
 // Condition structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
-type Condition struct {
+type Condition struct { // TO-DO: convert to AttributeStruct and ValueStruct?
 	Attribute        string         `yaml:"attribute,omitempty" json:"attribute" bson:"Attribute" structs:"Attribute,omitempty"`
 	Method           string         `yaml:"method,omitempty" json:"method" bson:"Method" structs:"Method,omitempty"`
 	Value            string         `yaml:"value,omitempty" json:"value" bson:"Value" structs:"Value,omitempty"`

@@ -12,7 +12,7 @@ import (
 )
 
 //-----------------------
-// ConditionTree
+// ConditionsTree
 //-----------------------
 type ConditionsTree struct {
 	ConditionsTree Node `yaml:"conditionsTree,omitempty" json:"conditionsTree,omitempty" bson:"conditionsTree,omitempty" structs:"conditionsTree,omitempty"`
@@ -425,7 +425,7 @@ func (t True) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) erro
 func (t True) String() string {
 	return "true"
 }
-func (t True) ToMongoQuechery(base, str string) (bson.M, []bson.M, error) {
+func (t True) ToMongoQuery(base, str string) (bson.M, []bson.M, error) {
 	return bson.M{}, []bson.M{}, fmt.Errorf("not supported")
 }
 
@@ -546,7 +546,7 @@ func handleMapStringInterface(v2 map[string]interface{}, parentString string) (N
 	case "NOT":
 		notNode, err := getNotNode(v2, parentString)
 		return notNode, err
-	default:
+	case "OR", "AND", "", "condition", "conditionsTree":
 		val, nodeType, err := getNodeValType(v2, parentString)
 		if err != nil {
 			return nil, err
@@ -556,7 +556,8 @@ func handleMapStringInterface(v2 map[string]interface{}, parentString string) (N
 			return nil, err
 		}
 		return node, nil
-
+	default:
+		return nil, fmt.Errorf("can't interpret map[interface{}]interface{}")
 	}
 	return nil, fmt.Errorf("can't interpret map[interface{}]interface{}")
 }
@@ -582,14 +583,22 @@ func getNodeCondition(v map[string]interface{}, parentString string) (Node, erro
 	}
 }
 
-func getAnyAllNode(v2 map[string]interface{}, parentString string) (Node, error) {
-
-	keys := getKeys(v2)
+func isValidAnyAllNode(v map[string]interface{}) error {
+	keys := getKeys(v)
 	if len(keys) != 2 && len(keys) != 3 {
-		return nil, fmt.Errorf("map of size different than 2 or 3 [ANY/ALL node]")
+		return fmt.Errorf("map of size different than 2 or 3 [ANY/ALL node]")
 	}
 	if !slice.ContainsString(keys, "parentJsonpathAttribute") {
-		return nil, fmt.Errorf("ANY/ALL node without 'parentJsonpathAttribute' key")
+		return fmt.Errorf("ANY/ALL node without 'parentJsonpathAttribute' key")
+	}
+	return nil
+}
+
+func getAnyAllNode(v2 map[string]interface{}, parentString string) (Node, error) {
+
+	err := isValidAnyAllNode(v2)
+	if err != nil {
+		return nil, err
 	}
 
 	var anyAllNode AnyAllNode //OOP
@@ -630,11 +639,18 @@ func getAnyAllNode(v2 map[string]interface{}, parentString string) (Node, error)
 	return anyAllNode, nil
 }
 
-func getNotNode(v2 map[string]interface{}, parentString string) (Node, error) {
-
-	keys := getKeys(v2)
+func isValidNotNode(v map[string]interface{}) error {
+	keys := getKeys(v)
 	if len(keys) != 1 {
-		return nil, fmt.Errorf("map of size different than 1 [NOT node]")
+		return fmt.Errorf("map of size different than 1 [NOT node]")
+	}
+	return nil
+}
+
+func getNotNode(v2 map[string]interface{}, parentString string) (Node, error) {
+	err := isValidNotNode(v2)
+	if err != nil {
+		return nil, err
 	}
 	val, nodeType, err := getNodeValType(v2, parentString)
 	if err != nil {

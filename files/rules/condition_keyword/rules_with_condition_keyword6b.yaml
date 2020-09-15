@@ -13,7 +13,7 @@ rules:
       resourceName: "/*"
     operation: GET
     conditions:
-      conditionTree:
+      conditionsTree:
         AND:
         - ANY:
             parentJsonpathAttribute: "jsonpath:$.spec.containers[:]"

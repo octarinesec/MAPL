@@ -479,12 +479,11 @@ func testJsonPathCondition(c *Condition, message *MessageAttributes) bool {
 	method := strings.ToUpper(c.Method)
 	switch method {
 	case "GE", "GT", "LE", "LT", "EQ", "NEQ", "NE":
-		valueToCompareString2, factor := convertStringWithUnits(valueToCompareString) // if the conversion to float doesn't work we still want to use the original string so we use a temporary one
-		valueToCompareFloat, err := strconv.ParseFloat(valueToCompareString2, 64)
+		valueStringWithoutUnits, factor := convertStringWithUnits(valueToCompareString) // if the conversion to float doesn't work we still want to use the original string so we use a temporary one
+		valueToCompareFloat, err := strconv.ParseFloat(valueStringWithoutUnits, 64)
 		valueToCompareFloat = valueToCompareFloat * factor
 
 		if err != nil {
-
 			if method == "EQ" || method == "NEQ" {
 				result = compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex) // compare strings with wildcards
 			} else {
@@ -498,21 +497,10 @@ func testJsonPathCondition(c *Condition, message *MessageAttributes) bool {
 		result = compareRegexFunc(valueToCompareString, c.Method, c.ValueRegex)
 	case "EX", "NEX":
 		if len(valueToCompareString) == 0 {
-			if method == "NEX" { // just test the existence of the key
-				return true
-			}
-			if method == "EX" { // just test the existence of the key
-				return false
-			}
+			return method == "NEX" // just test the existence of the key
 		} else {
-			if method == "NEX" { // just test the existence of the key
-				return false
-			}
-			if method == "EX" { // just test the existence of the key
-				return true
-			}
+			return method == "EX" // just test the existence of the key
 		}
-
 	default:
 		log.Printf("method not supported: %v", method)
 		return false
