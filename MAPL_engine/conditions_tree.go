@@ -42,6 +42,10 @@ func (c *ConditionsTree) UnmarshalJSON(data []byte) error {
 			c.ConditionsTree = nil
 			return nil
 		}
+		if data[0] == '[' && data[1] == ']' {
+			c.ConditionsTree = nil
+			return nil
+		}
 	}
 
 	var aux interface{}

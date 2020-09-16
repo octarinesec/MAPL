@@ -88,6 +88,12 @@ func TestJsonUnmarhshal(t *testing.T) {
 		maplRuleJson := `{"ruleID":"0","sender":{"senderList":[{"Regexp":{},"CIDR":{"IP":"","Mask":null}}]},"receiver":{"receiverList":[{"Regexp":{},"CIDR":{"IP":"","Mask":null}}]},"resource":{"-":{}},"conditions":{"conditionsTree":{"AND":[{"ANY":{"parentJsonpathAttribute":"jsonpath:$.spec.containers[:]","condition":{"condition":{"attribute":"jsonpath:$RELATIVE.securityContext.runAsUser","method":"EQ","value":"0"}}}},{"condition":{"attribute":"jsonpath:$.kind","method":"RE","value":"^Pod$"}}]}},"metadata":{"name":"runAsUser0"},"hash":"3d171b3db8380b7dc96dec48fc8f82fa","o":{},"-":true}`
 		x := []byte(maplRuleJson)
 		err = json.Unmarshal(x, &rule)
+		So(err, ShouldEqual, nil)
+
+		maplRuleJson2 := `{"ruleID":"1","sender":{"senderName":"*","senderType":"workload"},"receiver":{"receiverType":"hostname","receiverName":"google.com"},"protocol":"*","operation":"*","decision":"allow","conditions":[],"resource":null}`
+		x = []byte(maplRuleJson2)
+		err = json.Unmarshal(x, &rule)
+		So(err, ShouldEqual, nil)
 
 		//-----------------------
 		maplRuleJson = `{"sender":{"senderName":"*"},"receiver":{"receiverName":"a_group:a2@d_group:d2","receiverType":"workload"},"protocol":"http","resource":{"resourceType":"path","resourceName":"/books/,/cars,*"},"operation":"*","conditions":{"conditionsTree":{"attribute":"encryptionType","method":"EQ","value":"tls"}},"decision":"allow"}`
