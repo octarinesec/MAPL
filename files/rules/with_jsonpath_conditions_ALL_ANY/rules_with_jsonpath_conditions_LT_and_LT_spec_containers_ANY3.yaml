@@ -19,7 +19,8 @@ rules:
           value: "Pod"
         - ANY:
             parentJsonpathAttribute: "jsonpath:$.spec.containers[:]"
-            returnValueJsonpath: "jsonpath:$RELATIVE.name"
+            returnValueJsonpath:
+              name: "jsonpath:$RELATIVE.name"
             AND:
             - attribute: "jsonpath:$RELATIVE.resources.limits.cpu"
               method: LT

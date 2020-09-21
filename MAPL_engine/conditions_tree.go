@@ -7,6 +7,7 @@ import (
 	"github.com/bhmj/jsonslice"
 	"github.com/globalsign/mgo/bson"
 	"github.com/toolkits/slice"
+	dc "gopkg.in/getlantern/deepcopy.v1"
 	"sort"
 	"strings"
 )
@@ -84,7 +85,7 @@ func (c *ConditionsTree) SetBSON(raw bson.Raw) error {
 // Node Interface
 //--------------------------------------
 type Node interface {
-	Eval(message *MessageAttributes) (bool, string)
+	Eval(message *MessageAttributes) (bool, []map[string]interface{})
 	Append(node Node)
 	PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error
 	String() string // to-do: order terms so that hash will be the same
@@ -95,8 +96,8 @@ type AnyAllNode interface {
 	Node
 	SetParentJsonpathAttribute(parentJsonpathAttribute string)
 	GetParentJsonpathAttribute() string
-	SetReturnValueJsonpath(returnValueJsonpath string)
-	GetReturnValueJsonpath() string
+	SetReturnValueJsonpath(returnValueJsonpath map[string]string)
+	GetReturnValueJsonpath() map[string]string
 }
 
 //--------------------------------------
@@ -106,8 +107,8 @@ type And struct {
 	Nodes []Node `yaml:"AND,omitempty" json:"AND,omitempty" bson:"AND,omitempty" structs:"AND,omitempty"`
 }
 
-func (a *And) Eval(message *MessageAttributes) (bool, string) {
-	extraData := ""
+func (a *And) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
+	extraData := []map[string]interface{}{}
 	for _, node := range a.Nodes {
 		flag, extraDataTemp := node.Eval(message)
 		if len(extraDataTemp) > 0 {
@@ -167,15 +168,14 @@ type Or struct {
 	Nodes []Node `yaml:"OR,omitempty" json:"OR,omitempty" bson:"OR,omitempty" structs:"OR,omitempty"`
 }
 
-func (o *Or) Eval(message *MessageAttributes) (bool, string) {
-	extraData := ""
+func (o *Or) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
 	for _, node := range o.Nodes {
 		flag, extraData := node.Eval(message)
 		if flag {
 			return true, extraData // no need to check the rest
 		}
 	}
-	return false, extraData
+	return false, []map[string]interface{}{}
 }
 func (o *Or) Append(node Node) {
 	o.Nodes = append(o.Nodes, node)
@@ -200,9 +200,9 @@ type Not struct {
 	Node Node `yaml:"NOT,omitempty" json:"NOT,omitempty" bson:"NOT,omitempty" structs:"NOT,omitempty"`
 }
 
-func (n *Not) Eval(message *MessageAttributes) (bool, string) {
+func (n *Not) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
 	flag, _ := n.Node.Eval(message)
-	return !flag, ""
+	return !flag, []map[string]interface{}{}
 }
 func (n *Not) Append(node Node) {
 	n.Node = node
@@ -224,8 +224,8 @@ func (n *Not) String() string {
 type Any struct {
 	ParentJsonpathAttribute         string
 	ParentJsonpathAttributeOriginal string
-	ReturnValueJsonpath             string
-	ReturnValueJsonpathOriginal     string
+	ReturnValueJsonpath             map[string]string
+	ReturnValueJsonpathOriginal     map[string]string
 	Node                            Node `yaml:"condition,omitempty" json:"condition,omitempty" bson:"condition,omitempty" structs:"condition,omitempty"`
 }
 
@@ -243,7 +243,8 @@ func (a *Any) MarshalJSON() ([]byte, error) {
 
 	str := fmt.Sprintf(`{"ANY":{"parentJsonpathAttribute":"%v",`, parentJsonpathAttributeString)
 	if len(returnValueJsonpath) > 0 {
-		str = fmt.Sprintf(`%v"returnValueJsonpath":"%v",`, str, returnValueJsonpath)
+		returnValueJsonpathJson, _ := json.Marshal(returnValueJsonpath)
+		str = fmt.Sprintf(`%v"returnValueJsonpath": %v,`, str, string(returnValueJsonpathJson))
 	}
 
 	conditionBytes, err := json.Marshal(a.Node)
@@ -255,14 +256,14 @@ func (a *Any) MarshalJSON() ([]byte, error) {
 	return []byte(str), nil
 }
 
-func (a *Any) Eval(message *MessageAttributes) (bool, string) { // to-do: return errors
+func (a *Any) Eval(message *MessageAttributes) (bool, []map[string]interface{}) { // to-do: return errors
 
 	rawArrayData, err := getArrayOfJsons(a, message)
 	if err != nil {
-		return false, ""
+		return false, []map[string]interface{}{}
 	}
 
-	extraData := ""
+	extraData := []map[string]interface{}{}
 	result := false
 	checkAllValuesInTheArray := false
 	if len(a.ReturnValueJsonpath) > 0 {
@@ -271,20 +272,31 @@ func (a *Any) Eval(message *MessageAttributes) (bool, string) { // to-do: return
 	for _, val := range (rawArrayData) {
 		message.RequestJsonRawRelative = &val
 		flag, _ := a.Node.Eval(message)
-		extraDataBytes, _ := jsonslice.Get(val, a.ReturnValueJsonpath)
-		extraDataTemp := string(extraDataBytes)
-		extraDataTemp, _ = removeQuotes(extraDataTemp)
 		if flag {
 			result = true
-			extraData += extraDataTemp + ","
+			if a.ReturnValueJsonpath != nil {
+				extraDataTemp := map[string]interface{}{}
+				for k, v := range (a.ReturnValueJsonpath) {
+					extraDataBytes, _ := jsonslice.Get(val, v)
+					var tempInterface interface{}
+					err := json.Unmarshal(extraDataBytes, &tempInterface)
+					if err == nil {
+						extraDataTemp[k] = tempInterface
+					}
+					//extraDataTemp := string(extraDataBytes)
+					//extraDataTemp, _ = removeQuotes(extraDataTemp)
+				}
+				extraData = append(extraData, extraDataTemp)
+			}
 			if !checkAllValuesInTheArray {
-				return true, extraDataTemp
+				return result, extraData
 			}
 		}
 	}
-	if strings.HasSuffix(extraData, ",") {
-		extraData = extraData[0 : len(extraData)-1]
-	}
+
+	//if strings.HasSuffix(extraData, ",") {
+	//	extraData = extraData[0 : len(extraData)-1]
+	//}
 	return result, extraData
 }
 func (a *Any) Append(node Node) {
@@ -301,7 +313,15 @@ func (a *Any) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) erro
 }
 
 func (a *Any) String() string {
-	str := fmt.Sprintf("[ANY<%v>:%v]", a.ParentJsonpathAttributeOriginal, a.Node.String())
+	str1 := a.ParentJsonpathAttribute
+	if len(a.ParentJsonpathAttributeOriginal) > 0 {
+		str1 = a.ParentJsonpathAttributeOriginal
+	}
+	str2 := a.ReturnValueJsonpath
+	if len(a.ReturnValueJsonpathOriginal) > 0 {
+		str2 = a.ReturnValueJsonpathOriginal
+	}
+	str := fmt.Sprintf("[ANY<%v;%v>:%v]", str1, str2, a.Node.String())
 	return str
 }
 
@@ -314,13 +334,15 @@ func (a *Any) GetParentJsonpathAttribute() string {
 	return a.ParentJsonpathAttribute
 }
 
-func (a *Any) SetReturnValueJsonpath(returnValueJsonpath string) {
-	a.ReturnValueJsonpathOriginal = returnValueJsonpath
-	//a.ReturnValueJsonpath = strings.Replace(returnValueJsonpath, "jsonpath:", "", -1)
-	a.ReturnValueJsonpath = strings.Replace(returnValueJsonpath, "jsonpath:$RELATIVE.", "$.", 1)
+func (a *Any) SetReturnValueJsonpath(returnValueJsonpath map[string]string) {
+	dc.Copy(&a.ReturnValueJsonpathOriginal, &returnValueJsonpath)
+	dc.Copy(&a.ReturnValueJsonpath, &returnValueJsonpath)
+	for k, v := range (returnValueJsonpath) {
+		a.ReturnValueJsonpath[k] = strings.Replace(v, "jsonpath:$RELATIVE", "$", 1)
+	}
 }
 
-func (a *Any) GetReturnValueJsonpath() string {
+func (a *Any) GetReturnValueJsonpath() map[string]string {
 	return a.ReturnValueJsonpathOriginal
 }
 
@@ -330,8 +352,8 @@ func (a *Any) GetReturnValueJsonpath() string {
 type All struct {
 	ParentJsonpathAttribute         string
 	ParentJsonpathAttributeOriginal string
-	ReturnValueJsonpath             string
-	ReturnValueJsonpathOriginal     string
+	ReturnValueJsonpath             map[string]string
+	ReturnValueJsonpathOriginal     map[string]string
 	Node                            Node `yaml:"condition,omitempty" json:"condition,omitempty" bson:"condition,omitempty" structs:"condition,omitempty"`
 }
 
@@ -349,7 +371,8 @@ func (a *All) MarshalJSON() ([]byte, error) {
 
 	str := fmt.Sprintf(`{"ALL":{"parentJsonpathAttribute":"%v",`, parentJsonpathAttributeString)
 	if len(returnValueJsonpath) > 0 {
-		str = fmt.Sprintf(`%v"returnValueJsonpath":"%v",`, str, returnValueJsonpath)
+		returnValueJsonpathJson, _ := json.Marshal(returnValueJsonpath)
+		str = fmt.Sprintf(`%v"returnValueJsonpath":%v,`, str, string(returnValueJsonpathJson))
 	}
 
 	conditionBytes, err := json.Marshal(a.Node)
@@ -361,21 +384,21 @@ func (a *All) MarshalJSON() ([]byte, error) {
 	return []byte(str), nil
 }
 
-func (a *All) Eval(message *MessageAttributes) (bool, string) {
+func (a *All) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
 
 	rawArrayData, err := getArrayOfJsons(a, message)
 	if err != nil {
-		return false, ""
+		return false, []map[string]interface{}{}
 	}
 
 	for _, val := range (rawArrayData) {
 		message.RequestJsonRawRelative = &val
 		flag, _ := a.Node.Eval(message)
 		if !flag {
-			return false, ""
+			return false, []map[string]interface{}{}
 		}
 	}
-	return true, ""
+	return true, []map[string]interface{}{}
 }
 func (a *All) Append(node Node) {
 	a.Node = node
@@ -389,7 +412,15 @@ func (a *All) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) erro
 }
 
 func (a *All) String() string {
-	str := fmt.Sprintf("[ALL<%v>:%v]", a.ParentJsonpathAttributeOriginal, a.Node.String())
+	str1 := a.ParentJsonpathAttribute
+	if len(a.ParentJsonpathAttributeOriginal) > 0 {
+		str1 = a.ParentJsonpathAttributeOriginal
+	}
+	str2 := a.ReturnValueJsonpath
+	if len(a.ReturnValueJsonpathOriginal) > 0 {
+		str2 = a.ReturnValueJsonpathOriginal
+	}
+	str := fmt.Sprintf("[ALL<%v;%v>:%v]", str1, str2, a.Node.String())
 	return str
 }
 
@@ -402,14 +433,15 @@ func (a *All) GetParentJsonpathAttribute() string {
 	return a.ParentJsonpathAttribute
 }
 
-func (a *All) SetReturnValueJsonpath(returnValueJsonpath string) {
-	a.ReturnValueJsonpathOriginal = returnValueJsonpath
-	//a.ReturnValueJsonpath = strings.Replace(returnValueJsonpath, "jsonpath:", "", -1)
-	a.ReturnValueJsonpath = strings.Replace(returnValueJsonpath, "jsonpath:$RELATIVE.", "$.", 1)
-
+func (a *All) SetReturnValueJsonpath(returnValueJsonpath map[string]string) {
+	dc.Copy(&a.ReturnValueJsonpathOriginal, &returnValueJsonpath)
+	dc.Copy(&a.ReturnValueJsonpath, &returnValueJsonpath)
+	for k, v := range (returnValueJsonpath) {
+		a.ReturnValueJsonpath[k] = strings.Replace(v, "jsonpath:$RELATIVE", "$", 1)
+	}
 }
 
-func (a *All) GetReturnValueJsonpath() string {
+func (a *All) GetReturnValueJsonpath() map[string]string {
 	return a.ReturnValueJsonpathOriginal
 }
 
@@ -418,8 +450,8 @@ func (a *All) GetReturnValueJsonpath() string {
 //--------------------------------------
 type True struct{}
 
-func (t True) Eval(message *MessageAttributes) (bool, string) {
-	return true, ""
+func (t True) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
+	return true, []map[string]interface{}{}
 }
 func (t True) Append(node Node) {
 }
@@ -438,8 +470,8 @@ func (t True) ToMongoQuery(base, str string) (bson.M, []bson.M, error) {
 //--------------------------------------
 type False struct{}
 
-func (f False) Eval(message *MessageAttributes) (bool, string) {
-	return false, ""
+func (f False) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
+	return false, []map[string]interface{}{}
 }
 func (f False) Append(node Node) {
 }
@@ -456,8 +488,8 @@ func (f False) ToMongoQuery(base, str string) (bson.M, []bson.M, error) {
 //--------------------------------------
 // Basic Condition Node
 //--------------------------------------
-func (c *Condition) Eval(message *MessageAttributes) (bool, string) {
-	return testOneCondition(c, message), ""
+func (c *Condition) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
+	return testOneCondition(c, message), []map[string]interface{}{}
 }
 func (c *Condition) Append(node Node) {
 }
@@ -622,11 +654,25 @@ func getAnyAllNode(v2 map[string]interface{}, parentString string) (Node, error)
 				return nil, fmt.Errorf("invalid parentJsonpathAttribute [%v]", parentJsonpathAttribute)
 			}
 		case "returnValueJsonpath":
-			returnValueJsonpath := val.(string)
-			if strings.HasPrefix(returnValueJsonpath, "jsonpath:$RELATIVE.") {
-				anyAllNode.SetReturnValueJsonpath(returnValueJsonpath)
-			} else {
-				return nil, fmt.Errorf("invalid returnValueJsonpath [%v] [should start with jsonpath:$RELATIVE.]", returnValueJsonpath)
+			returnValueJsonpath := map[string]interface{}{}
+			switch val.(type) {
+			case map[string]interface{}:
+				returnValueJsonpath = val.(map[string]interface{})
+			case map[interface{}]interface{}:
+				returnValueJsonpath = mapInterfaceToMapString(val.(map[interface{}]interface{}))
+			default:
+				return nil, fmt.Errorf("invalid returnValueJsonpath [%v is not map[string]interface]", val)
+			}
+
+			returnValueJsonpathMap := map[string]string{}
+			for k, v := range (returnValueJsonpath) {
+				vString := v.(string)
+				if strings.HasPrefix(vString, "jsonpath:$RELATIVE") {
+					returnValueJsonpathMap[k] = vString
+				} else {
+					return nil, fmt.Errorf("invalid returnValueJsonpath [%v] [should start with jsonpath:$RELATIVE]", returnValueJsonpath[k])
+				}
+				anyAllNode.SetReturnValueJsonpath(returnValueJsonpathMap)
 			}
 		default:
 			node, err := InterpretNode(val, key) // recursion!

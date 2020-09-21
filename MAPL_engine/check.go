@@ -28,7 +28,7 @@ var DecisionNames = [...]string{
 	NONE:    "none",
 }
 
-func Check(message *MessageAttributes, rules *Rules) (decision int, descisionString string, relevantRuleIndex int, results []int, appliedRulesIndices []int, ruleDescription string, checkExtraData []string) {
+func Check(message *MessageAttributes, rules *Rules) (decision int, descisionString string, relevantRuleIndex int, results []int, appliedRulesIndices []int, ruleDescription string, checkExtraData [][]map[string]interface{}) {
 	//
 	// for each message we check its attributes against all of the rules and return a decision
 	//
@@ -37,10 +37,10 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 
 	results = make([]int, N)
 	ruleDescriptions := make([]string, N)
-	checkExtraData = make([]string, N)
+	checkExtraData = make([][]map[string]interface{}, N)
 
 	sem := make(chan int, N) // semaphore pattern
-	if true {                // check in parallel
+	if false {                // check in parallel
 
 		for i, rule := range (rules.Rules) { // check all the rules in parallel
 			go func(in_i int, in_rule Rule) {
@@ -95,7 +95,7 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 }
 
 // CheckOneRules gives the result of testing the message attributes with of one rule
-func CheckOneRule(message *MessageAttributes, rule *Rule) (int, string) {
+func CheckOneRule(message *MessageAttributes, rule *Rule) (int, []map[string]interface{}) {
 	// ----------------------
 	// compare basic message attributes:
 
@@ -105,17 +105,17 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) (int, string) {
 
 	match := TestSender(rule, message)
 	if !match {
-		return DEFAULT, ""
+		return DEFAULT,  []map[string]interface{}{}
 	}
 
 	match = TestReceiver(rule, message)
 	if !match {
-		return DEFAULT, ""
+		return DEFAULT,  []map[string]interface{}{}
 	}
 
 	match = rule.OperationRegex.Match([]byte(message.RequestMethod)) // supports wildcards
 	if !match {
-		return DEFAULT, ""
+		return DEFAULT,  []map[string]interface{}{}
 	}
 
 	// ----------------------
@@ -123,22 +123,22 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) (int, string) {
 	if rule.Protocol == "tcp" {
 		match = rule.Resource.ResourceNameRegex.Match([]byte(message.DestinationPort))
 		if !match {
-			return DEFAULT, ""
+			return DEFAULT,  []map[string]interface{}{}
 		}
 	} else {
 		if rule.Protocol != "*" {
 			if !strings.EqualFold(message.ContextProtocol, rule.Protocol) { // regardless of case // need to support wildcards!
-				return DEFAULT, ""
+				return DEFAULT,  []map[string]interface{}{}
 			}
 
 			if rule.Resource.ResourceType != "*" {
 				if message.ContextType != rule.Resource.ResourceType { // need to support wildcards?
-					return DEFAULT, ""
+					return DEFAULT,  []map[string]interface{}{}
 				}
 			}
 			match = rule.Resource.ResourceNameRegex.Match([]byte(message.RequestPath)) // supports wildcards
 			if !match {
-				return DEFAULT, ""
+				return DEFAULT,  []map[string]interface{}{}
 			}
 		}
 	}
@@ -146,12 +146,12 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) (int, string) {
 	// ----------------------
 	// test conditions:
 	conditionsResult := true // if there are no conditions then we skip the test and return the rule.Decision
-	extraData := ""
+	extraData := []map[string]interface{}{}
 	if rule.Conditions.ConditionsTree != nil {
 		conditionsResult, extraData = TestConditions(rule, message)
 	}
 	if conditionsResult == false {
-		return DEFAULT, ""
+		return DEFAULT,  []map[string]interface{}{}
 	}
 
 	// ----------------------
@@ -164,7 +164,7 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) (int, string) {
 	case "block", "BLOCK", "Block":
 		return BLOCK, extraData
 	}
-	return DEFAULT, ""
+	return DEFAULT, []map[string]interface{}{}
 }
 
 func TestSender(rule *Rule, message *MessageAttributes) bool {
@@ -237,15 +237,15 @@ func TestReceiver(rule *Rule, message *MessageAttributes) bool {
 }
 
 // testConditions tests the conditions of the rule with the message attributes
-func TestConditions(rule *Rule, message *MessageAttributes) (bool, string) { // to-do return error
+func TestConditions(rule *Rule, message *MessageAttributes) (bool, []map[string]interface{}) { // to-do return error
 
 	if rule.AlreadyConvertedFieldsToRegexFlag == false {
 		ConvertFieldsToRegex(rule)
 	}
-	if rule.Conditions.ConditionsTree!=nil {
+	if rule.Conditions.ConditionsTree != nil {
 		return rule.Conditions.ConditionsTree.Eval(message)
 	}
-	return false,"nil conditions"
+	return false, []map[string]interface{}{}
 
 }
 
@@ -360,7 +360,7 @@ func testReceiverAttributeCondition(c *Condition, message *MessageAttributes) bo
 }
 
 func testSenderLabelCondition(c *Condition, message *MessageAttributes) bool {
-	result:=false
+	result := false
 	if c.AttributeIsSenderLabel == false {
 		log.Println("senderLabel without the correct format")
 		return false
@@ -390,7 +390,7 @@ func testSenderLabelCondition(c *Condition, message *MessageAttributes) bool {
 }
 
 func testReceiverLabelCondition(c *Condition, message *MessageAttributes) bool {
-	result:=false
+	result := false
 	if c.AttributeIsReceiverLabel == false {
 		log.Println("receiverLabel without the correct format")
 		return false
@@ -455,7 +455,7 @@ func testJsonPathCondition(c *Condition, message *MessageAttributes) bool {
 		return whatToReturnInCaseOfEmptyResult(*c)
 	}
 
-	valueToCompareString=removeQuotesAndBrackets(valueToCompareString)
+	valueToCompareString = removeQuotesAndBrackets(valueToCompareString)
 	if len(valueToCompareString) == 0 {
 		return whatToReturnInCaseOfEmptyResult(*c)
 	}
@@ -668,7 +668,6 @@ func compareRegexFunc(value1 string, method string, value2 *regexp.Regexp) bool 
 	}
 	return false
 }
-
 
 //-------------------------------
 // functions for Any/All Node

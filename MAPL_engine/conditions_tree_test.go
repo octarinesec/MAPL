@@ -138,12 +138,12 @@ func TestConditionsTree2(t *testing.T) {
 
 		rules, err = YamlReadRulesFromFile("../files/rules/basic_rules/rules_basic_v2f.yaml")
 		So(err, ShouldEqual, nil)
-		condString = "[ANY<jsonpath:$.spec.template.spec.containers[:]>:<jsonpath:$.abc-EQ-ABC>]"
+		condString = "[ANY<jsonpath:$.spec.template.spec.containers[:];map[]>:<jsonpath:$.abc-EQ-ABC>]"
 		So(rules.Rules[0].Conditions.ConditionsTree.String(), ShouldEqual, condString)
 
 		rules, err = YamlReadRulesFromFile("../files/rules/basic_rules/rules_basic_v2fb.yaml")
 		So(err, ShouldEqual, nil)
-		condString = "[ANY<jsonpath:$.spec.template.spec.containers[:]>:((<jsonpath:$.b-EQ-B> || <jsonpath:$.c-EQ-C>) && <jsonpath:$.a-EQ-A>)]"
+		condString = "[ANY<jsonpath:$.spec.template.spec.containers[:];map[]>:((<jsonpath:$.b-EQ-B> || <jsonpath:$.c-EQ-C>) && <jsonpath:$.a-EQ-A>)]"
 		So(rules.Rules[0].Conditions.ConditionsTree.String(), ShouldEqual, condString)
 
 	})

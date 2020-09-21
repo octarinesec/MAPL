@@ -11,25 +11,25 @@ import (
 //-------------------rules-------------------------------------
 type Sender struct {
 	// if SenderName is a list (example: "srv1,srv2,srv123") then it is assumed that all are of the same type
-	SenderName string                   `yaml:"senderName,omitempty" json:"senderName,omitempty" bson:"SenderName" structs:"SenderName,omitempty"`
-	SenderType string                   `yaml:"senderType,omitempty" json:"senderType,omitempty" bson:"SenderType,omitempty" structs:"SenderType,omitempty"`
-	SenderList []ExpandedSenderReceiver `yaml:"-" json:"senderList,omitempty" bson:"SenderList,omitempty" structs:"SenderList,omitempty"`
+	SenderName string                   `yaml:"senderName,omitempty" json:"senderName,omitempty" bson:"senderName" structs:"senderName,omitempty"`
+	SenderType string                   `yaml:"senderType,omitempty" json:"senderType,omitempty" bson:"senderType,omitempty" structs:"senderType,omitempty"`
+	SenderList []ExpandedSenderReceiver `yaml:"-,omitempty" json:"-,omitempty" bson:"senderList,omitempty" structs:"senderList,omitempty"`
 }
 
 type Receiver struct {
 	// if ReceiverName is a list (example: "srv1,srv2,srv123") then it is assumed that all are of the same type
-	ReceiverName string                   `yaml:"receiverName,omitempty" json:"receiverName,omitempty" bson:"ReceiverName" structs:"ReceiverName,omitempty"`
-	ReceiverType string                   `yaml:"receiverType,omitempty" json:"receiverType,omitempty" bson:"ReceiverType,omitempty" structs:"ReceiverType,omitempty"`
-	ReceiverList []ExpandedSenderReceiver `yaml:"-" json:"receiverList,omitempty" bson:"ReceiverList,omitempty" structs:"ReceiverList,omitempty"`
+	ReceiverName string                   `yaml:"receiverName,omitempty" json:"receiverName,omitempty" bson:"receiverName" structs:"receiverName,omitempty"`
+	ReceiverType string                   `yaml:"receiverType,omitempty" json:"receiverType,omitempty" bson:"receiverType,omitempty" structs:"receiverType,omitempty"`
+	ReceiverList []ExpandedSenderReceiver `yaml:"-,omitempty" json:"-,omitempty" bson:"receiverList,omitempty" structs:"receiverList,omitempty"`
 }
 
 //
 type ExpandedSenderReceiver struct {
-	Name   string         `yaml:"-" json:"Name,omitempty" bson:"Name,omitempty"`
-	Type   string         `yaml:"-" json:"Type,omitempty" bson:"Type,omitempty"`
-	Regexp *regexp.Regexp `yaml:"-" json:"Regexp,omitempty" bson:"Regexp,omitempty"`
-	IsIP   bool           `yaml:"-" json:"IsIP,omitempty" bson:"IsIP,omitempty"`
-	IsCIDR bool           `yaml:"-" json:"IsCIDR,omitempty" bson:"IsCIDR,omitempty"`
+	Name   string         `yaml:"-" json:"name,omitempty" bson:"name,omitempty"`
+	Type   string         `yaml:"-" json:"type,omitempty" bson:"type,omitempty"`
+	Regexp *regexp.Regexp `yaml:"-" json:"regexp,omitempty" bson:"regexp,omitempty"`
+	IsIP   bool           `yaml:"-" json:"isIP,omitempty" bson:"isIP,omitempty"`
+	IsCIDR bool           `yaml:"-" json:"isCIDR,omitempty" bson:"isCIDR,omitempty"`
 	CIDR   net.IPNet      `yaml:"-" json:"CIDR,omitempty"  bson:"CIDR,omitempty"`
 	IP     net.IP         `yaml:"-" json:"IP,omitempty" bson:"IP,omitempty"`
 }
@@ -42,64 +42,64 @@ type Resource struct {
 	consumerGroup:<consumer_group_name>
 	port:<port number>
 	*/
-	ResourceType      string         `yaml:"resourceType,omitempty" json:"resourceType,omitempty" bson:"ResourceType,omitempty" structs:"ResourceType,omitempty"`
-	ResourceName      string         `yaml:"resourceName,omitempty" json:"resourceName,omitempty" bson:"ResourceName,omitempty" structs:"ResourceName,omitempty"`
-	ResourceNameRegex *regexp.Regexp `yaml:"-" json:"-,omitempty" bson:"ResourceNameRegex,omitempty" structs:"ResourceNameRegex,omitempty"`
+	ResourceType      string         `yaml:"resourceType,omitempty" json:"resourceType,omitempty" bson:"resourceType,omitempty" structs:"resourceType,omitempty"`
+	ResourceName      string         `yaml:"resourceName,omitempty" json:"resourceName,omitempty" bson:"resourceName,omitempty" structs:"resourceName,omitempty"`
+	ResourceNameRegex *regexp.Regexp `yaml:"-" json:"-,omitempty" bson:"resourceNameRegex,omitempty" structs:"resourceNameRegex,omitempty"`
 }
 
 // Condition structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
 type Condition struct { // TO-DO: convert to AttributeStruct and ValueStruct?
-	Attribute        string         `yaml:"attribute,omitempty" json:"attribute" bson:"Attribute" structs:"Attribute,omitempty"`
-	Method           string         `yaml:"method,omitempty" json:"method" bson:"Method" structs:"Method,omitempty"`
-	Value            string         `yaml:"value,omitempty" json:"value" bson:"Value" structs:"Value,omitempty"`
-	ValueInt         int64          `yaml:"-" json:"ValueInt,omitempty" bson:"ValueInt,omitempty" structs:"ValueInt,omitempty"`
-	ValueFloat       float64        `yaml:"-" json:"ValueFloat,omitempty" bson:"ValueFloat,omitempty" structs:"ValueFloat,omitempty"`
-	ValueRegex       *regexp.Regexp `yaml:"-" json:"ValueRegex,omitempty" bson:"ValueRegex,omitempty" structs:"ValueRegex,omitempty"`
-	ValueStringRegex *regexp.Regexp `yaml:"-" json:"ValueStringRegex,omitempty" bson:"ValueStringRegex,omitempty" structs:"ValueStringRegex,omitempty"`
+	Attribute        string         `yaml:"attribute,omitempty" json:"attribute" bson:"attribute" structs:"attribute,omitempty"`
+	Method           string         `yaml:"method,omitempty" json:"method" bson:"method" structs:"method,omitempty"`
+	Value            string         `yaml:"value,omitempty" json:"value" bson:"value" structs:"value,omitempty"`
+	ValueInt         int64          `yaml:"-" json:"-,omitempty" bson:"valueInt,omitempty" structs:"valueInt,omitempty"`
+	ValueFloat       float64        `yaml:"-" json:"-,omitempty" bson:"valueFloat,omitempty" structs:"valueFloat,omitempty"`
+	ValueRegex       *regexp.Regexp `yaml:"-" json:"-,omitempty" bson:"valueRegex,omitempty" structs:"valueRegex,omitempty"`
+	ValueStringRegex *regexp.Regexp `yaml:"-" json:"-,omitempty" bson:"valueStringRegex,omitempty" structs:"valueStringRegex,omitempty"`
 
-	AttributeIsSenderLabel    bool   `yaml:"-" json:"AttributeIsSenderLabel,omitempty" bson:"AttributeIsSenderLabel,omitempty" structs:"AttributeIsSenderLabel,omitempty"`
-	AttributeSenderLabelKey   string `yaml:"-" json:"AttributeSenderLabelKey,omitempty" bson:"AttributeSenderLabelKey,omitempty" structs:"AttributeSenderLabelKey,omitempty"`
-	AttributeIsReceiverLabel  bool   `yaml:"-" json:"AttributeIsReceiverLabel,omitempty" bson:"AttributeIsReceiverLabel,omitempty" structs:"AttributeIsReceiverLabel,omitempty"`
-	AttributeReceiverLabelKey string `yaml:"-" json:"AttributeReceiverLabelKey,omitempty" bson:"AttributeReceiverLabelKey,omitempty" structs:"AttributeReceiverLabelKey,omitempty"`
-	ValueIsReceiverLabel      bool   `yaml:"-" json:"ValueIsReceiverLabel,omitempty" bson:"ValueIsReceiverLabel,omitempty" structs:"ValueIsReceiverLabel,omitempty"`
-	ValueReceiverLabelKey     string `yaml:"-" json:"ValueReceiverLabelKey,omitempty" bson:"ValueReceiverLabelKey,omitempty" structs:"ValueReceiverLabelKey,omitempty"`
+	AttributeIsSenderLabel    bool   `yaml:"-" json:"-,omitempty" bson:"attributeIsSenderLabel,omitempty" structs:"attributeIsSenderLabel,omitempty"`
+	AttributeSenderLabelKey   string `yaml:"-" json:"-,omitempty" bson:"attributeSenderLabelKey,omitempty" structs:"attributeSenderLabelKey,omitempty"`
+	AttributeIsReceiverLabel  bool   `yaml:"-" json:"-,omitempty" bson:"attributeIsReceiverLabel,omitempty" structs:"attributeIsReceiverLabel,omitempty"`
+	AttributeReceiverLabelKey string `yaml:"-" json:"-,omitempty" bson:"attributeReceiverLabelKey,omitempty" structs:"attributeReceiverLabelKey,omitempty"`
+	ValueIsReceiverLabel      bool   `yaml:"-" json:"-,omitempty" bson:"valueIsReceiverLabel,omitempty" structs:"valueIsReceiverLabel,omitempty"`
+	ValueReceiverLabelKey     string `yaml:"-" json:"-,omitempty" bson:"valueReceiverLabelKey,omitempty" structs:"valueReceiverLabelKey,omitempty"`
 
-	AttributeIsSenderObject          bool   `yaml:"-" json:"AttributeIsSenderObject,omitempty" bson:"AttributeIsSenderObject,omitempty" structs:"AttributeIsSenderObject,omitempty"`
-	AttributeIsReceiverObject        bool   `yaml:"-" json:"AttributeIsReceiverObject,omitempty" bson:"AttributeIsReceiverObject,omitempty" structs:"AttributeIsReceiverObject,omitempty"`
-	ValueIsReceiverObject            bool   `yaml:"-" json:"ValueIsReceiverObject,omitempty" bson:"ValueIsReceiverObject,omitempty" structs:"ValueIsReceiverObject,omitempty"`
-	AttributeSenderObjectAttribute   string `yaml:"-" json:"AttributeSenderObjectAttribute,omitempty" bson:"AttributeSenderObjectAttribute,omitempty" structs:"AttributeSenderObjectAttribute,omitempty"`
-	AttributeReceiverObjectAttribute string `yaml:"-" json:"AttributeReceiverObjectAttribute,omitempty" bson:"AttributeReceiverObjectAttribute,omitempty" structs:"AttributeReceiverObjectAttribute,omitempty"`
-	ValueReceiverObject              string `yaml:"-" json:"ValueReceiverObject,omitempty" bson:"ValueReceiverObject,omitempty" structs:"ValueReceiverObject,omitempty"`
+	AttributeIsSenderObject          bool   `yaml:"-" json:"-,omitempty" bson:"attributeIsSenderObject,omitempty" structs:"attributeIsSenderObject,omitempty"`
+	AttributeIsReceiverObject        bool   `yaml:"-" json:"-,omitempty" bson:"attributeIsReceiverObject,omitempty" structs:"attributeIsReceiverObject,omitempty"`
+	ValueIsReceiverObject            bool   `yaml:"-" json:"-,omitempty" bson:"valueIsReceiverObject,omitempty" structs:"valueIsReceiverObject,omitempty"`
+	AttributeSenderObjectAttribute   string `yaml:"-" json:"-,omitempty" bson:"attributeSenderObjectAttribute,omitempty" structs:"attributeSenderObjectAttribute,omitempty"`
+	AttributeReceiverObjectAttribute string `yaml:"-" json:"-,omitempty" bson:"attributeReceiverObjectAttribute,omitempty" structs:"attributeReceiverObjectAttribute,omitempty"`
+	ValueReceiverObject              string `yaml:"-" json:"-,omitempty" bson:"valueReceiverObject,omitempty" structs:"valueReceiverObject,omitempty"`
 
-	AttributeIsJsonpath         bool   `yaml:"-" json:"AttributeIsJsonpath,omitempty" bson:"AttributeIsJsonpath,omitempty" structs:"AttributeIsJsonpath,omitempty"`
-	AttributeIsJsonpathRelative bool   `yaml:"-" json:"AttributeIsJsonpathRelative,omitempty" bson:"AttributeIsJsonpathRelative,omitempty" structs:"AttributeIsJsonpathRelative,omitempty"`
-	AttributeJsonpathQuery      string `yaml:"-" json:"AttributeJsonpathQuery,omitempty" bson:"AttributeJsonpathQuery,omitempty" structs:"AttributeJsonpathQuery,omitempty"`
+	AttributeIsJsonpath         bool   `yaml:"-" json:"-,omitempty" bson:"attributeIsJsonpath,omitempty" structs:"attributeIsJsonpath,omitempty"`
+	AttributeIsJsonpathRelative bool   `yaml:"-" json:"-,omitempty" bson:"attributeIsJsonpathRelative,omitempty" structs:"attributeIsJsonpathRelative,omitempty"`
+	AttributeJsonpathQuery      string `yaml:"-" json:"-,omitempty" bson:"attributeJsonpathQuery,omitempty" structs:"attributeJsonpathQuery,omitempty"`
 
-	OriginalAttribute string `yaml:"-" json:"OriginalAttribute,omitempty" bson:"OriginalAttribute,omitempty" structs:"OriginalAttribute,omitempty"` // used in hash
-	OriginalMethod     string `yaml:"-" json:"OriginalMethod,omitempty" bson:"OriginalMethod,omitempty" structs:"OriginalMethod,omitempty"`             // used in hash
-	OriginalValue     string `yaml:"-" json:"OriginalValue,omitempty" bson:"OriginalValue,omitempty" structs:"OriginalValue,omitempty"`             // used in hash
+	OriginalAttribute string `yaml:"-" json:"-,omitempty" bson:"originalAttribute,omitempty" structs:"originalAttribute,omitempty"` // used in hash
+	OriginalMethod     string `yaml:"-" json:"-,omitempty" bson:"originalMethod,omitempty" structs:"originalMethod,omitempty"`             // used in hash
+	OriginalValue     string `yaml:"-" json:"-,omitempty" bson:"originalValue,omitempty" structs:"originalValue,omitempty"`             // used in hash
 }
 
 type Rule struct {
 	// rule syntax:
 	//	<sender, receiver, resource, operation> : <conditions> : <decision>
 	//
-	RuleID    string   `yaml:"rule_id,omitempty" json:"ruleID,omitempty" bson:"RuleID,omitempty" structs:"RuleID,omitempty"`
-	Sender    Sender   `yaml:"sender,omitempty" json:"sender,omitempty" bson:"Sender" structs:"Sender,omitempty"`
-	Receiver  Receiver `yaml:"receiver,omitempty" json:"receiver,omitempty" bson:"Receiver" structs:"Receiver,omitempty"`
-	Protocol  string   `yaml:"protocol,omitempty" json:"protocol,omitempty" bson:"ResourceProtocol" structs:"Protocol,omitempty"`
-	Resource  Resource `yaml:"resource,omitempty" json:"resource,omitempty" bson:"Resource" structs:"Resource,omitempty"`
-	Operation string   `yaml:"operation,omitempty" json:"operation,omitempty" bson:"Operation" structs:"Operation,omitempty"`
+	RuleID    string   `yaml:"ruleID,omitempty" json:"ruleID,omitempty" bson:"ruleID,omitempty" structs:"ruleID,omitempty"`
+	Sender    Sender   `yaml:"sender,omitempty" json:"sender,omitempty" bson:"sender" structs:"Sender,omitempty"`
+	Receiver  Receiver `yaml:"receiver,omitempty" json:"receiver,omitempty" bson:"receiver" structs:"Receiver,omitempty"`
+	Protocol  string   `yaml:"protocol,omitempty" json:"protocol,omitempty" bson:"protocol" structs:"protocol,omitempty"`
+	Resource  Resource `yaml:"resource,omitempty" json:"resource,omitempty" bson:"resource" structs:"resource,omitempty"`
+	Operation string   `yaml:"operation,omitempty" json:"operation,omitempty" bson:"operation" structs:"operation,omitempty"`
 
 	Conditions ConditionsTree `yaml:"conditions,omitempty" json:"conditions,omitempty" bson:"conditions,omitempty" structs:"conditions,omitempty"`
 
-	Decision string `yaml:"decision,omitempty" json:"decision,omitempty" bson:"Decision" structs:"Decision,omitempty"`
+	Decision string `yaml:"decision,omitempty" json:"decision,omitempty" bson:"decision" structs:"decision,omitempty"`
 
-	Metadata map[string]string `yaml:"metadata,omitempty" json:"metadata,omitempty" bson:"Metadata" structs:"Metadata,omitempty"`
+	Metadata map[string]string `yaml:"metadata,omitempty" json:"metadata,omitempty" bson:"metadata" structs:"metadata,omitempty"`
 
-	Hash string `yaml:"hash,omitempty" json:"hash,omitempty" bson:"Hash" structs:"Hash,omitempty"`
+	Hash string `yaml:"hash,omitempty" json:"hash,omitempty" bson:"hash" structs:"hash,omitempty"`
 
-	OperationRegex                    *regexp.Regexp `yaml:"o,omitempty" json:"o,omitempty" bson:"OperationRegex,omitempty" structs:"OperationRegex,omitempty"`
+	OperationRegex                    *regexp.Regexp `yaml:"operationRegex,omitempty" json:"operationRegex,omitempty" bson:"operationRegex,omitempty" structs:"operationRegex,omitempty"`
 	AlreadyConvertedFieldsToRegexFlag bool           `yaml:"-,omitempty" json:"-,omitempty" bson:"-,omitempty" structs:"-,omitempty"` // default is false
 }
 
@@ -109,9 +109,9 @@ type Rules struct {
 }
 
 type ConditionNode struct {
-	Attribute string `yaml:"attribute,omitempty" json:"attribute" bson:"Attribute" structs:"Attribute,omitempty"`
-	Method    string `yaml:"method,omitempty" json:"method" bson:"Method" structs:"Method,omitempty"`
-	Value     string `yaml:"value,omitempty" json:"value" bson:"Value" structs:"Value,omitempty"`
+	Attribute string `yaml:"attribute,omitempty" json:"attribute" bson:"attribute" structs:"attribute,omitempty"`
+	Method    string `yaml:"method,omitempty" json:"method" bson:"method" structs:"method,omitempty"`
+	Value     string `yaml:"value,omitempty" json:"value" bson:"value" structs:"value,omitempty"`
 }
 
 func ConditionFromConditionNode(c ConditionNode) Condition {

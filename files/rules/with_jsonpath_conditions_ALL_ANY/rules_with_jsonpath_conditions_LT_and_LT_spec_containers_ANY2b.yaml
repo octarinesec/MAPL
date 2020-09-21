@@ -17,6 +17,8 @@ rules:
         parentJsonpathAttribute: "jsonpath:$.spec.containers[:]"
         returnValueJsonpath:
           name: "jsonpath:$RELATIVE.name"
+          resources: "jsonpath:$RELATIVE.resources"
+          all: "jsonpath:$RELATIVE*"
         AND:
         - attribute: "jsonpath:$RELATIVE.resources.limits.cpu"
           method: LT

@@ -389,7 +389,6 @@ func handleSenderReceiverAttributes(condition *Condition) {
 	}
 }
 
-
 func handleJsonpathAttribute(condition *Condition) {
 	//originalAttribute := condition.Attribute
 	if strings.HasPrefix(condition.Attribute, "jsonpath:") { // test if ATTRIBUTE is of type jsonpath
@@ -555,8 +554,8 @@ func convertStringWithUnits(inputString string) (string, float64) {
 	// see: https://en.wikipedia.org/wiki/Binary_prefix
 	// also: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/#meaning-of-memory
 
-	factorVec := []float64{1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 1024, math.Pow(1024, 2), math.Pow(1024, 3), math.Pow(1024, 4), math.Pow(1024, 5), math.Pow(1024, 6), 1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 0.001}
-	strVec := []string{"e3", "e6", "e9", "e12", "e15", "e18", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "K", "M", "G", "T", "P", "E", "m"}
+	factorVec := []float64{1e-2, 1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 1024, math.Pow(1024, 2), math.Pow(1024, 3), math.Pow(1024, 4), math.Pow(1024, 5), math.Pow(1024, 6), 1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 0.001}
+	strVec := []string{"%", "e3", "e6", "e9", "e12", "e15", "e18", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "K", "M", "G", "T", "P", "E", "m"}
 
 	for i_unit, unit := range strVec {
 
@@ -594,7 +593,7 @@ func ValidateRule(rule *Rule) error {
 		return err
 	}
 
-	if rule2.Conditions.ConditionsTree!=nil {
+	if rule2.Conditions.ConditionsTree != nil {
 		err = rule2.Conditions.ConditionsTree.PrepareAndValidate(PredefinedStringsAndLists{})
 		if err != nil {
 			return err

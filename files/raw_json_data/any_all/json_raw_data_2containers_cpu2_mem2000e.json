@@ -30,7 +30,7 @@
         "command": [
           "sh",
           "-c",
-          "echo 'Hello AppArmor!' && sleep 1h"
+          "echo 'Hello AppArmor!' && sleep 2h"
         ],
         "resources": {
           "limits": {
@@ -45,12 +45,12 @@
         "command": [
           "sh",
           "-c",
-          "echo 'Hello1 AppArmor!' && sleep 1h"
+          "echo 'Hello1 AppArmor!' && sleep 3h"
         ],
         "resources": {
           "limits": {
             "cpu": "1",
-            "memory": "1000Mi"
+            "memory": "1100Mi"
           }
         }
       }
