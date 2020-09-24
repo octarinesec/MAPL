@@ -2,8 +2,10 @@
 package MAPL_engine
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/bhmj/jsonslice"
 	"log"
 	"regexp"
@@ -40,7 +42,7 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 	checkExtraData = make([][]map[string]interface{}, N)
 
 	sem := make(chan int, N) // semaphore pattern
-	if false {                // check in parallel
+	if true {               // check in parallel
 
 		for i, rule := range (rules.Rules) { // check all the rules in parallel
 			go func(in_i int, in_rule Rule) {
@@ -60,7 +62,7 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 			<-sem
 		}
 
-	} else { // used for debugging
+	} else { // used only for debugging
 
 		for in_i, in_rule := range (rules.Rules) {
 			results[in_i], checkExtraData[in_i] = CheckOneRule(message, &in_rule)
@@ -105,17 +107,17 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) (int, []map[string]int
 
 	match := TestSender(rule, message)
 	if !match {
-		return DEFAULT,  []map[string]interface{}{}
+		return DEFAULT, []map[string]interface{}{}
 	}
 
 	match = TestReceiver(rule, message)
 	if !match {
-		return DEFAULT,  []map[string]interface{}{}
+		return DEFAULT, []map[string]interface{}{}
 	}
 
 	match = rule.OperationRegex.Match([]byte(message.RequestMethod)) // supports wildcards
 	if !match {
-		return DEFAULT,  []map[string]interface{}{}
+		return DEFAULT, []map[string]interface{}{}
 	}
 
 	// ----------------------
@@ -123,22 +125,22 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) (int, []map[string]int
 	if rule.Protocol == "tcp" {
 		match = rule.Resource.ResourceNameRegex.Match([]byte(message.DestinationPort))
 		if !match {
-			return DEFAULT,  []map[string]interface{}{}
+			return DEFAULT, []map[string]interface{}{}
 		}
 	} else {
 		if rule.Protocol != "*" {
 			if !strings.EqualFold(message.ContextProtocol, rule.Protocol) { // regardless of case // need to support wildcards!
-				return DEFAULT,  []map[string]interface{}{}
+				return DEFAULT, []map[string]interface{}{}
 			}
 
 			if rule.Resource.ResourceType != "*" {
 				if message.ContextType != rule.Resource.ResourceType { // need to support wildcards?
-					return DEFAULT,  []map[string]interface{}{}
+					return DEFAULT, []map[string]interface{}{}
 				}
 			}
 			match = rule.Resource.ResourceNameRegex.Match([]byte(message.RequestPath)) // supports wildcards
 			if !match {
-				return DEFAULT,  []map[string]interface{}{}
+				return DEFAULT, []map[string]interface{}{}
 			}
 		}
 	}
@@ -151,7 +153,7 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) (int, []map[string]int
 		conditionsResult, extraData = TestConditions(rule, message)
 	}
 	if conditionsResult == false {
-		return DEFAULT,  []map[string]interface{}{}
+		return DEFAULT, []map[string]interface{}{}
 	}
 
 	// ----------------------
@@ -690,6 +692,11 @@ func getArrayOfJsons(a AnyAllNode, message *MessageAttributes) ([][]byte, error)
 		return [][]byte{}, err
 	}
 
+	arrayData,err = getArrayFromArrayOfArrays(arrayData)
+	if err != nil {
+		return [][]byte{}, err
+	}
+
 	arrayJson, err := getArrayOfJsonsFromInterfaceArray(arrayData)
 	if err != nil {
 		arrayJson, err := getArrayOfJsonsFromMapStringInterface(arrayData)
@@ -735,4 +742,31 @@ func getArrayOfJsonsFromMapStringInterface(arrayData []byte) ([][]byte, error) {
 		arrayJson = append(arrayJson, y)
 	}
 	return arrayJson, nil
+}
+
+func getArrayFromArrayOfArrays(arrayData []byte) ([]byte, error) {
+	if len(arrayData) < 2 {
+		return arrayData, nil
+	}
+
+	buffer := new(bytes.Buffer) // clean the json
+	err:=json.Compact(buffer,arrayData)
+	if err!=nil{
+		return []byte{}, err
+	}
+	arrayDataNew:=buffer.Bytes()
+
+	if arrayDataNew[0] != '[' || arrayDataNew[1] != '[' {
+		return arrayDataNew, nil
+	}
+
+	arrayDataString := string(arrayDataNew)
+	arrayDataString = strings.Replace(arrayDataString, "[[", "[", 1)
+	arrayDataString = strings.Replace(arrayDataString, "]]", "]", 1)
+	arrayDataString = strings.Replace(arrayDataString, "],[", ",", -1)
+
+	if strings.Contains(arrayDataString, "[[") || strings.Contains(arrayDataString, "]]") {
+		return []byte{}, fmt.Errorf("malformed arrayData")
+	}
+	return []byte(arrayDataString), nil
 }

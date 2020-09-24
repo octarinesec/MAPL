@@ -1,0 +1,52 @@
+{
+  "apiVersion": "v1",
+  "kind": "Deployment",
+  "spec": {
+      "containers": [
+        {
+          "name": "c1A",
+          "image": "busybox",
+          "resources": {
+            "limits": {
+              "cpu": "8"
+            }
+          }
+        },
+        {
+          "name": "c2A",
+          "image": "busybox",
+          "resources": {
+            "limits": {
+              "cpu": "2"
+            }
+          }
+        }
+      ],
+
+
+    "template": {
+      "spec": {
+        "containers": [
+          {
+            "name": "c1B",
+            "image": "busybox",
+            "resources": {
+              "limits": {
+                "cpu": "8"
+              }
+            }
+          },
+          {
+            "name": "c2B",
+            "image": "busybox",
+            "resources": {
+              "limits": {
+                "cpu": "2"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

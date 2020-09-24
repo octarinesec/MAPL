@@ -13,7 +13,7 @@ rules:
     operation: "*"
     conditions:
       ANY:
-        parentJsonpathAttribute: jsonpath:$.spec.containers[:]
+        parentJsonpathAttribute: jsonpath:$..spec.containers
         returnValueJsonpath:
           "name": "jsonpath:$RELATIVE.name"
         condition:

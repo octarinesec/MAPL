@@ -374,23 +374,8 @@ func TestMaplEngineJsonConditionsWildcards(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
-		data := []byte(`{
-		  "metadata": {
-		    "labels": 
-		      {
-		        "name": "c1",
-		        "image": "busybox"
-		          }
-		        }
-		     }`)
-
-		z, err := jsonslice.Get(data, "$.metadata.labels.*")
-		if err == nil {
-			fmt.Println(string(z))
-		}
-
-		/*
-		   		data:=[]byte(`{
+		if false {
+			data := []byte(`{
 		     "apiVersion": "v1",
 		     "kind": "Pod",
 		     "spec": {
@@ -417,27 +402,69 @@ func TestMaplEngineJsonConditionsWildcards(t *testing.T) {
 		     }
 		   }`)
 
-		   		z,err:=jsonslice.Get(data, "$.spec.containers[:]")
-		   		if err==nil {
-		   			fmt.Println(string(z))
-		   		}
-		   		z,err=jsonslice.Get(data, "$.spec.containers[*]")
-		   		if err==nil {
-		   			fmt.Println(string(z))
-		   		}
-		   		z,err=jsonslice.Get(data, "$..containers[:]")
-		   		if err==nil {
-		   			fmt.Println(string(z))
-		   		}
-		   		z,err=jsonslice.Get(data, "$..spec.containers[:]")
-		   		if err==nil {
-		   			fmt.Println(string(z))
-		   		}
-		*/
+			z1, err := jsonslice.Get(data, "$.spec.containers[:]")
+			if err == nil {
+				fmt.Println(string(z1))
+			}
+			var x interface{}
+			err = json.Unmarshal(z1, &x)
+			z1, err = json.Marshal(x)
+			z2, err := jsonslice.Get(data, "$.spec.containers")
+			err = json.Unmarshal(z2, &x)
+			z2, err = json.Marshal(x)
+			if err == nil {
+				fmt.Println(string(z2))
+			}
+			So(len(z1), ShouldEqual, len(z2))
+			for i_z, _ := range (z1) {
+				So(z1[i_z], ShouldEqual, z2[i_z])
+			}
 
-		results, _ := test_CheckMessagesWithRawData("../files/rules/deepscan/rules_with_jsonpath_deepscan.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/deepscan/json_raw_data_2containers.json")
+			z3, err := jsonslice.Get(data, "$..spec.containers[:]")
+			err = json.Unmarshal(z3, &x)
+			z3b, err := json.Marshal(x)
+			if err == nil {
+				fmt.Println(string(z3))
+			}
+			z4, err := jsonslice.Get(data, "$..spec.containers")
+			err = json.Unmarshal(z4, &x)
+			z4b, err := json.Marshal(x)
+			if err == nil {
+				fmt.Println(string(z4))
+			}
+			So(len(z3b), ShouldEqual, len(z4b))
+			for i_z, _ := range (z3b) {
+				So(z3b[i_z], ShouldEqual, z4b[i_z])
+			}
+		}
+
+		results, extraData,_ := test_CheckMessagesWithRawDataWithReturnValue("../files/rules/deepscan/rules_with_jsonpath_deepscan.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/deepscan/json_raw_data_2containers.json")
+		So(extraData[0][0]["name"].(string), ShouldEqual, "c2")
 		So(results[0], ShouldEqual, BLOCK)
 
+		results, extraData,_ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/deepscan/rules_with_jsonpath_deepscan.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/deepscan/json_raw_data_2containers.json")
+		So(extraData[0][0]["name"].(string), ShouldEqual, "c2")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, extraData,_ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/deepscan/rules_with_jsonpath_deepscan.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/deepscan/json_raw_data_2containers_dep.json")
+		So(len(extraData[0]), ShouldEqual, 0)
+		So(results[0], ShouldEqual, DEFAULT)
+
+
+		results, extraData,_ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/deepscan/rules_with_jsonpath_deepscan2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/deepscan/json_raw_data_2containers_dep.json")
+		So(extraData[0][0]["name"].(string), ShouldEqual, "c2")
+		So(results[0], ShouldEqual, BLOCK)
+
+
+		results, extraData,_ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/deepscan/rules_with_jsonpath_deepscan2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/deepscan/json_raw_data_2containers_dep2.json")
+		So(extraData[0][0]["name"].(string), ShouldEqual, "c2A")
+		So(extraData[0][1]["name"].(string), ShouldEqual, "c2B")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, extraData,_ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/deepscan/rules_with_jsonpath_deepscan2b.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/deepscan/json_raw_data_2containers_dep2.json")
+		So(extraData[0][0]["name"].(string), ShouldEqual, "c2A")
+		So(extraData[0][1]["name"].(string), ShouldEqual, "c2B")
+		So(results[0], ShouldEqual, BLOCK)
 	})
 }
 
@@ -1005,6 +1032,7 @@ func TestMaplEngineJsonConditionsOnArraysAnyReturnValues(t *testing.T) {
 		str := "test jsonpath conditions on arrays"
 		fmt.Println(str)
 
+
 		results, extraData, _ := test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_1container.json")
 		So(len(extraData[0]), ShouldEqual, 0)
 		So(results[0], ShouldEqual, BLOCK)
@@ -1089,6 +1117,9 @@ func TestMaplEngineJsonConditionsOnArraysAnyReturnValues(t *testing.T) {
 		So(val, ShouldEqual, val2)
 
 		So(results[0], ShouldEqual, BLOCK)
+
+		strBytes,_:=json.Marshal(extraData[0])
+		fmt.Println(string(strBytes))
 
 		//-----------
 
@@ -1187,6 +1218,13 @@ func TestMaplEngineJsonConditionsOnArraysAnyReturnValues(t *testing.T) {
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY4.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000h.json")
 		val = extraData[0][0]["name"].(string)
 		So(val, ShouldEqual, "c2") // the first (2 ANYs under OR)
+		So(results[0], ShouldEqual, BLOCK)
+
+		//---------------
+		// AND with two ANYs
+		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY7.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000g.json")
+		val = extraData[0][0]["name2"].(string)
+		So(val, ShouldEqual, "c2") // the last (2 ANYs under AND)
 		So(results[0], ShouldEqual, BLOCK)
 
 		//---------------
