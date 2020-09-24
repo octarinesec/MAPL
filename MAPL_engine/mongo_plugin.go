@@ -13,7 +13,7 @@ func (a *And) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, 
 	pipeline := []bson.M{}
 
 	for _, node := range a.Nodes {
-		q, pipelineAppend, err := node.ToMongoQuery(base,"")
+		q, pipelineAppend, err := node.ToMongoQuery(base, "")
 		if err != nil {
 			return bson.M{}, []bson.M{}, err
 		}
@@ -33,7 +33,7 @@ func (o *Or) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, e
 	q_array := []bson.M{}
 	pipeline := []bson.M{}
 	for _, node := range o.Nodes {
-		q, pipelineAppend, err := node.ToMongoQuery(base,"")
+		q, pipelineAppend, err := node.ToMongoQuery(base, "")
 		if err != nil {
 			return bson.M{}, []bson.M{}, err
 		}
@@ -50,7 +50,7 @@ func (o *Or) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, e
 
 func (n *Not) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, error) { //parentString is irrelevant here
 
-	q, pipeline, err := n.Node.ToMongoQuery(base,"")
+	q, pipeline, err := n.Node.ToMongoQuery(base, "")
 	if err != nil {
 		return bson.M{}, []bson.M{}, err
 	}
@@ -62,10 +62,13 @@ func (n *Not) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, 
 
 func (a *All) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, error) { //parentString is irrelevant here
 
+	if strings.HasPrefix(a.ParentJsonpathAttributeOriginal, "jsonpath:$..") {
+		return bson.M{}, []bson.M{}, fmt.Errorf("deepscan is not supported")
+	}
 	parentField := strings.Replace(a.ParentJsonpathAttributeOriginal, "jsonpath:$.", base+".", 1)
 	parentField = strings.Replace(parentField, "[:]", "", -1)
 
-	q, pipeline, err := a.Node.ToMongoQuery(base,"")
+	q, pipeline, err := a.Node.ToMongoQuery(base, "")
 	if err != nil {
 		return bson.M{}, []bson.M{}, err
 	}
@@ -83,10 +86,13 @@ func (a *All) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, 
 
 func (a *Any) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, error) { //parentString is irrelevant here
 
-	parentField := strings.Replace(a.ParentJsonpathAttributeOriginal, "jsonpath:$.", base +".", 1)
+	if strings.HasPrefix(a.ParentJsonpathAttributeOriginal, "jsonpath:$..") {
+		return bson.M{}, []bson.M{}, fmt.Errorf("deepscan is not supported")
+	}
+	parentField := strings.Replace(a.ParentJsonpathAttributeOriginal, "jsonpath:$.", base+".", 1)
 	parentField = strings.Replace(parentField, "[:]", "", -1)
 
-	q, pipeline, err := a.Node.ToMongoQuery(base,parentField)
+	q, pipeline, err := a.Node.ToMongoQuery(base, parentField)
 	if err != nil {
 		return bson.M{}, []bson.M{}, err
 	}

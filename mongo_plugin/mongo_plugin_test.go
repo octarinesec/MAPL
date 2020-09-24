@@ -1,17 +1,17 @@
 package mongo_plugin
 
 import (
-	"github.com/octarinesec/MAPL/MAPL_engine"
 	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/octarinesec/MAPL/MAPL_engine"
 	//"github.com/globalsign/mgo"
 	//"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/globalsign/mgo/bson"
-	bson2 "gopkg.in/mgo.v2/bson"
 	mgo2 "gopkg.in/mgo.v2"
+	bson2 "gopkg.in/mgo.v2/bson"
 
 	//bson2 "go.mongodb.org/mongo-driver/bson"
 	//"go.mongodb.org/mongo-driver/bson/primitive"
@@ -24,8 +24,8 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/ghodss/yaml"
 	"context"
+	"github.com/ghodss/yaml"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -112,10 +112,8 @@ func init() {
 	// TODO - Find a better way of making sure the services are ready
 	time.Sleep(time.Second * 1)
 
-
-
 	mongoCtx2, _ = context.WithTimeout(context.Background(), 10*time.Second)
-	client, err := mongo.Connect(mongoCtx2, options.Client().ApplyURI(fmt.Sprintf("mongodb://%v:%v",host,mongoPort)))
+	client, err := mongo.Connect(mongoCtx2, options.Client().ApplyURI(fmt.Sprintf("mongodb://%v:%v", host, mongoPort)))
 	if err != nil {
 		panic(err)
 	}
@@ -443,24 +441,32 @@ func TestMongoPluginAnyAll(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
+		// invalid ANY:
+		results, err := test_plugin("../files/rules/mongo_plugin/any_all/invalid_rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json")
+		errString := fmt.Sprintf("%v", err)
+		So(errString, ShouldEqual, "deepscan is not supported")
+		// invalid ALL:
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/invalid_rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json")
+		errString = fmt.Sprintf("%v", err)
+		So(errString, ShouldEqual, "deepscan is not supported")
 		// ANY:
-		results, _ := test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json")
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json")
 		So(results[0], ShouldEqual, true)
-		results, _ = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_B.json")
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_B.json")
 		So(results[0], ShouldEqual, false)
 
 		// ALL:
-		results, _ = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json")
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json")
 		So(results[0], ShouldEqual, false)
-		results, _ = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_B.json")
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_B.json")
 		So(results[0], ShouldEqual, false)
-		results, _ = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_C.json")
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_C.json")
 		So(results[0], ShouldEqual, true)
+
+		fmt.Println(err)
 
 	})
 }
-
-
 
 func TestMongoPluginKeyValue(t *testing.T) {
 
@@ -480,7 +486,6 @@ func TestMongoPluginKeyValue(t *testing.T) {
 
 	reporting.QuietMode()
 	Convey("tests", t, func() {
-
 
 		results, _ := test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_key1.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json")
 		So(results[0], ShouldEqual, true)
@@ -517,25 +522,24 @@ func TestMongoPluginKeyValue(t *testing.T) {
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_json4.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json")
 		So(results[0], ShouldEqual, true)
 
-
 		results, err := test_plugin("../files/rules/mongo_plugin/key_value/invalid_rules_with_jsonpath_conditions_key_json.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json")
-		strErr:=fmt.Sprintf("%v",err)
+		strErr := fmt.Sprintf("%v", err)
 		fmt.Println(strErr)
 		So(strErr, ShouldEqual, "jsonpath condition $KEY must not have a subfield [jsonpath:$KEY.def2]")
 
 		results, err = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_relative.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json")
 		fmt.Println(results)
-		strErr=fmt.Sprintf("%v",err)
+		strErr = fmt.Sprintf("%v", err)
 		fmt.Println(strErr)
 		So(strErr, ShouldEqual, "VALUE within array is not supported")
 
 		results, err = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_relative_ALL.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json")
-		strErr=fmt.Sprintf("%v",err)
+		strErr = fmt.Sprintf("%v", err)
 		fmt.Println(strErr)
 		So(strErr, ShouldEqual, "VALUE within array is not supported")
 
 		results, err = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_key_relative.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json")
-		strErr=fmt.Sprintf("%v",err)
+		strErr = fmt.Sprintf("%v", err)
 		fmt.Println(strErr)
 		So(strErr, ShouldEqual, "KEY within array is not supported")
 
@@ -633,16 +637,18 @@ func test_plugin(rulesFilename, jsonRawFilename string) ([]bool, error) {
 	outputResults := make([]bool, len(rules.Rules))
 	for i_rule, rule := range (rules.Rules) {
 
-		query, added_pipeline,err := rule.Conditions.ConditionsTree.ToMongoQuery("raw","")
-		if err!=nil{
+		query, added_pipeline, err := rule.Conditions.ConditionsTree.ToMongoQuery("raw", "")
+		if err != nil {
+			deleteDocument(id)
 			return []bool{}, err
 		}
 		fmt.Println(added_pipeline)
 
-		query_pipeline:=append(added_pipeline,bson.M{"$match":query} )
+		query_pipeline := append(added_pipeline, bson.M{"$match": query})
 		//query_pipeline:=[]bson.M{bson.M{"$match":query}}
 
 		if err != nil {
+			deleteDocument(id)
 			return []bool{}, err
 		}
 
@@ -651,19 +657,18 @@ func test_plugin(rulesFilename, jsonRawFilename string) ([]bool, error) {
 		z2, _ := json.Marshal(query_pipeline)
 		fmt.Println(string(z2))
 
-		result := getDataFromMongo(query) // query
+		result := getDataFromMongo(query)                    // query
 		result2 := getDataFromMongoAggregate(query_pipeline) // aggregation pipeline
 
-
-		if len(added_pipeline)==0 {
+		if len(added_pipeline) == 0 {
 			if result != result2 {
+				deleteDocument(id)
 				return []bool{}, err
 			}
 			outputResults[i_rule] = result
-		}else{
+		} else {
 			outputResults[i_rule] = result2
 		}
-
 
 	}
 
@@ -743,19 +748,16 @@ func getDataFromMongo(query bson.M) bool {
 
 func getDataFromMongoAggregate(query_pipeline []bson.M) bool {
 
-
-	results,err := mongoDbCollection2.Aggregate(mongoCtx2,query_pipeline)
-	if err!=nil{
+	results, err := mongoDbCollection2.Aggregate(mongoCtx2, query_pipeline)
+	if err != nil {
 		return false
 	}
 
 	var items []bson.M
-	results.All(mongoCtx2,&items)
+	results.All(mongoCtx2, &items)
 
 	return len(items) > 0
 }
-
-
 
 func DbConnect(Host, Port, DB string) (*bongo.Connection, error) {
 
