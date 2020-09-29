@@ -576,6 +576,12 @@ func InterpretNode(node interface{}, parentString string) (Node, error) {
 			return handleInterfaceArray(node, parentString)
 		}
 
+	case driverBson.D:
+		return nil, fmt.Errorf("can't parse conditions1 %+v the type: %T", v, node)
+
+	case []driverBson.E:
+		return nil, fmt.Errorf("can't parse conditions2 %+v the type: %T", v, node)
+
 	default:
 		return nil, fmt.Errorf("can't parse conditions %+v the type: %T", v, node)
 	}
