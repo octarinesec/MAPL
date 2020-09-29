@@ -78,7 +78,7 @@ func (c *ConditionsTree) UnmarshalBSON(data []byte) error {
 	}
 
 	var aux interface{}
-	if err := driverBson.Unmarshal(data, &aux); err != nil {
+	if err := driverBson.UnmarshalExtJSON(data, false, &aux); err != nil {
 		return err
 	}
 	var n Node
