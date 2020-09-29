@@ -78,9 +78,10 @@ func (c *ConditionsTree) UnmarshalBSON(data []byte) error {
 	}
 
 	var aux interface{}
-	if err := driverBson.UnmarshalExtJSON(data, false, &aux); err != nil {
+	if err := driverBson.Unmarshal(data, &aux); err != nil {
 		return err
 	}
+
 	var n Node
 	n, err := ParseConditionsTree(aux)
 	if err != nil {
@@ -576,7 +577,7 @@ func InterpretNode(node interface{}, parentString string) (Node, error) {
 		}
 
 	default:
-		return nil, fmt.Errorf("can't parse conditions %+v", v)
+		return nil, fmt.Errorf("can't parse conditions %+v the type: %T", v, node)
 	}
 	return nil, errors.New("can't parse conditions")
 }
