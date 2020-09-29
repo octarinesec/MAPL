@@ -8,6 +8,8 @@ import (
 	"github.com/globalsign/mgo/bson"
 	"github.com/toolkits/slice"
 	driverBson "go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/bsonrw"
+	"go.mongodb.org/mongo-driver/x/bsonx"
 	dc "gopkg.in/getlantern/deepcopy.v1"
 	"sort"
 	"strings"
@@ -77,12 +79,16 @@ func (c *ConditionsTree) UnmarshalBSON(data []byte) error {
 		}
 	}
 
-	var aux interface{}
-	if err := driverBson.Unmarshal(data, &aux); err != nil {
+	dec, err := driverBson.NewDecoder(bsonrw.NewBSONDocumentReader(data))
+	if err != nil {
+		panic("")
+	}
+
+	var aux bsonx.MDoc
+	if err := dec.Decode(&aux); err != nil {
 		return err
 	}
 
-	var n Node
 	n, err := ParseConditionsTree(aux)
 	if err != nil {
 		return err
