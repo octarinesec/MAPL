@@ -81,7 +81,7 @@ func (c *ConditionsTree) UnmarshalBSON(data []byte) error {
 	return json.Unmarshal(docRaw, c)
 }
 
-func (c *ConditionsTree) MarshalBSON() ([]byte, error) {
+func (c ConditionsTree) MarshalBSON() ([]byte, error) {
 	jsonRaw, err := json.Marshal(c)
 	if err != nil {
 		return nil, err
