@@ -68,26 +68,11 @@ func (c *ConditionsTree) UnmarshalJSON(data []byte) error {
 // SetBSON implements bson.Setter.
 // we actually use the json unmarshaller
 func (c *ConditionsTree) UnmarshalBSON(data []byte) error {
-
-	var i map[string]interface{}
-	bsonErr := deiverBson.Unmarshal(data, &i)
-	if bsonErr != nil {
-		return bsonErr
-	}
-	data, err := json.Marshal(i)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(data, c)
-	return err
+	return json.Unmarshal(data, c)
 }
 
 func (c *ConditionsTree) MarshalBSON() ([]byte, error) {
-	data, err := json.Marshal(c)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return json.Marshal(c)
 }
 
 //--------------------------------------
