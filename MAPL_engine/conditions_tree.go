@@ -7,7 +7,7 @@ import (
 	"github.com/bhmj/jsonslice"
 	"github.com/globalsign/mgo/bson"
 	"github.com/toolkits/slice"
-	deiverBson "go.mongodb.org/mongo-driver/bson"
+	_ "go.mongodb.org/mongo-driver/bson"
 	dc "gopkg.in/getlantern/deepcopy.v1"
 	"sort"
 	"strings"
