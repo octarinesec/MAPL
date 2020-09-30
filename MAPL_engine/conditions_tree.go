@@ -7,7 +7,7 @@ import (
 	"github.com/bhmj/jsonslice"
 	"github.com/globalsign/mgo/bson"
 	"github.com/toolkits/slice"
-	_ "go.mongodb.org/mongo-driver/bson"
+	driverBson "go.mongodb.org/mongo-driver/bson"
 	dc "gopkg.in/getlantern/deepcopy.v1"
 	"sort"
 	"strings"
@@ -68,11 +68,31 @@ func (c *ConditionsTree) UnmarshalJSON(data []byte) error {
 // SetBSON implements bson.Setter.
 // we actually use the json unmarshaller
 func (c *ConditionsTree) UnmarshalBSON(data []byte) error {
-	return json.Unmarshal(data, c)
+	var doc map[string]interface{}
+	if err := driverBson.Unmarshal(data, doc); err != nil {
+		return err
+	}
+
+	docRaw, err := json.Marshal(doc)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(docRaw, c)
 }
 
 func (c *ConditionsTree) MarshalBSON() ([]byte, error) {
-	return json.Marshal(c)
+	jsonRaw, err := json.Marshal(c)
+	if err != nil {
+		return nil, err
+	}
+
+	var doc map[string]interface{}
+	if err := json.Unmarshal(jsonRaw, &doc); err != nil {
+		return nil, err
+	}
+
+	return driverBson.Marshal(doc)
 }
 
 //--------------------------------------
