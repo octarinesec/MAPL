@@ -65,11 +65,11 @@ func (c *ConditionsTree) UnmarshalJSON(data []byte) error {
 
 }
 
-// SetBSON implements bson.Setter.
+// UnmarshalBSON implements driverBson.Unmarshal.
 // we actually use the json unmarshaller
 func (c *ConditionsTree) UnmarshalBSON(data []byte) error {
 	var doc map[string]interface{}
-	if err := driverBson.Unmarshal(data, doc); err != nil {
+	if err := driverBson.Unmarshal(data, &doc); err != nil {
 		return err
 	}
 
