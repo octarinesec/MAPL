@@ -2,14 +2,11 @@ package MAPL_engine
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/bhmj/jsonslice"
 	"github.com/globalsign/mgo/bson"
 	"github.com/toolkits/slice"
 	driverBson "go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/bsonrw"
-	"go.mongodb.org/mongo-driver/x/bsonx"
 	dc "gopkg.in/getlantern/deepcopy.v1"
 	"sort"
 	"strings"
@@ -79,13 +76,8 @@ func (c *ConditionsTree) UnmarshalBSON(data []byte) error {
 		}
 	}
 
-	dec, err := driverBson.NewDecoder(bsonrw.NewBSONDocumentReader(data))
-	if err != nil {
-		panic("")
-	}
-
-	var aux bsonx.MDoc
-	if err := dec.Decode(&aux); err != nil {
+	var aux interface{}
+	if err := driverBson.Unmarshal(data, &aux); err != nil {
 		return err
 	}
 
@@ -562,7 +554,6 @@ func ParseConditionsTree(c interface{}) (Node, error) {
 }
 
 func InterpretNode(node interface{}, parentString string) (Node, error) {
-
 	switch v := node.(type) {
 
 	case map[string]interface{}:
@@ -582,16 +573,12 @@ func InterpretNode(node interface{}, parentString string) (Node, error) {
 			return handleInterfaceArray(node, parentString)
 		}
 
-	case driverBson.D:
-		return nil, fmt.Errorf("can't parse conditions1 %+v the type: %T", v, node)
-
-	case []driverBson.E:
-		return nil, fmt.Errorf("can't parse conditions2 %+v the type: %T", v, node)
-
 	default:
+		if nodeArray, ok := node.([]interface{}); ok {
+			return InterpretNode(nodeArray, parentString)
+		}
 		return nil, fmt.Errorf("can't parse conditions %+v the type: %T", v, node)
 	}
-	return nil, errors.New("can't parse conditions")
 }
 
 func handleMapInterfaceInterface(v map[interface{}]interface{}, parentString string) (Node, error) {
