@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 
-
 	"github.com/octarinesec/MAPL/MAPL_engine"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -46,7 +45,6 @@ var mongoConnStr string
 var mongoCtx context.Context
 var mongoClient *mongo.Client
 var mongoDbConnection *mongo.Database
-
 
 type connectionStruct struct {
 	connection *mongo.Database
@@ -618,7 +616,6 @@ func test_plugin(rulesFilename, jsonRawFilename string) ([]bool, error) {
 
 	testReadWriteRules(rules)
 
-
 	id := randomString(16)
 	insertRawDataToMongo(id, data)
 
@@ -626,6 +623,7 @@ func test_plugin(rulesFilename, jsonRawFilename string) ([]bool, error) {
 	for i_rule, rule := range (rules.Rules) {
 
 		query, added_pipeline, err := rule.Conditions.ConditionsTree.ToMongoQuery("raw", "")
+
 		if err != nil {
 			deleteDocument(id)
 			return []bool{}, err
@@ -645,17 +643,30 @@ func test_plugin(rulesFilename, jsonRawFilename string) ([]bool, error) {
 		z2, _ := json.Marshal(query_pipeline)
 		fmt.Println(string(z2))
 
-		result := getDataFromMongo(query)                    // query
-		result2 := getDataFromMongoAggregate(query_pipeline) // aggregation pipeline
+		resultSimpleQueryFromConditions := getDataFromMongo(query)                      // query
+		resultAggregateQueryFromConditions := getDataFromMongoAggregate(query_pipeline) // aggregation pipeline
+
+		resultQuery, err := rule.ToMongoQuery("raw")
+		resultQueryFromRule := false
+		if resultQuery.Type == MAPL_engine.QueryTypeAggregate {
+			q := resultQuery.Query.([]bson.M)
+			resultQueryFromRule = getDataFromMongoAggregate(q)
+		}
+		if resultQuery.Type == MAPL_engine.QueryTypeSimple {
+			q := resultQuery.Query.(bson.M)
+			resultQueryFromRule = getDataFromMongo(q)
+		}
 
 		if len(added_pipeline) == 0 {
-			if result != result2 {
+			if resultSimpleQueryFromConditions != resultAggregateQueryFromConditions {
 				deleteDocument(id)
 				return []bool{}, err
 			}
-			outputResults[i_rule] = result
+			So(resultQueryFromRule, ShouldEqual, resultSimpleQueryFromConditions)
+			outputResults[i_rule] = resultSimpleQueryFromConditions
 		} else {
-			outputResults[i_rule] = result2
+			So(resultQueryFromRule, ShouldEqual, resultAggregateQueryFromConditions)
+			outputResults[i_rule] = resultAggregateQueryFromConditions
 		}
 
 	}
@@ -719,9 +730,10 @@ type ruleDoc struct {
 	ID   string
 	Rule MAPL_engine.Rule
 }
+
 func testReadWriteRules(rules MAPL_engine.Rules) (error) {
 
-	for _,rule:=range rules.Rules{
+	for _, rule := range rules.Rules {
 
 		id := randomString(16)
 		z := &ruleDoc{
@@ -729,33 +741,31 @@ func testReadWriteRules(rules MAPL_engine.Rules) (error) {
 			Rule: rule,
 		}
 		_, err := mongoDbConnection.Collection("ruleCollection").InsertOne(nil, z)
-		if err!=nil{
+		if err != nil {
 			return err
 		}
 
 		var rule2 ruleDoc
-		cursor:=mongoDbConnection.Collection("ruleCollection").FindOne(nil, bson.M{"id": id})
+		cursor := mongoDbConnection.Collection("ruleCollection").FindOne(nil, bson.M{"id": id})
 		err = cursor.Decode(&rule2)
-		if err!=nil{
+		if err != nil {
 			return err
 		}
 
-		h1:=MAPL_engine.RuleMD5Hash(rule)
-		h2:=MAPL_engine.RuleMD5Hash(rule2.Rule)
-		So(h1,ShouldEqual,h2)
+		h1 := MAPL_engine.RuleMD5Hash(rule)
+		h2 := MAPL_engine.RuleMD5Hash(rule2.Rule)
+		So(h1, ShouldEqual, h2)
 
-		_, err = mongoDbConnection.Collection("ruleCollection").DeleteMany(nil, bson.M{"id":id})
+		_, err = mongoDbConnection.Collection("ruleCollection").DeleteMany(nil, bson.M{"id": id})
 
-		if err!=nil{
+		if err != nil {
 			return err
 		}
-
 
 	}
 	return nil
 
 }
-
 
 func deleteDocument(id string) (error) {
 
@@ -788,7 +798,6 @@ func getDataFromMongoAggregate(query_pipeline []bson.M) bool {
 
 	return len(items) > 0
 }
-
 
 func DbConnect(host, port, DB string) (*mongo.Database, context.Context, *mongo.Client, error) {
 
