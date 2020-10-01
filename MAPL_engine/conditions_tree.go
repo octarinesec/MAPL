@@ -7,6 +7,7 @@ import (
 	"github.com/bhmj/jsonslice"
 	"github.com/globalsign/mgo/bson"
 	"github.com/toolkits/slice"
+	driverBson "go.mongodb.org/mongo-driver/bson"
 	dc "gopkg.in/getlantern/deepcopy.v1"
 	"sort"
 	"strings"
@@ -64,21 +65,34 @@ func (c *ConditionsTree) UnmarshalJSON(data []byte) error {
 
 }
 
-// SetBSON implements bson.Setter.
+// UnmarshalBSON implements driverBson.Unmarshal.
 // we actually use the json unmarshaller
-func (c *ConditionsTree) SetBSON(raw bson.Raw) error {
-
-	var i interface{}
-	bsonErr := raw.Unmarshal(&i)
-	if bsonErr != nil {
-		return bsonErr
+func (c *ConditionsTree) UnmarshalBSON(data []byte) error {
+	var doc map[string]interface{}
+	if err := driverBson.Unmarshal(data, &doc); err != nil {
+		return err
 	}
-	data, err := json.Marshal(i)
+
+	docRaw, err := json.Marshal(doc)
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(data, c)
-	return err
+
+	return json.Unmarshal(docRaw, c)
+}
+
+func (c ConditionsTree) MarshalBSON() ([]byte, error) {
+	jsonRaw, err := json.Marshal(c)
+	if err != nil {
+		return nil, err
+	}
+
+	var doc map[string]interface{}
+	if err := json.Unmarshal(jsonRaw, &doc); err != nil {
+		return nil, err
+	}
+
+	return driverBson.Marshal(doc)
 }
 
 //--------------------------------------
@@ -269,14 +283,14 @@ func (a *Any) Eval(message *MessageAttributes) (bool, []map[string]interface{}) 
 	if len(a.ReturnValueJsonpath) > 0 {
 		checkAllValuesInTheArray = true
 	}
-	for _, val := range (rawArrayData) {
+	for _, val := range rawArrayData {
 		message.RequestJsonRawRelative = &val
 		flag, _ := a.Node.Eval(message)
 		if flag {
 			result = true
 			if a.ReturnValueJsonpath != nil {
 				extraDataTemp := map[string]interface{}{}
-				for k, v := range (a.ReturnValueJsonpath) {
+				for k, v := range a.ReturnValueJsonpath {
 					extraDataBytes, _ := jsonslice.Get(val, v)
 					var tempInterface interface{}
 					err := json.Unmarshal(extraDataBytes, &tempInterface)
@@ -337,7 +351,7 @@ func (a *Any) GetParentJsonpathAttribute() string {
 func (a *Any) SetReturnValueJsonpath(returnValueJsonpath map[string]string) {
 	dc.Copy(&a.ReturnValueJsonpathOriginal, &returnValueJsonpath)
 	dc.Copy(&a.ReturnValueJsonpath, &returnValueJsonpath)
-	for k, v := range (returnValueJsonpath) {
+	for k, v := range returnValueJsonpath {
 		a.ReturnValueJsonpath[k] = strings.Replace(v, "jsonpath:$RELATIVE", "$", 1)
 	}
 }
@@ -391,7 +405,7 @@ func (a *All) Eval(message *MessageAttributes) (bool, []map[string]interface{}) 
 		return false, []map[string]interface{}{}
 	}
 
-	for _, val := range (rawArrayData) {
+	for _, val := range rawArrayData {
 		message.RequestJsonRawRelative = &val
 		flag, _ := a.Node.Eval(message)
 		if !flag {
@@ -436,7 +450,7 @@ func (a *All) GetParentJsonpathAttribute() string {
 func (a *All) SetReturnValueJsonpath(returnValueJsonpath map[string]string) {
 	dc.Copy(&a.ReturnValueJsonpathOriginal, &returnValueJsonpath)
 	dc.Copy(&a.ReturnValueJsonpath, &returnValueJsonpath)
-	for k, v := range (returnValueJsonpath) {
+	for k, v := range returnValueJsonpath {
 		a.ReturnValueJsonpath[k] = strings.Replace(v, "jsonpath:$RELATIVE", "$", 1)
 	}
 }
@@ -644,8 +658,8 @@ func getAnyAllNode(v2 map[string]interface{}, parentString string) (Node, error)
 		anyAllNode = &All{}
 	}
 
-	for key, val := range (v2) {
-		switch (key) {
+	for key, val := range v2 {
+		switch key {
 		case "parentJsonpathAttribute":
 			parentJsonpathAttribute := val.(string)
 			if isValidParentJsonpathAttribute(parentJsonpathAttribute) {
@@ -665,7 +679,7 @@ func getAnyAllNode(v2 map[string]interface{}, parentString string) (Node, error)
 			}
 
 			returnValueJsonpathMap := map[string]string{}
-			for k, v := range (returnValueJsonpath) {
+			for k, v := range returnValueJsonpath {
 				vString := v.(string)
 				if strings.HasPrefix(vString, "jsonpath:$RELATIVE") {
 					returnValueJsonpathMap[k] = vString
@@ -767,7 +781,7 @@ func handleInterfaceArray(node interface{}, parentString string) (Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, subNode := range (v2) {
+	for _, subNode := range v2 {
 		subNode2, err := InterpretNode(subNode, "") // recursion!
 		if err != nil {
 			return nil, fmt.Errorf("can't parse subNode [%+v]: %v", subNode, err)
