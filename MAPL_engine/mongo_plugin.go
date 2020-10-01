@@ -2,7 +2,7 @@ package MAPL_engine
 
 import (
 	"fmt"
-	"github.com/globalsign/mgo/bson"
+	"go.mongodb.org/mongo-driver/bson"
 	"strconv"
 	"strings"
 )

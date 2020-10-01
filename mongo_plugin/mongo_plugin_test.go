@@ -5,20 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
+
 	"github.com/octarinesec/MAPL/MAPL_engine"
-	//"github.com/globalsign/mgo"
-	//"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"github.com/globalsign/mgo/bson"
-	mgo2 "gopkg.in/mgo.v2"
-	bson2 "gopkg.in/mgo.v2/bson"
-
-	//bson2 "go.mongodb.org/mongo-driver/bson"
-	//"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 
-	"github.com/go-bongo/bongo"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/smartystreets/goconvey/convey/reporting"
 	"io/ioutil"
@@ -36,11 +31,6 @@ import (
 	"time"
 )
 
-/*
-import (
-"github.com/octarinesec/MAPL/MAPL_engine"
-)*/
-
 var testDir = "/tmp/octarine.testing"
 var mongodPath = "/usr/bin/mongod"
 
@@ -52,15 +42,16 @@ var collectionName = "raw_data"
 var testIsDone = false
 
 var mongoConnStr string
-var mongoDbConnection *bongo.Connection
-var mgoRefreshPeriod time.Duration
 
-var mongoCtx2 context.Context
-var mongoDbConnection2 *mongo.Database
-var mongoDbCollection2 *mongo.Collection
+var mongoCtx context.Context
+var mongoClient *mongo.Client
+var mongoDbConnection *mongo.Database
+
 
 type connectionStruct struct {
-	connection *bongo.Connection
+	connection *mongo.Database
+	ctx        context.Context
+	client     *mongo.Client
 	err        error
 }
 
@@ -83,8 +74,8 @@ func init() {
 			break
 		}
 		go func() {
-			connection, err := restartMongo(mongoDbDir)
-			resp <- connectionStruct{connection: connection, err: err}
+			connection, ctx, client, err := restartMongo(mongoDbDir)
+			resp <- connectionStruct{connection: connection, ctx: ctx, client: client, err: err}
 		}()
 
 		// Listen on our channel AND a timeout channel - which ever happens first.
@@ -92,6 +83,8 @@ func init() {
 		case res := <-resp:
 			fmt.Println(res)
 			z.connection = res.connection
+			z.client = res.client
+			z.ctx = res.ctx
 			z.err = res.err
 			flag = true
 		case <-time.After(5 * time.Second):
@@ -101,35 +94,25 @@ func init() {
 	}
 
 	connection := z.connection
+	ctx := z.ctx
+	client := z.client
 	err := z.err
 
 	if err != nil {
 		log.Fatal(err)
 	}
+	mongoCtx = ctx
+	mongoClient = client
 	mongoDbConnection = connection
-	mgoRefreshPeriod = time.Duration(3) * time.Second
-
-	// TODO - Find a better way of making sure the services are ready
-	time.Sleep(time.Second * 1)
-
-	mongoCtx2, _ = context.WithTimeout(context.Background(), 10*time.Second)
-	client, err := mongo.Connect(mongoCtx2, options.Client().ApplyURI(fmt.Sprintf("mongodb://%v:%v", host, mongoPort)))
-	if err != nil {
-		panic(err)
-	}
-	//defer client.Disconnect(mongoCtx2)
-
-	mongoDbConnection2 = client.Database(DB)
-	mongoDbCollection2 = mongoDbConnection2.Collection(collectionName)
 
 }
 
-func restartMongo(mongoDbDir string) (*bongo.Connection, error) {
+func restartMongo(mongoDbDir string) (*mongo.Database, context.Context, *mongo.Client, error) {
 	stopMongodb()
 	startMongodb(mongodPath, mongoDbDir, mongoPort)
 	time.Sleep(time.Second * 5)
-	connection, err := DbConnect(host, mongoPort, DB)
-	return connection, err
+	connection, ctx, client, err := DbConnect(host, mongoPort, DB)
+	return connection, ctx, client, err
 }
 
 func startMongodb(mongodPath string, dbpath string, port string) {
@@ -619,6 +602,8 @@ func TestMain(m *testing.M) {
 
 	time.Sleep(time.Second * 1)
 
+	mongoClient.Disconnect(mongoCtx)
+
 	stopMongodb()
 
 	os.Exit(testResult)
@@ -630,6 +615,9 @@ func test_plugin(rulesFilename, jsonRawFilename string) ([]bool, error) {
 	if err != nil {
 		return []bool{}, err
 	}
+
+	testReadWriteRules(rules)
+
 
 	id := randomString(16)
 	insertRawDataToMongo(id, data)
@@ -657,7 +645,9 @@ func test_plugin(rulesFilename, jsonRawFilename string) ([]bool, error) {
 		z2, _ := json.Marshal(query_pipeline)
 		fmt.Println(string(z2))
 
-		result := getDataFromMongo(query)                    // query
+		fmt.Println(mongoCtx)
+		result := getDataFromMongo(query) // query
+		fmt.Println(mongoCtx)
 		result2 := getDataFromMongoAggregate(query_pipeline) // aggregation pipeline
 
 		if len(added_pipeline) == 0 {
@@ -705,9 +695,8 @@ func readRulesAndRawData(rulesFilename, jsonRawFilename string) (MAPL_engine.Rul
 }
 
 type testDoc struct {
-	bongo.DocumentBase `bson:",inline"`
-	ID                 string
-	Raw                interface{}
+	ID  string
+	Raw interface{}
 }
 
 func insertRawDataToMongo(id string, data []byte) (error) {
@@ -722,66 +711,107 @@ func insertRawDataToMongo(id string, data []byte) (error) {
 		ID:  id,
 		Raw: raw,
 	}
-	err = mongoDbConnection.Collection(collectionName).Save(z)
+	_, err = mongoDbConnection.Collection(collectionName).InsertOne(mongoCtx, z)
 
 	return err
 
 }
 
+type ruleDoc struct {
+	ID   string
+	Rule MAPL_engine.Rule
+}
+func testReadWriteRules(rules MAPL_engine.Rules) (error) {
+
+	for _,rule:=range rules.Rules{
+
+		id := randomString(16)
+		z := &ruleDoc{
+			ID:   id,
+			Rule: rule,
+		}
+		_, err := mongoDbConnection.Collection("ruleCollection").InsertOne(mongoCtx, z)
+		if err!=nil{
+			return err
+		}
+
+		var rule2 ruleDoc
+		err = mongoDbConnection.Collection("ruleCollection").FindOne(mongoCtx, bson.M{"id": id}).Decode(&rule2)
+		if err!=nil{
+			return err
+		}
+
+		h1:=MAPL_engine.RuleMD5Hash(rule)
+		h2:=MAPL_engine.RuleMD5Hash(rule2.Rule)
+		So(h1,ShouldEqual,h2)
+
+		_, err = mongoDbConnection.Collection("ruleCollection").DeleteMany(mongoCtx, bson.M{"id":id})
+
+		if err!=nil{
+			return err
+		}
+
+
+	}
+	return nil
+
+}
+
+
 func deleteDocument(id string) (error) {
 
-	err := mongoDbConnection.Collection(collectionName).DeleteOne(bson2.M{"id": id})
+	_, err := mongoDbConnection.Collection(collectionName).DeleteMany(mongoCtx, bson.M{"id": id})
 	return err
 
 }
 
 func getDataFromMongo(query bson.M) bool {
 
-	results := mongoDbConnection.Collection(collectionName).Find(query)
-	var item interface{}
-	counter := 0
-	for results.Next(&item) {
-		counter += 1
-	}
-	return counter > 0
-}
-
-func getDataFromMongoAggregate(query_pipeline []bson.M) bool {
-
-	results, err := mongoDbCollection2.Aggregate(mongoCtx2, query_pipeline)
+	results, err := mongoDbConnection.Collection(collectionName).Find(mongoCtx, query)
 	if err != nil {
 		return false
 	}
 
 	var items []bson.M
-	results.All(mongoCtx2, &items)
+	results.All(mongoCtx, &items)
+	return len(items) > 0
+}
+
+func getDataFromMongoAggregate(query_pipeline []bson.M) bool {
+
+	results, err := mongoDbConnection.Collection(collectionName).Aggregate(mongoCtx, query_pipeline)
+	if err != nil {
+		return false
+	}
+
+	var items []bson.M
+	results.All(mongoCtx, &items)
 
 	return len(items) > 0
 }
 
-func DbConnect(Host, Port, DB string) (*bongo.Connection, error) {
 
-	var connStr string
+func DbConnect(host, port, DB string) (*mongo.Database, context.Context, *mongo.Client, error) {
 
-	connStr = fmt.Sprintf("%v:%v/%v", Host, Port, DB)
-
-	log.Println("Connecting to DB")
-
-	//dialInfo := mgo.DialInfo{}
-	//dialInfo.Timeout = time.Duration(10 * time.Second)
-
-	dbconfig := &bongo.Config{
-		ConnectionString: connStr,
-		Database:         DB,
-		//DialInfo:         &dialInfo,
+	client, err := mongo.NewClient(options.Client().SetConnectTimeout(time.Duration(10 * time.Second)).ApplyURI(fmt.Sprintf("mongodb://%v:%v", host, port)))
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	conn, err := bongo.Connect(dbconfig)
-	if err == nil {
-		conn.Session.SetMode(mgo2.Strong, true)
-
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	err = client.Connect(ctx)
+	if err != nil {
+		log.Fatal(err)
 	}
-	return conn, err
+	//defer client.Disconnect(ctx) // we disconnect outside, when all the tests are finished
+
+	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
+		// Can't connect to Mongo server
+		log.Fatal(err)
+	}
+
+	connection := client.Database(DB)
+	return connection, ctx, client, nil
 
 }
 

@@ -3,6 +3,7 @@ package MAPL_engine
 import (
 	"fmt"
 	"github.com/toolkits/slice"
+	"go.mongodb.org/mongo-driver/bson"
 	"net"
 	"regexp"
 	"strings"
@@ -246,4 +247,34 @@ func (c *Condition) MarshalJSON() ([]byte, error) {
 	str := fmt.Sprintf(`{"condition":{"attribute":"%v","method":"%v","value":"%v"}}`, attributeString, methodString, valueString)
 
 	return []byte(str), nil
+}
+
+func (c *Condition) MarshalBSON() ([]byte, error) {
+
+	attributeString := c.Attribute
+	if len(c.OriginalAttribute) > 0 {
+		attributeString = c.OriginalAttribute
+	}
+	attributeString = strings.Replace(attributeString, "\\", "\\\\", -1)
+	attributeString = strings.Replace(attributeString, "\"", "\\\"", -1)
+
+	methodString := c.Method
+	if len(c.OriginalMethod) > 0 {
+		methodString = c.OriginalMethod
+	}
+
+	valueString := c.Value
+	if len(c.OriginalValue) > 0 {
+		valueString = c.OriginalValue
+	}
+	valueString = strings.Replace(valueString, "\\", "\\\\", -1)
+	valueString = strings.Replace(valueString, "\"", "\\\"", -1)
+
+
+	conditionInnerBson:=bson.D{{"attribute",attributeString},{"method",methodString},{"value",valueString}}
+	conditionBson:=bson.M{"condition":conditionInnerBson}
+
+	bsonBytes, err := bson.Marshal(conditionBson)
+
+	return bsonBytes,err
 }

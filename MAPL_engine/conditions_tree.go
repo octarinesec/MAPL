@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bhmj/jsonslice"
-	"github.com/globalsign/mgo/bson"
 	"github.com/toolkits/slice"
+	"go.mongodb.org/mongo-driver/bson"
 	dc "gopkg.in/getlantern/deepcopy.v1"
 	"sort"
 	"strings"
@@ -64,8 +64,29 @@ func (c *ConditionsTree) UnmarshalJSON(data []byte) error {
 
 }
 
-// SetBSON implements bson.Setter.
-// we actually use the json unmarshaller
+
+
+func (c *ConditionsTree) UnmarshalBSON(data []byte) error {
+
+	fmt.Println(string(data))
+
+	var i bson.M
+	bsonErr := bson.Unmarshal(data,&i)
+	fmt.Println(bsonErr)
+	fmt.Println(i)
+
+	data, err := json.Marshal(i)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(data, c)
+	return err
+}
+
+
+/*
+// SetBSON implements bson.Setter. this is for package "github.com/globalsign/mgo" or labix.org/v2/mgo/bson
+// we actually use the json unmarshaller inside
 func (c *ConditionsTree) SetBSON(raw bson.Raw) error {
 
 	var i interface{}
@@ -80,6 +101,7 @@ func (c *ConditionsTree) SetBSON(raw bson.Raw) error {
 	err = json.Unmarshal(data, c)
 	return err
 }
+*/
 
 //--------------------------------------
 // Node Interface
