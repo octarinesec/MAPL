@@ -243,3 +243,31 @@ func removeQuotes(str string) (string, error) {
 
 	return str, nil
 }
+
+//-------------------------------------------------------------------------------------
+
+const AggregateQuery = "aggregate"
+const SimpleQuery = "query"
+const None = "none"
+
+type MaplToMongoResult struct {
+	QueryType string
+	Query interface{}
+}
+
+func (rule *Rule) ToMongoQuery(parentField string) (MaplToMongoResult, error) {
+
+	query, added_pipeline, err := rule.Conditions.ConditionsTree.ToMongoQuery(parentField, "")
+	if err != nil {
+
+		return MaplToMongoResult{None, nil}, err
+
+	}
+
+	if len(added_pipeline) == 0 {
+		return MaplToMongoResult{SimpleQuery, query}, nil
+	}
+	query_pipeline := append(added_pipeline, bson.M{"$match": query})
+	return MaplToMongoResult{AggregateQuery, query_pipeline}, nil
+
+}
