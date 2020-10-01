@@ -643,31 +643,30 @@ func test_plugin(rulesFilename, jsonRawFilename string) ([]bool, error) {
 		z2, _ := json.Marshal(query_pipeline)
 		fmt.Println(string(z2))
 
-		result := getDataFromMongo(query)                    // query
-		result2 := getDataFromMongoAggregate(query_pipeline) // aggregation pipeline
+		resultSimpleQueryFromConditions := getDataFromMongo(query)                      // query
+		resultAggregateQueryFromConditions := getDataFromMongoAggregate(query_pipeline) // aggregation pipeline
 
 		resultQuery, err := rule.ToMongoQuery("raw")
-		result3 := false
-		if resultQuery.QueryType == MAPL_engine.AggregateQuery {
-
-			q:=resultQuery.Query.([]bson.M)
-			result3 = getDataFromMongoAggregate(q)
+		resultQueryFromRule := false
+		if resultQuery.Type == MAPL_engine.QueryTypeAggregate {
+			q := resultQuery.Query.([]bson.M)
+			resultQueryFromRule = getDataFromMongoAggregate(q)
 		}
-		if resultQuery.QueryType == MAPL_engine.SimpleQuery {
-			q:=resultQuery.Query.(bson.M)
-			result3 = getDataFromMongo(q)
+		if resultQuery.Type == MAPL_engine.QueryTypeSimple {
+			q := resultQuery.Query.(bson.M)
+			resultQueryFromRule = getDataFromMongo(q)
 		}
 
 		if len(added_pipeline) == 0 {
-			if result != result2 {
+			if resultSimpleQueryFromConditions != resultAggregateQueryFromConditions {
 				deleteDocument(id)
 				return []bool{}, err
 			}
-			So(result3,ShouldEqual,result)
-			outputResults[i_rule] = result
+			So(resultQueryFromRule, ShouldEqual, resultSimpleQueryFromConditions)
+			outputResults[i_rule] = resultSimpleQueryFromConditions
 		} else {
-			So(result3,ShouldEqual,result2)
-			outputResults[i_rule] = result2
+			So(resultQueryFromRule, ShouldEqual, resultAggregateQueryFromConditions)
+			outputResults[i_rule] = resultAggregateQueryFromConditions
 		}
 
 	}
