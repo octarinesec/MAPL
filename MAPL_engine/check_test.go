@@ -1428,7 +1428,7 @@ func TestRulesWithPredefinedStrings(t *testing.T) {
 		So(results[1], ShouldEqual, ALLOW)
 
 		//---------
-		predefined_lists := []string{"../files/lists/predefined_list_workload.yaml", "../files/lists/predefined_list_workload2.yaml", "../files/lists/predefined_list_workload3.yaml"}
+		predefined_lists := []string{"../files/lists/predefined_list_workload.yaml", "../files/lists/predefined_list_workload2.yaml", "../files/lists/predefined_list_workload3.yaml",  "../files/lists/predefined_list_workload4.yaml"}
 		for _, f := range (predefined_lists) {
 			results, rules, _ = test_CheckMessagesWithRawDataAndPredefinedStrings("../files/rules/predefined_strings/rules_with_condition_translation_list.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/predefined_strings/json_raw_workload_dep.json", f)
 			z := rules.Rules[0].Conditions.ConditionsTree.String()

@@ -444,7 +444,25 @@ func TestMongoPluginAnyAll(t *testing.T) {
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_C.json")
 		So(results[0], ShouldEqual, true)
 
-		fmt.Println(err)
+		// Multi-level:
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json")
+		So(results[0], ShouldEqual, false)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json")
+		So(results[0], ShouldEqual, true)
+
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays2.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json")
+		So(results[0], ShouldEqual, true)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays2.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json")
+		So(results[0], ShouldEqual, true)
+
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json")
+		So(results[0], ShouldEqual, false)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json")
+		So(results[0], ShouldEqual, false)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B2.json")
+		So(results[0], ShouldEqual, true)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_C.json")
+		So(results[0], ShouldEqual, false)
 
 	})
 }
@@ -503,8 +521,13 @@ func TestMongoPluginKeyValue(t *testing.T) {
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_json4.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json")
 		So(results[0], ShouldEqual, true)
 
-		results, err := test_plugin("../files/rules/mongo_plugin/key_value/invalid_rules_with_jsonpath_conditions_key_json.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json")
+		results, err := test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_json5.yaml", "../files/raw_json_data/key_value/json_raw_data_labels_relative.json")
 		strErr := fmt.Sprintf("%v", err)
+		fmt.Println(strErr)
+		So(strErr, ShouldEqual, "VALUE within array is not supported")
+
+		results, err = test_plugin("../files/rules/mongo_plugin/key_value/invalid_rules_with_jsonpath_conditions_key_json.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json")
+		strErr = fmt.Sprintf("%v", err)
 		fmt.Println(strErr)
 		So(strErr, ShouldEqual, "jsonpath condition $KEY must not have a subfield [jsonpath:$KEY.def2]")
 
@@ -622,7 +645,7 @@ func test_plugin(rulesFilename, jsonRawFilename string) ([]bool, error) {
 	outputResults := make([]bool, len(rules.Rules))
 	for i_rule, rule := range (rules.Rules) {
 
-		query, added_pipeline, err := rule.Conditions.ConditionsTree.ToMongoQuery("raw", "")
+		query, added_pipeline, err := rule.Conditions.ConditionsTree.ToMongoQuery("raw", "", 0)
 
 		if err != nil {
 			deleteDocument(id)
@@ -720,7 +743,7 @@ func insertRawDataToMongo(id string, data []byte) (error) {
 		ID:  id,
 		Raw: raw,
 	}
-	_, err = mongoDbConnection.Collection(collectionName).InsertOne(mongoCtx, z)
+	_, err = mongoDbConnection.Collection(collectionName).InsertOne(nil, z)
 
 	return err
 

@@ -1,0 +1,9 @@
+predefinedStrings:
+  dep: "Deployment"
+  pod: "Pod"
+  workload: "Workload"
+
+predefinedLists:
+  workload:
+    -  "Deployment"
+    -  "#pod"

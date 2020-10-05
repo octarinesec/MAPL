@@ -102,7 +102,7 @@ type Node interface {
 	Append(node Node)
 	PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error
 	String() string // to-do: order terms so that hash will be the same
-	ToMongoQuery(base string, parentString string) (bson.M, []bson.M, error)
+	ToMongoQuery(base string, parentString string, inArrayCounter int) (bson.M, []bson.M, error)
 }
 
 type AnyAllNode interface {
@@ -474,7 +474,7 @@ func (t True) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) erro
 func (t True) String() string {
 	return "true"
 }
-func (t True) ToMongoQuery(base, str string) (bson.M, []bson.M, error) {
+func (t True) ToMongoQuery(base, str string, inArrayCounter int) (bson.M, []bson.M, error) {
 	return bson.M{}, []bson.M{}, fmt.Errorf("not supported")
 }
 
@@ -494,7 +494,7 @@ func (f False) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) err
 func (f False) String() string {
 	return "false"
 }
-func (f False) ToMongoQuery(base, str string) (bson.M, []bson.M, error) {
+func (f False) ToMongoQuery(base, str string, inArrayCounter int) (bson.M, []bson.M, error) {
 	return bson.M{}, []bson.M{}, fmt.Errorf("not supported")
 }
 

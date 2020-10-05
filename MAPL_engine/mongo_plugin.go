@@ -7,13 +7,13 @@ import (
 	"strings"
 )
 
-func (a *And) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, error) { //parentString is irrelevant here
+func (a *And) ToMongoQuery(base string, parentString string, inArrayCounter int) (bson.M, []bson.M, error) { //parentString is irrelevant here
 
 	q_array := []bson.M{}
 	pipeline := []bson.M{}
 
 	for _, node := range a.Nodes {
-		q, pipelineAppend, err := node.ToMongoQuery(base, "")
+		q, pipelineAppend, err := node.ToMongoQuery(base, "", inArrayCounter)
 		if err != nil {
 			return bson.M{}, []bson.M{}, err
 		}
@@ -28,12 +28,12 @@ func (a *And) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, 
 	return q_and, pipeline, nil
 }
 
-func (o *Or) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, error) { //parentString is irrelevant here
+func (o *Or) ToMongoQuery(base string, parentString string, inArrayCounter int) (bson.M, []bson.M, error) { //parentString is irrelevant here
 
 	q_array := []bson.M{}
 	pipeline := []bson.M{}
 	for _, node := range o.Nodes {
-		q, pipelineAppend, err := node.ToMongoQuery(base, "")
+		q, pipelineAppend, err := node.ToMongoQuery(base, "", inArrayCounter)
 		if err != nil {
 			return bson.M{}, []bson.M{}, err
 		}
@@ -48,9 +48,9 @@ func (o *Or) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, e
 	return q_or, pipeline, nil
 }
 
-func (n *Not) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, error) { //parentString is irrelevant here
+func (n *Not) ToMongoQuery(base string, parentString string, inArrayCounter int) (bson.M, []bson.M, error) { //parentString is irrelevant here
 
-	q, pipeline, err := n.Node.ToMongoQuery(base, "")
+	q, pipeline, err := n.Node.ToMongoQuery(base, "", inArrayCounter)
 	if err != nil {
 		return bson.M{}, []bson.M{}, err
 	}
@@ -60,15 +60,20 @@ func (n *Not) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, 
 	return q_not, pipeline, nil
 }
 
-func (a *All) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, error) { //parentString is irrelevant here
+func (a *All) ToMongoQuery(base string, parentString string, inArrayCounter int) (bson.M, []bson.M, error) { //parentString is irrelevant here
+
+	if strings.HasSuffix(a.ParentJsonpathAttributeOriginal,"[:]"){
+		inArrayCounter+=1
+	}
 
 	if strings.HasPrefix(a.ParentJsonpathAttributeOriginal, "jsonpath:$..") {
 		return bson.M{}, []bson.M{}, fmt.Errorf("deepscan is not supported")
 	}
 	parentField := strings.Replace(a.ParentJsonpathAttributeOriginal, "jsonpath:$.", base+".", 1)
+	parentField = strings.Replace(parentField, "jsonpath:$RELATIVE.", "", 1)
 	parentField = strings.Replace(parentField, "[:]", "", -1)
 
-	q, pipeline, err := a.Node.ToMongoQuery(base, "")
+	q, pipeline, err := a.Node.ToMongoQuery(base, "", inArrayCounter+1)
 	if err != nil {
 		return bson.M{}, []bson.M{}, err
 	}
@@ -84,15 +89,20 @@ func (a *All) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, 
 
 }
 
-func (a *Any) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, error) { //parentString is irrelevant here
+func (a *Any) ToMongoQuery(base string, parentString string, inArrayCounter int) (bson.M, []bson.M, error) { //parentString is irrelevant here
+
+	if strings.HasSuffix(a.ParentJsonpathAttributeOriginal,"[:]"){
+		inArrayCounter+=1
+	}
 
 	if strings.HasPrefix(a.ParentJsonpathAttributeOriginal, "jsonpath:$..") {
 		return bson.M{}, []bson.M{}, fmt.Errorf("deepscan is not supported")
 	}
 	parentField := strings.Replace(a.ParentJsonpathAttributeOriginal, "jsonpath:$.", base+".", 1)
+	parentField = strings.Replace(parentField, "jsonpath:$RELATIVE.", "", 1)
 	parentField = strings.Replace(parentField, "[:]", "", -1)
 
-	q, pipeline, err := a.Node.ToMongoQuery(base, parentField)
+	q, pipeline, err := a.Node.ToMongoQuery(base, parentField, inArrayCounter+1)
 	if err != nil {
 		return bson.M{}, []bson.M{}, err
 	}
@@ -106,7 +116,7 @@ func (a *Any) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, 
 	return q_all, pipeline, nil
 }
 
-func (c *Condition) ToMongoQuery(base string, parentString string) (bson.M, []bson.M, error) {
+func (c *Condition) ToMongoQuery(base string, parentString string, inArrayCounter int) (bson.M, []bson.M, error) {
 
 	//see: https://docs.mongodb.com/manual/reference/operator/query/
 
@@ -123,7 +133,7 @@ func (c *Condition) ToMongoQuery(base string, parentString string) (bson.M, []bs
 
 	if strings.HasPrefix(c.OriginalAttribute, "jsonpath:$VALUE") {
 
-		if strings.Contains(parentString, "RELATIVE") {
+		if inArrayCounter >= 2 {
 			return bson.M{}, []bson.M{}, fmt.Errorf("VALUE within array is not supported") // if neccessary we can do [$unwind, $addFields, $merge] steps!
 		}
 		//if strings.Contains(c.OriginalAttribute,"jsonpath:$VALUE."){
@@ -140,7 +150,7 @@ func (c *Condition) ToMongoQuery(base string, parentString string) (bson.M, []bs
 
 	if strings.HasPrefix(c.OriginalAttribute, "jsonpath:$KEY") {
 
-		if strings.Contains(parentString, "RELATIVE") {
+		if inArrayCounter>=2 {
 			return bson.M{}, []bson.M{}, fmt.Errorf("KEY within array is not supported")
 		}
 		if strings.Contains(c.OriginalAttribute, "jsonpath:$KEY.") {

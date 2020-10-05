@@ -16,7 +16,7 @@ type MaplToMongoResult struct {
 
 func (rule *Rule) ToMongoQuery(parentField string) (MaplToMongoResult, error) {
 
-	query, added_pipeline, err := rule.Conditions.ConditionsTree.ToMongoQuery(parentField, "")
+	query, added_pipeline, err := rule.Conditions.ConditionsTree.ToMongoQuery(parentField, "", 0)
 	if err != nil {
 
 		return MaplToMongoResult{"", nil}, err
