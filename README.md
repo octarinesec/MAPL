@@ -18,3 +18,7 @@ See also previous syntax (MAPL v1) in [MAPL v1 Syntax](https://github.com/octari
 Given a list of rules and message attributes, the MAPL engine gives a decision whether to allow, allow and alert or block the communication.  
 The engine is documented in [MAPL Engine](https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_ENGINE.md).  
 The MAPL engine can be used in service meshes, API gateways and IAM solutions.  
+
+# Mongo Plugin
+We created a plugin to translate MAPL conditions into Mongo queries, as querying in the db speeds up the query by a factor of 5-10.
+See [Mongo Plugin](https://github.com/octarinesec/MAPL/tree/master/docs/Mongo_Plugin.md). 
