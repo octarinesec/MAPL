@@ -10,7 +10,7 @@ The MAPL rules have the following syntax:
 `<sender, receiver, protocol, resource, operation> : <conditions> : <decision>`
 
 Essentially, a rule gives a decision whether the sender (client) may do the operation on the resource of the receiver (server) when the conditions apply.  
-The language is described thoroughly in [MAPL v2 Syntax](https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC_v2.md).
+The language is described thoroughly in [MAPL v2 Syntax](https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC_v2.md).  
 See also previous syntax (MAPL v1) in [MAPL v1 Syntax](https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC_v1.md).
 
 # MAPL Engine
