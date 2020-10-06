@@ -1,6 +1,7 @@
 # Mongo Plugin
 We created a mongo plugin to translate conditions from MAPL v2 into mongo query language.  
 Querying the db directly speeds up the queries by about a factor of 5 to 10.
+It is assumed that all of the attributes are of type **jsonpath**
 
 ## Examples
 We assume that the raw json document is under the "**raw**" field in the document in the db.
