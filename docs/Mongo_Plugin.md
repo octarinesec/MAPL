@@ -76,7 +76,8 @@ Mongo query = ```{"$nor":[{"raw.spec.containers":{"$elemMatch":{"$nor":[{"volume
 ```
 
 Mongo **Aggregate** query = 
-```[ 
+```
+  [ 
      {"$addFields":{"addedField.raw.metadata.labels":{"$objectToArray":"$raw.metadata.labels"}}},
      {"$match":{"addedField.raw.metadata.labels.v":{"$eq":"ABC"}}} 
    ]
@@ -90,15 +91,15 @@ Mongo **Aggregate** query =
 
 For example:
 
-
+```
   conditions:
    ANY:
      parentJsonpathAttribute: "jsonpath:$.spec.containers[:]"
      condition:
        attribute: "jsonpath:$RELATIVE.resources.limits.cpu"
        method: GT
-       value: 0.5 or 500m
-       
+       value: 0.5 
+ ```      
 If the document in the db contains the value 600m [0.6 core] then the query will fail as it tries to compare number (from MAPL) and string (in the db). A special pre-processing is needed before saving the document to the db.
 
 
