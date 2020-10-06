@@ -20,5 +20,5 @@ The engine is documented in [MAPL Engine](https://github.com/octarinesec/MAPL/tr
 The MAPL engine can be used in service meshes, API gateways and IAM solutions.  
 
 # Mongo Plugin
-We created a plugin to translate MAPL conditions into Mongo queries, as querying in the db speeds up the query by a factor of 5-10.
+We created a plugin to translate MAPL conditions into Mongo queries, as querying in the db speeds up the query by a factor of 5-10.  
 See [Mongo Plugin](https://github.com/octarinesec/MAPL/tree/master/docs/Mongo_Plugin.md). 
