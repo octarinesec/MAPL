@@ -1,4 +1,4 @@
-# MAPL Specification
+# MAPL v1 Specification
 
 MAPL (Manageable Access-control Policy Language) is a language for access control rules, designed for a microservices environment.
 It is designed to be intuitive, rich and expressive, as well as simple and straightforward.  
@@ -80,7 +80,7 @@ The language allows for the following two words:
 The verb "read" corresponds to any of GET ,HEAD, OPTIONS, TRACE, CONSUME  
 The verb "write" corresponds to any of POST, PUT, DELETE, PRODUCE  
 
-### Conditions
+### Conditions (MAPL v1)
 
 MAPL conditions part is a DNF (OR of ANDs) of one-attribute-conditions.  
 This allows for rich and expressive enough testing of message attributes while keeping the rule simple and tractable.  
@@ -282,7 +282,7 @@ Block service A.my_namespace from communicating with service B.my_namespace over
     decision: block
 ```
 
-### Conditions
+### Conditions (MAPL v1)
 
 Block service A.my_namespace from communicating with B.my_namespace over HTTP to any path /books using GET method if
 -  the payloadSize is between 1024 and 4096 bytes  
@@ -329,14 +329,4 @@ or
     decision: block
 
 ```
-
-# MAPL versions
-
-<br>
-
-|fields|version 1|version 2
-|:----:|:----:|:----:|
-sender|a string that represents the sender name|a structure that contains sender name (as before) and sender type (used to avoid ambiguity, especially when working with wildcards)
-receiver|a string that represents the receiver name|a structure that contains receiver name (as before) and receiver type (used to avoid ambiguity, especially when working with wildcards)
-resource and protocol| resource field is a structure that contains resource protocol, resource type and resource name|protocol is a separate field from the resource field
 
