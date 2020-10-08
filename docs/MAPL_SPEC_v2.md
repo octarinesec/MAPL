@@ -182,6 +182,13 @@ err = rule.SetPredefinedStringsAndLists(predefinedStringsAndLists)
 
 # Examples
 
+In Go:
+```
+rule.Check(&message)
+or
+rule.TestConditions(&message)
+```
+
 ### Sender and Receiver
 Allow service A.my_namespace to communicate with service B.my_namespace over HTTP to any path using the GET method:
 
