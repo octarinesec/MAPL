@@ -185,7 +185,9 @@ err = rule.SetPredefinedStringsAndLists(predefinedStringsAndLists)
 In Go:
 ```
 rule.Check(&message)
+```
 or
+```
 rule.TestConditions(&message)
 ```
 
