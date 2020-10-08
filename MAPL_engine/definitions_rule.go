@@ -48,7 +48,8 @@ type Resource struct {
 }
 
 // Condition structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
-type Condition struct { // TO-DO: convert to AttributeStruct and ValueStruct?
+type Condition struct {
+	// TO-DO: convert to AttributeStruct and ValueStruct?
 	Attribute        string         `yaml:"attribute,omitempty" json:"attribute" bson:"attribute" structs:"attribute,omitempty"`
 	Method           string         `yaml:"method,omitempty" json:"method" bson:"method" structs:"method,omitempty"`
 	Value            string         `yaml:"value,omitempty" json:"value" bson:"value" structs:"value,omitempty"`
@@ -76,8 +77,8 @@ type Condition struct { // TO-DO: convert to AttributeStruct and ValueStruct?
 	AttributeJsonpathQuery      string `yaml:"-" json:"-,omitempty" bson:"attributeJsonpathQuery,omitempty" structs:"attributeJsonpathQuery,omitempty"`
 
 	OriginalAttribute string `yaml:"-" json:"-,omitempty" bson:"originalAttribute,omitempty" structs:"originalAttribute,omitempty"` // used in hash
-	OriginalMethod     string `yaml:"-" json:"-,omitempty" bson:"originalMethod,omitempty" structs:"originalMethod,omitempty"`             // used in hash
-	OriginalValue     string `yaml:"-" json:"-,omitempty" bson:"originalValue,omitempty" structs:"originalValue,omitempty"`             // used in hash
+	OriginalMethod    string `yaml:"-" json:"-,omitempty" bson:"originalMethod,omitempty" structs:"originalMethod,omitempty"`       // used in hash
+	OriginalValue     string `yaml:"-" json:"-,omitempty" bson:"originalValue,omitempty" structs:"originalValue,omitempty"`         // used in hash
 }
 
 type Rule struct {
@@ -101,6 +102,10 @@ type Rule struct {
 
 	OperationRegex                    *regexp.Regexp `yaml:"operationRegex,omitempty" json:"operationRegex,omitempty" bson:"operationRegex,omitempty" structs:"operationRegex,omitempty"`
 	AlreadyConvertedFieldsToRegexFlag bool           `yaml:"-,omitempty" json:"-,omitempty" bson:"-,omitempty" structs:"-,omitempty"` // default is false
+
+	predefinedStringsAndLists PredefinedStringsAndLists
+	ruleAlreadyPrepared       bool
+	preparedRule              *Rule
 }
 
 // Rules structure contains a list of rules

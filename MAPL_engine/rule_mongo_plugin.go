@@ -16,7 +16,12 @@ type MaplToMongoResult struct {
 
 func (rule *Rule) ToMongoQuery(parentField string) (MaplToMongoResult, error) {
 
-	query, added_pipeline, err := rule.Conditions.ConditionsTree.ToMongoQuery(parentField, "", 0)
+	if !rule.ruleAlreadyPrepared {
+		rule.SetPredefinedStringsAndLists(GlobalPredefinedStringsAndLists) // use the global if not set already
+	}
+
+
+	query, added_pipeline, err := rule.preparedRule.Conditions.ConditionsTree.ToMongoQuery(parentField, "", 0)
 	if err != nil {
 
 		return MaplToMongoResult{"", nil}, err

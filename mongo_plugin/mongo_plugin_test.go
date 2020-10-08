@@ -645,7 +645,24 @@ func test_plugin(rulesFilename, jsonRawFilename string) ([]bool, error) {
 	outputResults := make([]bool, len(rules.Rules))
 	for i_rule, rule := range (rules.Rules) {
 
-		query, added_pipeline, err := rule.Conditions.ConditionsTree.ToMongoQuery("raw", "", 0)
+		// ------------------------------
+		// from rule (this is the main way)
+		resultQuery, err := rule.ToMongoQuery("raw")
+		resultQueryFromRule := false
+		if resultQuery.Type == MAPL_engine.QueryTypeAggregate {
+			q := resultQuery.Query.([]bson.M)
+			resultQueryFromRule = getDataFromMongoAggregate(q)
+		}
+		if resultQuery.Type == MAPL_engine.QueryTypeSimple {
+			q := resultQuery.Query.(bson.M)
+			resultQueryFromRule = getDataFromMongo(q)
+		}
+
+		// -------------------------------
+		// directly from conditions:
+		// just for unit tests
+		r:=rule.GetPreparedRule()
+		query, added_pipeline, err := r.Conditions.ConditionsTree.ToMongoQuery("raw", "", 0)
 
 		if err != nil {
 			deleteDocument(id)
@@ -669,16 +686,7 @@ func test_plugin(rulesFilename, jsonRawFilename string) ([]bool, error) {
 		resultSimpleQueryFromConditions := getDataFromMongo(query)                      // query
 		resultAggregateQueryFromConditions := getDataFromMongoAggregate(query_pipeline) // aggregation pipeline
 
-		resultQuery, err := rule.ToMongoQuery("raw")
-		resultQueryFromRule := false
-		if resultQuery.Type == MAPL_engine.QueryTypeAggregate {
-			q := resultQuery.Query.([]bson.M)
-			resultQueryFromRule = getDataFromMongoAggregate(q)
-		}
-		if resultQuery.Type == MAPL_engine.QueryTypeSimple {
-			q := resultQuery.Query.(bson.M)
-			resultQueryFromRule = getDataFromMongo(q)
-		}
+
 
 		if len(added_pipeline) == 0 {
 			if resultSimpleQueryFromConditions != resultAggregateQueryFromConditions {

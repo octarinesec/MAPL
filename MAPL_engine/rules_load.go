@@ -14,6 +14,8 @@ import (
 	"strings"
 )
 
+var GlobalPredefinedStringsAndLists PredefinedStringsAndLists
+
 // YamlReadRulesFromString function reads rules from a yaml string
 func YamlReadRulesFromString(yamlString string) (Rules, error) {
 
@@ -25,10 +27,10 @@ func YamlReadRulesFromString(yamlString string) (Rules, error) {
 	}
 
 	//err = PrepareRules(&rules)
-	err = PrepareRulesWithPredefinedStrings(&rules, PredefinedStringsAndLists{})
-	if err != nil {
-		return Rules{}, err
-	}
+	//err = PrepareRulesWithPredefinedStrings(&rules, PredefinedStringsAndLists{})
+	//if err != nil {
+	//	return Rules{}, err
+	//}
 
 	return rules, nil
 }
@@ -51,6 +53,40 @@ func YamlReadRulesFromFile(filename string) (Rules, error) {
 	return rules, err
 }
 
+func (rule *Rule) SetPredefinedStringsAndLists(stringsAndlists PredefinedStringsAndLists) error {
+
+	rule.ruleAlreadyPrepared = false
+
+	var ruleCopy Rule
+	err := deepcopy.Copy(&ruleCopy, rule)
+	if err != nil {
+		return err
+	}
+
+	rule.predefinedStringsAndLists = stringsAndlists
+
+	err = PrepareOneRuleWithPredefinedStrings(&ruleCopy, rule.predefinedStringsAndLists)
+	if err != nil {
+		return err
+	}
+
+	ruleCopy.ruleAlreadyPrepared = true
+	rule.preparedRule = &ruleCopy
+	rule.ruleAlreadyPrepared = true
+
+	return nil
+}
+
+func (rule *Rule) GetPreparedRule() (*Rule) { // used in unit tests
+
+	if !rule.ruleAlreadyPrepared {
+		r := Rule{}
+		return &r
+	}
+	return rule.preparedRule
+
+}
+
 func YamlReadRulesFromStringWithPredefinedStrings(yamlString string, stringsAndlists PredefinedStringsAndLists) (Rules, error) {
 
 	var rules Rules
@@ -60,10 +96,17 @@ func YamlReadRulesFromStringWithPredefinedStrings(yamlString string, stringsAndl
 		return Rules{}, err
 	}
 
-	err = PrepareRulesWithPredefinedStrings(&rules, stringsAndlists)
-	if err != nil {
-		return Rules{}, err
+	for i_r, _ := range (rules.Rules) {
+		err = rules.Rules[i_r].SetPredefinedStringsAndLists(stringsAndlists)
+		if err != nil {
+			return Rules{}, err
+		}
 	}
+
+	//err = PrepareRulesWithPredefinedStrings(&rules, stringsAndlists)
+	//if err != nil {
+	//	return Rules{}, err
+	//}
 
 	return rules, nil
 }
@@ -415,6 +458,16 @@ func handleJsonpathAttribute(condition *Condition) {
 		//condition.OriginalAttribute = originalAttribute // used in hash
 	}
 }
+
+/*
+func (rule *Rule) prepareOneRuleWithPredefinedStrings() {
+
+	if !rule.ruleAlreadyPrepared {
+		PrepareOneRuleWithPredefinedStrings(rule, rule.predefinedStringsAndLists)
+		rule.ruleAlreadyPrepared = true
+	}
+}
+*/
 
 // convertStringToRegex function converts one string to regex. Remove spaces, handle special characters and wildcards.
 func ConvertStringToRegex(str_in string) string {

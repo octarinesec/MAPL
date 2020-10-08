@@ -42,7 +42,7 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 	checkExtraData = make([][]map[string]interface{}, N)
 
 	sem := make(chan int, N) // semaphore pattern
-	if true {               // check in parallel
+	if false { // check in parallel
 
 		for i, rule := range (rules.Rules) { // check all the rules in parallel
 			go func(in_i int, in_rule Rule) {
@@ -97,13 +97,14 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 }
 
 // CheckOneRules gives the result of testing the message attributes with of one rule
-func CheckOneRule(message *MessageAttributes, rule *Rule) (int, []map[string]interface{}) {
+func CheckOneRule(message *MessageAttributes, ruleOriginal *Rule) (int, []map[string]interface{}) {
+
+	if !ruleOriginal.ruleAlreadyPrepared {
+		ruleOriginal.SetPredefinedStringsAndLists(GlobalPredefinedStringsAndLists) // use the global if not set already
+	}
+	rule := ruleOriginal.preparedRule // the prepared rule is the one used below!
 	// ----------------------
 	// compare basic message attributes:
-
-	if rule.AlreadyConvertedFieldsToRegexFlag == false {
-		ConvertFieldsToRegex(rule)
-	}
 
 	match := TestSender(rule, message)
 	if !match {
@@ -150,7 +151,7 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) (int, []map[string]int
 	conditionsResult := true // if there are no conditions then we skip the test and return the rule.Decision
 	extraData := []map[string]interface{}{}
 	if rule.Conditions.ConditionsTree != nil {
-		conditionsResult, extraData = TestConditions(rule, message)
+		conditionsResult, extraData = TestConditions(ruleOriginal, message) // using original rule here. using prepared rule inside.
 	}
 	if conditionsResult == false {
 		return DEFAULT, []map[string]interface{}{}
@@ -167,6 +168,10 @@ func CheckOneRule(message *MessageAttributes, rule *Rule) (int, []map[string]int
 		return BLOCK, extraData
 	}
 	return DEFAULT, []map[string]interface{}{}
+}
+
+func (rule *Rule) Check(message *MessageAttributes) (int, []map[string]interface{}) {
+	return CheckOneRule(message, rule)
 }
 
 func TestSender(rule *Rule, message *MessageAttributes) bool {
@@ -241,14 +246,19 @@ func TestReceiver(rule *Rule, message *MessageAttributes) bool {
 // testConditions tests the conditions of the rule with the message attributes
 func TestConditions(rule *Rule, message *MessageAttributes) (bool, []map[string]interface{}) { // to-do return error
 
-	if rule.AlreadyConvertedFieldsToRegexFlag == false {
-		ConvertFieldsToRegex(rule)
+	if !rule.ruleAlreadyPrepared {
+		rule.SetPredefinedStringsAndLists(GlobalPredefinedStringsAndLists)
 	}
-	if rule.Conditions.ConditionsTree != nil {
-		return rule.Conditions.ConditionsTree.Eval(message)
+
+	if rule.preparedRule.Conditions.ConditionsTree != nil {
+		return rule.preparedRule.Conditions.ConditionsTree.Eval(message)
 	}
 	return false, []map[string]interface{}{}
 
+}
+
+func (rule *Rule) TestConditions(message *MessageAttributes) (bool, []map[string]interface{}) {
+	return TestConditions(rule, message)
 }
 
 // testOneCondition tests one condition of the rule with the message attributes
@@ -692,7 +702,7 @@ func getArrayOfJsons(a AnyAllNode, message *MessageAttributes) ([][]byte, error)
 		return [][]byte{}, err
 	}
 
-	arrayData,err = getArrayFromArrayOfArrays(arrayData)
+	arrayData, err = getArrayFromArrayOfArrays(arrayData)
 	if err != nil {
 		return [][]byte{}, err
 	}
@@ -750,11 +760,11 @@ func getArrayFromArrayOfArrays(arrayData []byte) ([]byte, error) {
 	}
 
 	buffer := new(bytes.Buffer) // clean the json
-	err:=json.Compact(buffer,arrayData)
-	if err!=nil{
+	err := json.Compact(buffer, arrayData)
+	if err != nil {
 		return []byte{}, err
 	}
-	arrayDataNew:=buffer.Bytes()
+	arrayDataNew := buffer.Bytes()
 
 	if arrayDataNew[0] != '[' || arrayDataNew[1] != '[' {
 		return arrayDataNew, nil
