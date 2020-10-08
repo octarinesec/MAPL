@@ -175,8 +175,8 @@ In GO:
 ```
 err := yaml.Unmarshal([]byte(predefinedStringsAndListsYamlStr), &predefinedStringsAndLists)
 predefinedStringsAndLists, err = validatePredefinedString(predefinedStringsAndLists)
-err = yaml.Unmarshal([]byte(rulesYamlStr), &rules)
-err = PrepareRulesWithPredefinedStrings(&rules, predefinedStringsAndLists)
+err = yaml.Unmarshal([]byte(ruleYamlStr), &rule)
+err = rule.SetPredefinedStringsAndLists(predefinedStringsAndLists)
 ```
 
 
