@@ -97,49 +97,49 @@ func TestMaplEngineMainFields(t *testing.T) {
 
 	reporting.QuietMode()
 	Convey("tests", t, func() {
-/*
-		str := "test whitelist: sender. Expected results: message 0: allow, message 1: block by default (no relevant whitelist entry), message 2: block by default (no relevant whitelist entry)  message 3: block by default (no relevant whitelist entry)"
-		fmt.Println(str)
-		results, _ := test_CheckMessages("../files/rules/main_fields/rules_basic.yaml", "../files/messages/main_fields/messages_basic_sender_name.yaml")
-		So(results[0], ShouldEqual, ALLOW)
-		So(results[1], ShouldEqual, DEFAULT)
-		So(results[2], ShouldEqual, DEFAULT)
-		So(results[3], ShouldEqual, DEFAULT)
-		fmt.Println("----------------------")
+		/*
+				str := "test whitelist: sender. Expected results: message 0: allow, message 1: block by default (no relevant whitelist entry), message 2: block by default (no relevant whitelist entry)  message 3: block by default (no relevant whitelist entry)"
+				fmt.Println(str)
+				results, _ := test_CheckMessages("../files/rules/main_fields/rules_basic.yaml", "../files/messages/main_fields/messages_basic_sender_name.yaml")
+				So(results[0], ShouldEqual, ALLOW)
+				So(results[1], ShouldEqual, DEFAULT)
+				So(results[2], ShouldEqual, DEFAULT)
+				So(results[3], ShouldEqual, DEFAULT)
+				fmt.Println("----------------------")
 
-		str = "test whitelist: receiver. Expected results: message 0: allow, message 1: block by default (no relevant whitelist entry)"
-		fmt.Println(str)
-		results, _ = test_CheckMessages("../files/rules/main_fields/rules_basic.yaml", "../files/messages/main_fields/messages_basic_receiver_name.yaml")
-		So(results[0], ShouldEqual, ALLOW)
-		So(results[1], ShouldEqual, DEFAULT)
-		fmt.Println("----------------------")
+				str = "test whitelist: receiver. Expected results: message 0: allow, message 1: block by default (no relevant whitelist entry)"
+				fmt.Println(str)
+				results, _ = test_CheckMessages("../files/rules/main_fields/rules_basic.yaml", "../files/messages/main_fields/messages_basic_receiver_name.yaml")
+				So(results[0], ShouldEqual, ALLOW)
+				So(results[1], ShouldEqual, DEFAULT)
+				fmt.Println("----------------------")
 
-		str = "test whitelist: sender with wildcards. Expected results: messages 0,1: allow, messages 2,3: block by default (no relevant whitelist entry)"
-		fmt.Println(str)
-		results, _ = test_CheckMessages("../files/rules/main_fields/rules_sender_with_wildcards.yaml", "../files/messages/main_fields/messages_sender_name_test_with_wildcards.yaml")
-		So(results[0], ShouldEqual, ALLOW)
-		So(results[1], ShouldEqual, ALLOW)
-		So(results[2], ShouldEqual, DEFAULT)
-		So(results[3], ShouldEqual, DEFAULT)
-		fmt.Println("----------------------")
+				str = "test whitelist: sender with wildcards. Expected results: messages 0,1: allow, messages 2,3: block by default (no relevant whitelist entry)"
+				fmt.Println(str)
+				results, _ = test_CheckMessages("../files/rules/main_fields/rules_sender_with_wildcards.yaml", "../files/messages/main_fields/messages_sender_name_test_with_wildcards.yaml")
+				So(results[0], ShouldEqual, ALLOW)
+				So(results[1], ShouldEqual, ALLOW)
+				So(results[2], ShouldEqual, DEFAULT)
+				So(results[3], ShouldEqual, DEFAULT)
+				fmt.Println("----------------------")
 
-		str = "test whitelist: receiver with wildcards. Expected results: messages 0,1: allow, messages 2,3: block by default (no relevant whitelist entry)"
-		fmt.Println(str)
-		results, _ = test_CheckMessages("../files/rules/main_fields/rules_receiver_with_wildcards.yaml", "../files/messages/main_fields/messages_receiver_name_test_with_wildcards.yaml")
-		So(results[0], ShouldEqual, ALLOW)
-		So(results[1], ShouldEqual, ALLOW)
-		So(results[2], ShouldEqual, DEFAULT)
-		So(results[3], ShouldEqual, DEFAULT)
-		fmt.Println("----------------------")
+				str = "test whitelist: receiver with wildcards. Expected results: messages 0,1: allow, messages 2,3: block by default (no relevant whitelist entry)"
+				fmt.Println(str)
+				results, _ = test_CheckMessages("../files/rules/main_fields/rules_receiver_with_wildcards.yaml", "../files/messages/main_fields/messages_receiver_name_test_with_wildcards.yaml")
+				So(results[0], ShouldEqual, ALLOW)
+				So(results[1], ShouldEqual, ALLOW)
+				So(results[2], ShouldEqual, DEFAULT)
+				So(results[3], ShouldEqual, DEFAULT)
+				fmt.Println("----------------------")
 
-		str = "test whitelist: sender lists. Expected results: messages 0,1: allow, messages 2: block by default (no relevant whitelist entry)"
-		fmt.Println(str)
-		results, _ = test_CheckMessages("../files/rules/main_fields/rules_sender_list.yaml", "../files/messages/main_fields/messages_sender_test_with_lists.yaml")
-		So(results[0], ShouldEqual, ALLOW)
-		So(results[1], ShouldEqual, ALLOW)
-		So(results[2], ShouldEqual, DEFAULT)
-		fmt.Println("----------------------")
-*/
+				str = "test whitelist: sender lists. Expected results: messages 0,1: allow, messages 2: block by default (no relevant whitelist entry)"
+				fmt.Println(str)
+				results, _ = test_CheckMessages("../files/rules/main_fields/rules_sender_list.yaml", "../files/messages/main_fields/messages_sender_test_with_lists.yaml")
+				So(results[0], ShouldEqual, ALLOW)
+				So(results[1], ShouldEqual, ALLOW)
+				So(results[2], ShouldEqual, DEFAULT)
+				fmt.Println("----------------------")
+		*/
 		str := "test whitelist: sender ip. Expected results: message 0,1,3,4: allow, message 2: block by default (no relevant whitelist entry)"
 		fmt.Println(str)
 		results, _ := test_CheckMessages("../files/rules/main_fields/rules_with_sender_ips.yaml", "../files/messages/main_fields/messages_basic_sender_ip.yaml")
@@ -1607,11 +1607,11 @@ func test_CheckMessages(rulesFilename string, messagesFilename string) ([]int, e
 		}
 		outputResults = append(outputResults, result)
 
-		result2:=DEFAULT
+		result2 := DEFAULT
 		for _, r := range rules.Rules {
 			result2_temp, _ := r.Check(&message)
-			if result2_temp>result2{
-				result2=result2_temp
+			if result2_temp > result2 {
+				result2 = result2_temp
 			}
 		}
 		So(result, ShouldEqual, result2)
@@ -1657,6 +1657,11 @@ func test_CheckMessagesWithPredefinedStrings(rulesFilename string, messagesFilen
 		}
 
 	}
+
+	err = SetGlobalPredefinedStringsAndLists(predefinedStringsAndLists)
+	So(err, ShouldEqual, nil)
+	err = SetGlobalPredefinedStringsAndLists(PredefinedStringsAndLists{})
+	So(err, ShouldEqual, nil)
 
 	return outputResults, rules, nil
 

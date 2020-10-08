@@ -16,6 +16,15 @@ import (
 
 var GlobalPredefinedStringsAndLists PredefinedStringsAndLists
 
+func SetGlobalPredefinedStringsAndLists(stringsAndlists PredefinedStringsAndLists) error {
+	validatedStringsAndlists, err := validatePredefinedString(stringsAndlists)
+	if err != nil {
+		return err
+	}
+	GlobalPredefinedStringsAndLists = validatedStringsAndlists
+	return nil
+}
+
 // YamlReadRulesFromString function reads rules from a yaml string
 func YamlReadRulesFromString(yamlString string) (Rules, error) {
 
