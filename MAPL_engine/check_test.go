@@ -337,7 +337,18 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
-		results, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug.json")
+
+		results, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug4.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug2.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug4b.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug2.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+		results, err := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug.json")
+		fmt.Println(err)
+
+		So(err, ShouldEqual, nil)
+
+		results, _ = test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug.json")
 		So(results[0], ShouldEqual, BLOCK)
 		results2, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug.json")
 		So(results2[0], ShouldEqual, BLOCK)

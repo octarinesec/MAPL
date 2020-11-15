@@ -1,6 +1,6 @@
 package MAPL_engine
 
-import 	"go.mongodb.org/mongo-driver/bson"
+import "go.mongodb.org/mongo-driver/bson"
 
 type QueryType string
 
@@ -20,6 +20,9 @@ func (rule *Rule) ToMongoQuery(parentField string) (MaplToMongoResult, error) {
 		rule.SetPredefinedStringsAndLists(GlobalPredefinedStringsAndLists) // use the global if not set already
 	}
 
+	if rule.preparedRule.Conditions == nil {
+		return MaplToMongoResult{QueryTypeSimple, bson.M{}}, nil
+	}
 
 	query, added_pipeline, err := rule.preparedRule.Conditions.ConditionsTree.ToMongoQuery(parentField, "", 0)
 	if err != nil {

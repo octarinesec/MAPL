@@ -1,0 +1,26 @@
+rules:
+  - rule_id: 0
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "workload"
+    protocol: "*"
+    resource:
+      resourceType: "*"
+      resourceName: "*"
+    operation: "*"
+    conditions:
+      conditionsTree:
+        AND:
+        - attribute: "jsonpath:$.spec.replicas"
+          method: EQ
+          value: 1
+        - ANY:
+            parentJsonpathAttribute: "jsonpath:$.spec.template.spec.containers[:]"
+            condition:
+              attribute: "jsonpath:$RELATIVE.resource.limis.cpu"
+              method: EQ
+              value: 1
+    decision: block
