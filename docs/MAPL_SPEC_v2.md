@@ -178,7 +178,10 @@ predefinedStringsAndLists, err = validatePredefinedString(predefinedStringsAndLi
 err = yaml.Unmarshal([]byte(ruleYamlStr), &rule)
 err = rule.SetPredefinedStringsAndLists(predefinedStringsAndLists)
 ```
-
+setting default PredefinedStringsAndLists:
+```
+err:=SetGlobalPredefinedStringsAndLists(stringsAndlists)
+```
 
 # Examples
 
