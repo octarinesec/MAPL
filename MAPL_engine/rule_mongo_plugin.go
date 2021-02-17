@@ -20,7 +20,7 @@ func (rule *Rule) ToMongoQuery(parentField string) (MaplToMongoResult, error) {
 		rule.SetPredefinedStringsAndLists(GlobalPredefinedStringsAndLists) // use the global if not set already
 	}
 
-	if rule.preparedRule.Conditions == nil {
+	if rule.preparedRule.Conditions.ConditionsTree == nil {
 		return MaplToMongoResult{QueryTypeSimple, bson.M{}}, nil
 	}
 

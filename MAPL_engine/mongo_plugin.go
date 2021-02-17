@@ -167,7 +167,12 @@ func (c *Condition) ToMongoQuery(base string, parentString string, inArrayCounte
 	}
 
 	if strings.HasPrefix(c.OriginalAttribute, "jsonpath:$.") {
-		field = strings.Replace(c.OriginalAttribute, "jsonpath:$.", base+".", 1)
+
+		newBase := ""
+		if len(base)>0 {
+			newBase = base + "."
+		}
+		field = strings.Replace(c.OriginalAttribute, "jsonpath:$.",newBase , 1)
 	}
 
 	field, err := removeQuotes(field)
@@ -209,7 +214,7 @@ func (c *Condition) ToMongoQuery(base string, parentString string, inArrayCounte
 		q2 := bson.M{field: bson.M{"$exists": true}}
 		q = bson.M{"$and": []bson.M{q1, q2}}
 		// db.raw_data.find({"$and":[{"raw.metadata.labels.foo":{"$not":{"$regex":"ar2"}}},{"raw.metadata.labels.foo":{"$exists":true}}]})
-	case "IN", "NIN":
+	case "IN", "NIN": // it is not supported natievly. we convert it to RE/NRE first which are supported.
 		return bson.M{}, []bson.M{}, fmt.Errorf("methods IN,NIN are not supported yet")
 	}
 
