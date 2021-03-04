@@ -62,6 +62,11 @@ func (n *Not) ToMongoQuery(base string, parentString string, inArrayCounter int)
 
 func (a *All) ToMongoQuery(base string, parentString string, inArrayCounter int) (bson.M, []bson.M, error) { //parentString is irrelevant here
 
+	splitted := strings.Split(a.ParentJsonpathAttributeOriginal, ",")
+	if len(splitted) > 1 {
+		return bson.M{}, []bson.M{}, fmt.Errorf("list of ParentJsonpathAttributes is not supported yet")
+	}
+
 	if strings.HasSuffix(a.ParentJsonpathAttributeOriginal, "[:]") {
 		inArrayCounter += 1
 	}
@@ -90,6 +95,11 @@ func (a *All) ToMongoQuery(base string, parentString string, inArrayCounter int)
 }
 
 func (a *Any) ToMongoQuery(base string, parentString string, inArrayCounter int) (bson.M, []bson.M, error) { //parentString is irrelevant here
+
+	splitted := strings.Split(a.ParentJsonpathAttributeOriginal, ",")
+	if len(splitted) > 1 {
+		return bson.M{}, []bson.M{}, fmt.Errorf("list of ParentJsonpathAttributes is not supported yet")
+	}
 
 	if strings.HasSuffix(a.ParentJsonpathAttributeOriginal, "[:]") {
 		inArrayCounter += 1

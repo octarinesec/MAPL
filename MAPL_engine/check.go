@@ -708,38 +708,47 @@ func getArrayOfJsons(a AnyAllNode, message *MessageAttributes) ([][]byte, error)
 	// used in eval of ANY/ALL node (getting the data from the message attributes by the parentJsonpath)
 	arrayData := []byte{}
 	err := errors.New("error")
-	parentJsonpath := a.GetParentJsonpathAttribute()
+	parentJsonpathAll := a.GetParentJsonpathAttribute()
 
-	if strings.HasPrefix(parentJsonpath, "$RELATIVE.") || parentJsonpath == "$RELATIVE*" || strings.HasPrefix(parentJsonpath, "$KEY.") || strings.HasPrefix(parentJsonpath, "$VALUE.") { // to-do: create a flag once when parsing!
-		parentJsonpath = strings.Replace(parentJsonpath, "$RELATIVE.", "$.", 1)
-		parentJsonpath = strings.Replace(parentJsonpath, "$KEY.", "$.", 1)
-		parentJsonpath = strings.Replace(parentJsonpath, "$VALUE.", "$.", 1)
-		if parentJsonpath == "$RELATIVE*" {
-			parentJsonpath = "$*"
+	arrayJsonAll := [][]byte{}
+
+	//allow for a list of jsonpaths
+	splitted := strings.Split(parentJsonpathAll, ",")
+	for _, parentJsonpath := range (splitted) {
+
+		if strings.HasPrefix(parentJsonpath, "$RELATIVE.") || parentJsonpath == "$RELATIVE*" || strings.HasPrefix(parentJsonpath, "$KEY.") || strings.HasPrefix(parentJsonpath, "$VALUE.") { // to-do: create a flag once when parsing!
+			parentJsonpath = strings.Replace(parentJsonpath, "$RELATIVE.", "$.", 1)
+			parentJsonpath = strings.Replace(parentJsonpath, "$KEY.", "$.", 1)
+			parentJsonpath = strings.Replace(parentJsonpath, "$VALUE.", "$.", 1)
+			if parentJsonpath == "$RELATIVE*" {
+				parentJsonpath = "$*"
+			}
+			arrayData, err = jsonslice.Get(*message.RequestJsonRawRelative, parentJsonpath)
+		} else {
+			arrayData, err = jsonslice.Get(*message.RequestJsonRaw, parentJsonpath)
 		}
-		arrayData, err = jsonslice.Get(*message.RequestJsonRawRelative, parentJsonpath)
-	} else {
-		arrayData, err = jsonslice.Get(*message.RequestJsonRaw, parentJsonpath)
-	}
 
-	if err != nil {
-		return [][]byte{}, err
-	}
-
-	arrayData, err = getArrayFromArrayOfArrays(arrayData)
-	if err != nil {
-		return [][]byte{}, err
-	}
-
-	arrayJson, err := getArrayOfJsonsFromInterfaceArray(arrayData)
-	if err != nil {
-		arrayJson, err := getArrayOfJsonsFromMapStringInterface(arrayData)
 		if err != nil {
 			return [][]byte{}, err
 		}
-		return arrayJson, nil
+
+		arrayData, err = getArrayFromArrayOfArrays(arrayData)
+		if err != nil {
+			return [][]byte{}, err
+		}
+
+		arrayJson, err := getArrayOfJsonsFromInterfaceArray(arrayData)
+		if err != nil {
+			arrayJson, err = getArrayOfJsonsFromMapStringInterface(arrayData)
+			if err != nil {
+				return [][]byte{}, err
+			}
+		}
+		for _, arrayJsonTemp := range (arrayJson) {
+			arrayJsonAll = append(arrayJsonAll, arrayJsonTemp)
+		}
 	}
-	return arrayJson, nil
+	return arrayJsonAll, nil
 }
 
 func getArrayOfJsonsFromInterfaceArray(arrayData []byte) ([][]byte, error) {

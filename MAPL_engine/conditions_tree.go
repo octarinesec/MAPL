@@ -745,15 +745,19 @@ func getNotNode(v2 map[string]interface{}, parentString string) (Node, error) {
 }
 
 func isValidParentJsonpathAttribute(parentJsonpathAttribute string) bool {
-	flag1 := strings.HasPrefix(parentJsonpathAttribute, "jsonpath:.")
-	flag2 := strings.HasPrefix(parentJsonpathAttribute, "jsonpath:$.")
-	flag3 := strings.HasPrefix(parentJsonpathAttribute, "jsonpath:$RELATIVE")
-	if !flag1 && !flag2 && !flag3 {
-		return false
+
+	// allow for a list:
+	splitted := strings.Split(parentJsonpathAttribute, ",")
+	for _, parentJsonpathAttributeTemp := range (splitted) {
+
+		flag1 := strings.HasPrefix(parentJsonpathAttributeTemp, "jsonpath:.")
+		flag2 := strings.HasPrefix(parentJsonpathAttributeTemp, "jsonpath:$.")
+		flag3 := strings.HasPrefix(parentJsonpathAttributeTemp, "jsonpath:$RELATIVE")
+		if !flag1 && !flag2 && !flag3 {
+			return false
+		}
 	}
-	//if !strings.HasSuffix(parentJsonpathAttribute, "[:]") {
-	//	return false
-	//}
+
 	return true
 }
 

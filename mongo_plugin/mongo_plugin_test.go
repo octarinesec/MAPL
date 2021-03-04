@@ -443,10 +443,16 @@ func TestMongoPluginAnyAll(t *testing.T) {
 		results, err := test_plugin("../files/rules/mongo_plugin/any_all/invalid_rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
 		errString := fmt.Sprintf("%v", err)
 		So(errString, ShouldEqual, "deepscan is not supported")
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/invalid_rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY2.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
+		errString = fmt.Sprintf("%v", err)
+		So(errString, ShouldEqual, "list of ParentJsonpathAttributes is not supported yet")
 		// invalid ALL:
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/invalid_rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
 		errString = fmt.Sprintf("%v", err)
 		So(errString, ShouldEqual, "deepscan is not supported")
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/invalid_rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL2.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
+		errString = fmt.Sprintf("%v", err)
+		So(errString, ShouldEqual, "list of ParentJsonpathAttributes is not supported yet")
 		// ANY:
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
 		So(results[0], ShouldEqual, true)
