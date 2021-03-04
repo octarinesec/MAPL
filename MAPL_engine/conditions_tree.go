@@ -182,13 +182,22 @@ type Or struct {
 }
 
 func (o *Or) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
+	flagOut := false
+	extraDataOut := []map[string]interface{}{}
 	for _, node := range o.Nodes {
 		flag, extraData := node.Eval(message)
+		// if flag {
+		//	return true, extraData // no need to check the rest
+		//}
+		flagOut = flagOut || flag
 		if flag {
-			return true, extraData // no need to check the rest
+			for _, e := range (extraData) {
+				extraDataOut = append(extraDataOut, e)
+			}
 		}
 	}
-	return false, []map[string]interface{}{}
+	//return false, []map[string]interface{}{}
+	return flagOut, extraDataOut
 }
 func (o *Or) Append(node Node) {
 	o.Nodes = append(o.Nodes, node)
@@ -282,6 +291,7 @@ func (a *Any) Eval(message *MessageAttributes) (bool, []map[string]interface{}) 
 	if len(a.ReturnValueJsonpath) > 0 {
 		checkAllValuesInTheArray = true
 	}
+	originalRequestJsonRawRelative := message.RequestJsonRawRelative
 	for _, val := range rawArrayData {
 		message.RequestJsonRawRelative = &val
 		flag, _ := a.Node.Eval(message)
@@ -302,6 +312,7 @@ func (a *Any) Eval(message *MessageAttributes) (bool, []map[string]interface{}) 
 				extraData = append(extraData, extraDataTemp)
 			}
 			if !checkAllValuesInTheArray {
+				message.RequestJsonRawRelative = originalRequestJsonRawRelative
 				return result, extraData
 			}
 		}
@@ -310,6 +321,7 @@ func (a *Any) Eval(message *MessageAttributes) (bool, []map[string]interface{}) 
 	//if strings.HasSuffix(extraData, ",") {
 	//	extraData = extraData[0 : len(extraData)-1]
 	//}
+	message.RequestJsonRawRelative = originalRequestJsonRawRelative
 	return result, extraData
 }
 func (a *Any) Append(node Node) {
@@ -404,13 +416,17 @@ func (a *All) Eval(message *MessageAttributes) (bool, []map[string]interface{}) 
 		return false, []map[string]interface{}{}
 	}
 
+	originalRequestJsonRawRelative := message.RequestJsonRawRelative
+
 	for _, val := range rawArrayData {
 		message.RequestJsonRawRelative = &val
 		flag, _ := a.Node.Eval(message)
 		if !flag {
+			message.RequestJsonRawRelative = originalRequestJsonRawRelative
 			return false, []map[string]interface{}{}
 		}
 	}
+	message.RequestJsonRawRelative = originalRequestJsonRawRelative
 	return true, []map[string]interface{}{}
 }
 func (a *All) Append(node Node) {
@@ -502,7 +518,7 @@ func (f False) ToMongoQuery(base, str string, inArrayCounter int) (bson.M, []bso
 // Basic Condition Node
 //--------------------------------------
 func (c *Condition) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
-	return testOneCondition(c, message), []map[string]interface{}{}
+	return testOneCondition(c, message)
 }
 func (c *Condition) Append(node Node) {
 }
@@ -731,7 +747,7 @@ func getNotNode(v2 map[string]interface{}, parentString string) (Node, error) {
 func isValidParentJsonpathAttribute(parentJsonpathAttribute string) bool {
 	flag1 := strings.HasPrefix(parentJsonpathAttribute, "jsonpath:.")
 	flag2 := strings.HasPrefix(parentJsonpathAttribute, "jsonpath:$.")
-	flag3 := strings.HasPrefix(parentJsonpathAttribute, "jsonpath:$RELATIVE.")
+	flag3 := strings.HasPrefix(parentJsonpathAttribute, "jsonpath:$RELATIVE")
 	if !flag1 && !flag2 && !flag3 {
 		return false
 	}

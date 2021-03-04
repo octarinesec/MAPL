@@ -170,7 +170,11 @@ func TestConditionsTree3(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
-		rules, err := YamlReadRulesFromFile("../files/rules/condition_keyword/rules_with_condition_keyword.yaml")
+		rules, err := YamlReadRulesFromFile("../files/rules/condition_keyword/rules_with_condition_keyword_and_return_value.yaml")
+		So(rules.Rules[0].Conditions.ConditionsTree,ShouldNotEqual,nil)
+		So(err, ShouldEqual, nil)
+
+		rules, err = YamlReadRulesFromFile("../files/rules/condition_keyword/rules_with_condition_keyword.yaml")
 		So(rules.Rules[0].Conditions.ConditionsTree,ShouldNotEqual,nil)
 		So(err, ShouldEqual, nil)
 		rules, err = YamlReadRulesFromFile("../files/rules/condition_keyword/rules_with_condition_keyword2.yaml")
@@ -179,6 +183,7 @@ func TestConditionsTree3(t *testing.T) {
 		So(err, ShouldEqual, nil)
 		rules, err = YamlReadRulesFromFile("../files/rules/condition_keyword/rules_with_condition_keyword4.yaml")
 		So(err, ShouldEqual, nil)
+
 		//------------------
 
 		hash5:=compareJsonAndYamlHash("../files/rules/condition_keyword/rules_with_condition_keyword5.yaml")

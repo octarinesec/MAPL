@@ -60,12 +60,14 @@ func validateAttribute(condition *Condition) (bool, error) {
 			return false, fmt.Errorf("jsonpath condition must start with '$' or '.' [%v]", condition.Attribute)
 		}
 		if strings.HasPrefix(condition.Attribute, "jsonpath:$") && !strings.HasPrefix(condition.Attribute, "jsonpath:$.") {
-			relativeKeywords:=[]string{"jsonpath:$RELATIVE.","jsonpath:$KEY","jsonpath:$VALUE"}
-			if !SliceHasPrefix(relativeKeywords,condition.Attribute)  {
-				return false, fmt.Errorf("jsonpath condition must start with '$.' [%v]", condition.Attribute)
+			relativeKeywords := []string{"jsonpath:$RELATIVE.", "jsonpath:$KEY", "jsonpath:$VALUE"}
+			if !SliceHasPrefix(relativeKeywords, condition.Attribute) {
+				if condition.Attribute != "jsonpath:$RELATIVE" {
+					return false, fmt.Errorf("jsonpath condition must start with '$.' [%v]", condition.Attribute)
+				}
 			}
 		}
-		if strings.HasPrefix(condition.Attribute, "jsonpath:$KEY."){
+		if strings.HasPrefix(condition.Attribute, "jsonpath:$KEY.") {
 			return false, fmt.Errorf("jsonpath condition $KEY must not have a subfield [%v]", condition.Attribute)
 		}
 		if strings.Contains(condition.Attribute, "[:]") {

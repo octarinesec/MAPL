@@ -62,8 +62,8 @@ func (n *Not) ToMongoQuery(base string, parentString string, inArrayCounter int)
 
 func (a *All) ToMongoQuery(base string, parentString string, inArrayCounter int) (bson.M, []bson.M, error) { //parentString is irrelevant here
 
-	if strings.HasSuffix(a.ParentJsonpathAttributeOriginal,"[:]"){
-		inArrayCounter+=1
+	if strings.HasSuffix(a.ParentJsonpathAttributeOriginal, "[:]") {
+		inArrayCounter += 1
 	}
 
 	if strings.HasPrefix(a.ParentJsonpathAttributeOriginal, "jsonpath:$..") {
@@ -91,8 +91,8 @@ func (a *All) ToMongoQuery(base string, parentString string, inArrayCounter int)
 
 func (a *Any) ToMongoQuery(base string, parentString string, inArrayCounter int) (bson.M, []bson.M, error) { //parentString is irrelevant here
 
-	if strings.HasSuffix(a.ParentJsonpathAttributeOriginal,"[:]"){
-		inArrayCounter+=1
+	if strings.HasSuffix(a.ParentJsonpathAttributeOriginal, "[:]") {
+		inArrayCounter += 1
 	}
 
 	if strings.HasPrefix(a.ParentJsonpathAttributeOriginal, "jsonpath:$..") {
@@ -150,7 +150,7 @@ func (c *Condition) ToMongoQuery(base string, parentString string, inArrayCounte
 
 	if strings.HasPrefix(c.OriginalAttribute, "jsonpath:$KEY") {
 
-		if inArrayCounter>=2 {
+		if inArrayCounter >= 2 {
 			return bson.M{}, []bson.M{}, fmt.Errorf("KEY within array is not supported")
 		}
 		if strings.Contains(c.OriginalAttribute, "jsonpath:$KEY.") {
@@ -169,10 +169,10 @@ func (c *Condition) ToMongoQuery(base string, parentString string, inArrayCounte
 	if strings.HasPrefix(c.OriginalAttribute, "jsonpath:$.") {
 
 		newBase := ""
-		if len(base)>0 {
+		if len(base) > 0 {
 			newBase = base + "."
 		}
-		field = strings.Replace(c.OriginalAttribute, "jsonpath:$.",newBase , 1)
+		field = strings.Replace(c.OriginalAttribute, "jsonpath:$.", newBase, 1)
 	}
 
 	field, err := removeQuotes(field)
@@ -214,7 +214,7 @@ func (c *Condition) ToMongoQuery(base string, parentString string, inArrayCounte
 		q2 := bson.M{field: bson.M{"$exists": true}}
 		q = bson.M{"$and": []bson.M{q1, q2}}
 		// db.raw_data.find({"$and":[{"raw.metadata.labels.foo":{"$not":{"$regex":"ar2"}}},{"raw.metadata.labels.foo":{"$exists":true}}]})
-	case "IN", "NIN": // it is not supported natievly. we convert it to RE/NRE first which are supported.
+	case "IN", "NIN": // it is not supported natively. we convert it to RE/NRE first which are supported.
 		return bson.M{}, []bson.M{}, fmt.Errorf("methods IN,NIN are not supported yet")
 	}
 

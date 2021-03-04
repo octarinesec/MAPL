@@ -455,6 +455,11 @@ func handleJsonpathAttribute(condition *Condition) {
 			condition.AttributeIsJsonpathRelative = true
 			netConditionAttribute = strings.Replace(netConditionAttribute, "$RELATIVE.", "$.", 1)
 			//netConditionAttribute = strings.Replace(netConditionAttribute, "$VALUE.", "$.", 1)
+		} else {
+			if netConditionAttribute == "$RELATIVE" {
+				condition.AttributeIsJsonpathRelative = true
+				netConditionAttribute = "$"
+			}
 		}
 
 		if netConditionAttribute[0] == '.' {

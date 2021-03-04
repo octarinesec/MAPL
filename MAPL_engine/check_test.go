@@ -98,47 +98,47 @@ func TestMaplEngineMainFields(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 		/*
-				str := "test whitelist: sender. Expected results: message 0: allow, message 1: block by default (no relevant whitelist entry), message 2: block by default (no relevant whitelist entry)  message 3: block by default (no relevant whitelist entry)"
-				fmt.Println(str)
-				results, _ := test_CheckMessages("../files/rules/main_fields/rules_basic.yaml", "../files/messages/main_fields/messages_basic_sender_name.yaml")
-				So(results[0], ShouldEqual, ALLOW)
-				So(results[1], ShouldEqual, DEFAULT)
-				So(results[2], ShouldEqual, DEFAULT)
-				So(results[3], ShouldEqual, DEFAULT)
-				fmt.Println("----------------------")
+			str := "test whitelist: sender. Expected results: message 0: allow, message 1: block by default (no relevant whitelist entry), message 2: block by default (no relevant whitelist entry)  message 3: block by default (no relevant whitelist entry)"
+			fmt.Println(str)
+			results, _ := test_CheckMessages("../files/rules/main_fields/rules_basic.yaml", "../files/messages/main_fields/messages_basic_sender_name.yaml")
+			So(results[0], ShouldEqual, ALLOW)
+			So(results[1], ShouldEqual, DEFAULT)
+			So(results[2], ShouldEqual, DEFAULT)
+			So(results[3], ShouldEqual, DEFAULT)
+			fmt.Println("----------------------")
 
-				str = "test whitelist: receiver. Expected results: message 0: allow, message 1: block by default (no relevant whitelist entry)"
-				fmt.Println(str)
-				results, _ = test_CheckMessages("../files/rules/main_fields/rules_basic.yaml", "../files/messages/main_fields/messages_basic_receiver_name.yaml")
-				So(results[0], ShouldEqual, ALLOW)
-				So(results[1], ShouldEqual, DEFAULT)
-				fmt.Println("----------------------")
+			str = "test whitelist: receiver. Expected results: message 0: allow, message 1: block by default (no relevant whitelist entry)"
+			fmt.Println(str)
+			results, _ = test_CheckMessages("../files/rules/main_fields/rules_basic.yaml", "../files/messages/main_fields/messages_basic_receiver_name.yaml")
+			So(results[0], ShouldEqual, ALLOW)
+			So(results[1], ShouldEqual, DEFAULT)
+			fmt.Println("----------------------")
 
-				str = "test whitelist: sender with wildcards. Expected results: messages 0,1: allow, messages 2,3: block by default (no relevant whitelist entry)"
-				fmt.Println(str)
-				results, _ = test_CheckMessages("../files/rules/main_fields/rules_sender_with_wildcards.yaml", "../files/messages/main_fields/messages_sender_name_test_with_wildcards.yaml")
-				So(results[0], ShouldEqual, ALLOW)
-				So(results[1], ShouldEqual, ALLOW)
-				So(results[2], ShouldEqual, DEFAULT)
-				So(results[3], ShouldEqual, DEFAULT)
-				fmt.Println("----------------------")
+			str = "test whitelist: sender with wildcards. Expected results: messages 0,1: allow, messages 2,3: block by default (no relevant whitelist entry)"
+			fmt.Println(str)
+			results, _ = test_CheckMessages("../files/rules/main_fields/rules_sender_with_wildcards.yaml", "../files/messages/main_fields/messages_sender_name_test_with_wildcards.yaml")
+			So(results[0], ShouldEqual, ALLOW)
+			So(results[1], ShouldEqual, ALLOW)
+			So(results[2], ShouldEqual, DEFAULT)
+			So(results[3], ShouldEqual, DEFAULT)
+			fmt.Println("----------------------")
 
-				str = "test whitelist: receiver with wildcards. Expected results: messages 0,1: allow, messages 2,3: block by default (no relevant whitelist entry)"
-				fmt.Println(str)
-				results, _ = test_CheckMessages("../files/rules/main_fields/rules_receiver_with_wildcards.yaml", "../files/messages/main_fields/messages_receiver_name_test_with_wildcards.yaml")
-				So(results[0], ShouldEqual, ALLOW)
-				So(results[1], ShouldEqual, ALLOW)
-				So(results[2], ShouldEqual, DEFAULT)
-				So(results[3], ShouldEqual, DEFAULT)
-				fmt.Println("----------------------")
+			str = "test whitelist: receiver with wildcards. Expected results: messages 0,1: allow, messages 2,3: block by default (no relevant whitelist entry)"
+			fmt.Println(str)
+			results, _ = test_CheckMessages("../files/rules/main_fields/rules_receiver_with_wildcards.yaml", "../files/messages/main_fields/messages_receiver_name_test_with_wildcards.yaml")
+			So(results[0], ShouldEqual, ALLOW)
+			So(results[1], ShouldEqual, ALLOW)
+			So(results[2], ShouldEqual, DEFAULT)
+			So(results[3], ShouldEqual, DEFAULT)
+			fmt.Println("----------------------")
 
-				str = "test whitelist: sender lists. Expected results: messages 0,1: allow, messages 2: block by default (no relevant whitelist entry)"
-				fmt.Println(str)
-				results, _ = test_CheckMessages("../files/rules/main_fields/rules_sender_list.yaml", "../files/messages/main_fields/messages_sender_test_with_lists.yaml")
-				So(results[0], ShouldEqual, ALLOW)
-				So(results[1], ShouldEqual, ALLOW)
-				So(results[2], ShouldEqual, DEFAULT)
-				fmt.Println("----------------------")
+			str = "test whitelist: sender lists. Expected results: messages 0,1: allow, messages 2: block by default (no relevant whitelist entry)"
+			fmt.Println(str)
+			results, _ = test_CheckMessages("../files/rules/main_fields/rules_sender_list.yaml", "../files/messages/main_fields/messages_sender_test_with_lists.yaml")
+			So(results[0], ShouldEqual, ALLOW)
+			So(results[1], ShouldEqual, ALLOW)
+			So(results[2], ShouldEqual, DEFAULT)
+			fmt.Println("----------------------")
 		*/
 		str := "test whitelist: sender ip. Expected results: message 0,1,3,4: allow, message 2: block by default (no relevant whitelist entry)"
 		fmt.Println(str)
@@ -337,7 +337,6 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
-
 		results, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug4.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug2.json")
 		So(results[0], ShouldEqual, BLOCK)
 		results, _ = test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug4b.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug2.json")
@@ -363,6 +362,38 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 		results6, _ := test_ConditionsWithJsonRaw("../files/rules/debugging/rules_with_jsonpath_debug2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug.json")
 		So(results6[0][0], ShouldEqual, true)
 
+	})
+}
+
+func TestMaplEngineJsonConditionWithReturnValues(t *testing.T) {
+
+	logging := false
+	if logging {
+		// setup a log outfile file
+		f, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777) //create your file with desired read/write permissions
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Sync()
+		defer f.Close()
+		log.SetOutput(f) //set output of logs to f
+	} else {
+		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
+	}
+
+	reporting.QuietMode()
+	Convey("tests", t, func() {
+
+		// test on arrays
+		str := "test jsonpath condition"
+		fmt.Println(str)
+
+		results, extraData, _ := test_CheckMessagesWithRawDataWithReturnValue("../files/rules/condition_keyword/rules_with_condition_keyword_and_return_value.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data_condition_with_return_values.json")
+		So(len(extraData[0]), ShouldEqual, 1)
+		So(len(extraData[0][0]), ShouldEqual, 2)
+		So(extraData[0][0]["name"], ShouldEqual, "containerName")
+		So(extraData[0][0]["command"], ShouldEqual, "containerCommand")
+		So(results[0], ShouldEqual, ALLOW)
 	})
 }
 
@@ -1519,6 +1550,7 @@ func TestMaplEngineJsonConditionsKeyValue(t *testing.T) {
 		str := "test jsonpath conditions with key/value attribute"
 		fmt.Println(str)
 
+
 		results, _ := test_CheckMessagesWithRawData("../files/rules/key_value/rules_with_jsonpath_conditions_key1.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json")
 		So(results[0], ShouldEqual, BLOCK)
 
@@ -1560,6 +1592,10 @@ func TestMaplEngineJsonConditionsKeyValue(t *testing.T) {
 
 		results, _ = test_CheckMessagesWithRawData("../files/rules/key_value/rules_with_jsonpath_conditions_value_relative_ALL.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_labels_relative3.json")
 		So(results[0], ShouldEqual, DEFAULT)
+
+		results, _ = test_CheckMessagesWithRawData("../files/rules/key_value/rules_with_jsonpath_conditions_key_relative.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/key_value/json_raw_data_object.json")
+		So(results[0], ShouldEqual, BLOCK)
+
 
 	})
 }

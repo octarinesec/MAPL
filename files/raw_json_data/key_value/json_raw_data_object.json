@@ -1,0 +1,32 @@
+{
+  "cluster": "",
+  "namespace": "",
+  "kind": "",
+  "name": "",
+  "labels": null,
+  "raw": null,
+  "object": {
+    "kind": "Pod",
+    "apiVersion": "v1",
+    "metadata": {
+      "name": "pod",
+      "namespace": "namespace",
+      "creationTimestamp": null
+    },
+    "spec": {
+      "volumes": [
+        {
+          "name": "",
+          "nfs": {
+            "server": "",
+            "path": ""
+          }
+        }
+      ],
+      "containers": null
+    },
+    "status": {
+
+    }
+  }
+}

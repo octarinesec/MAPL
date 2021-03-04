@@ -1,8 +1,10 @@
 package MAPL_engine
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/toolkits/slice"
+	dc "gopkg.in/getlantern/deepcopy.v1"
 	"net"
 	"regexp"
 	"strings"
@@ -76,6 +78,9 @@ type Condition struct {
 	AttributeIsJsonpathRelative bool   `yaml:"-" json:"-,omitempty" bson:"attributeIsJsonpathRelative,omitempty" structs:"attributeIsJsonpathRelative,omitempty"`
 	AttributeJsonpathQuery      string `yaml:"-" json:"-,omitempty" bson:"attributeJsonpathQuery,omitempty" structs:"attributeJsonpathQuery,omitempty"`
 
+	ReturnValueJsonpath         map[string]string `yaml:"-" json:"-,omitempty"`
+	ReturnValueJsonpathOriginal map[string]string `yaml:"-" json:"-,omitempty"`
+
 	OriginalAttribute string `yaml:"-" json:"-,omitempty" bson:"originalAttribute,omitempty" structs:"originalAttribute,omitempty"` // used in hash
 	OriginalMethod    string `yaml:"-" json:"-,omitempty" bson:"originalMethod,omitempty" structs:"originalMethod,omitempty"`       // used in hash
 	OriginalValue     string `yaml:"-" json:"-,omitempty" bson:"originalValue,omitempty" structs:"originalValue,omitempty"`         // used in hash
@@ -114,9 +119,11 @@ type Rules struct {
 }
 
 type ConditionNode struct {
-	Attribute string `yaml:"attribute,omitempty" json:"attribute" bson:"attribute" structs:"attribute,omitempty"`
-	Method    string `yaml:"method,omitempty" json:"method" bson:"method" structs:"method,omitempty"`
-	Value     string `yaml:"value,omitempty" json:"value" bson:"value" structs:"value,omitempty"`
+	Attribute                   string            `yaml:"attribute,omitempty" json:"attribute" bson:"attribute" structs:"attribute,omitempty"`
+	Method                      string            `yaml:"method,omitempty" json:"method" bson:"method" structs:"method,omitempty"`
+	Value                       string            `yaml:"value,omitempty" json:"value" bson:"value" structs:"value,omitempty"`
+	ReturnValueJsonpathOriginal map[string]string `yaml:"returnValueJsonpathOriginal,omitempty" json:"returnValueJsonpathOriginal" bson:"returnValueJsonpathOriginal" structs:"returnValueJsonpathOriginal,omitempty"`
+	ReturnValueJsonpath         map[string]string `yaml:"returnValueJsonpath,omitempty" json:"returnValueJsonpath" bson:"returnValueJsonpath" structs:"returnValueJsonpath,omitempty"`
 }
 
 func ConditionFromConditionNode(c ConditionNode) Condition {
@@ -125,6 +132,14 @@ func ConditionFromConditionNode(c ConditionNode) Condition {
 	c_out.Attribute = c.Attribute
 	c_out.Method = c.Method
 	c_out.Value = c.Value
+	c_out.ReturnValueJsonpath = c.ReturnValueJsonpath
+
+	dc.Copy(&c_out.ReturnValueJsonpathOriginal, &c.ReturnValueJsonpath)
+	dc.Copy(&c_out.ReturnValueJsonpath, &c.ReturnValueJsonpath)
+	for k, v := range c_out.ReturnValueJsonpath {
+		c_out.ReturnValueJsonpath[k] = strings.Replace(v, "jsonpath:$RELATIVE", "$", 1)
+		c_out.ReturnValueJsonpath[k] = strings.Replace(v, "jsonpath:$", "$", 1)
+	}
 
 	return c_out
 
@@ -144,6 +159,20 @@ func ReadCondition(v map[string]interface{}) (ConditionNode) {
 		case "value", "Value":
 			c.Value = fmt.Sprintf("%v", val) // to avoid interface interpreted as int which causes panic
 
+		case "returnValueJsonpath", "ReturnValueJsonpath":
+			c.ReturnValueJsonpath = make(map[string]string)
+			switch val.(type) {
+			case map[string]interface{}:
+				val2 := val.(map[string]interface{})
+				for kk, vv := range val2 {
+					c.ReturnValueJsonpath[kk] = vv.(string)
+				}
+			case map[interface{}]interface{}:
+				val2 := val.(map[interface{}]interface{})
+				for kk, vv := range val2 {
+					c.ReturnValueJsonpath[kk.(string)] = vv.(string)
+				}
+			}
 		}
 	}
 	return c
@@ -164,20 +193,26 @@ func isConditionNode(v map[string]interface{}) bool {
 	flagValue := slice.ContainsString(keys, "Value") || slice.ContainsString(keys, "value")
 	flagValue2 := slice.ContainsString(keys, "ValueInt") || slice.ContainsString(keys, "valueInt")
 	flagValue3 := slice.ContainsString(keys, "ValueFloat") || slice.ContainsString(keys, "valueFloat")
+	flagReturnValue := slice.ContainsString(keys, "ReturnValueJsonpath") || slice.ContainsString(keys, "returnValueJsonpath")
 
-	if len(keys) == 2 && flagAtt && flagMethod {
+	extra := 0
+	if flagReturnValue {
+		extra += 1
+	}
+
+	if len(keys) == 2+extra && flagAtt && flagMethod {
 		return true
 	}
-	if len(keys) == 3 && flagAtt && flagMethod && flagValue {
+	if len(keys) == 3+extra && flagAtt && flagMethod && flagValue {
 		return true
 	}
-	if len(keys) == 4 && flagAtt && flagMethod && flagValue && flagValue2 {
+	if len(keys) == 4+extra && flagAtt && flagMethod && flagValue && flagValue2 {
 		return true
 	}
-	if len(keys) == 4 && flagAtt && flagMethod && flagValue && flagValue3 {
+	if len(keys) == 4+extra && flagAtt && flagMethod && flagValue && flagValue3 {
 		return true
 	}
-	if len(keys) == 5 && flagAtt && flagMethod && flagValue && flagValue2 && flagValue3 {
+	if len(keys) == 5+extra && flagAtt && flagMethod && flagValue && flagValue2 && flagValue3 {
 		return true
 	}
 
@@ -248,7 +283,16 @@ func (c *Condition) MarshalJSON() ([]byte, error) {
 	valueString = strings.Replace(valueString, "\\", "\\\\", -1)
 	valueString = strings.Replace(valueString, "\"", "\\\"", -1)
 
+	returnValueJsonpath := c.ReturnValueJsonpath
+	if len(c.ReturnValueJsonpathOriginal) > 0 {
+		returnValueJsonpath = c.ReturnValueJsonpathOriginal
+	}
+	returnValueJsonpathJson, _ := json.Marshal(returnValueJsonpath)
+
 	str := fmt.Sprintf(`{"condition":{"attribute":"%v","method":"%v","value":"%v"}}`, attributeString, methodString, valueString)
 
+	if len(returnValueJsonpathJson)>0 {
+		str=fmt.Sprintf(`{"condition":{"attribute":"%v","method":"%v","value":"%v","returnValueJsonpath":%v}}`, attributeString, methodString, valueString,string(returnValueJsonpathJson))
+	}
 	return []byte(str), nil
 }

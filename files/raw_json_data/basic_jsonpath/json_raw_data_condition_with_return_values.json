@@ -1,0 +1,16 @@
+{
+  "apiVersion": "v1",
+  "kind": "Pod",
+  "metadata": {
+    "name": "hello-apparmor",
+    "annotations": {
+      "container.apparmor.security.beta.kubernetes.io/hello": "localhost/k8s-apparmor-example-deny-write"
+    }
+  },
+  "encryptionType": "TLS",
+  "object": {
+    "container": "containerName",
+    "command": "containerCommand",
+    "otherStuff": "otherStuff"
+  }
+}

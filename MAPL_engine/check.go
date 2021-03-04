@@ -42,7 +42,7 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 	checkExtraData = make([][]map[string]interface{}, N)
 
 	sem := make(chan int, N) // semaphore pattern
-	if false { // check in parallel
+	if false {               // check in parallel
 
 		for i, rule := range (rules.Rules) { // check all the rules in parallel
 			go func(in_i int, in_rule Rule) {
@@ -262,7 +262,7 @@ func (rule *Rule) TestConditions(message *MessageAttributes) (bool, []map[string
 }
 
 // testOneCondition tests one condition of the rule with the message attributes
-func testOneCondition(c *Condition, message *MessageAttributes) bool {
+func testOneCondition(c *Condition, message *MessageAttributes) (bool, []map[string]interface{}) {
 
 	var valueToCompareInt int64
 	var valueToCompareFloat float64
@@ -314,25 +314,40 @@ func testOneCondition(c *Condition, message *MessageAttributes) bool {
 		}
 
 	case ("$sender"):
-		return testSenderAttributeCondition(c, message)
+		return testSenderAttributeCondition(c, message), []map[string]interface{}{}
 
 	case ("$receiver"):
-		return testReceiverAttributeCondition(c, message)
+		return testReceiverAttributeCondition(c, message), []map[string]interface{}{}
 
 	case ("senderLabel"):
-		return testSenderLabelCondition(c, message)
+		return testSenderLabelCondition(c, message), []map[string]interface{}{}
 
 	case ("receiverLabel"):
-		return testReceiverLabelCondition(c, message)
+		return testReceiverLabelCondition(c, message), []map[string]interface{}{}
 
 	case ("jsonpath"):
-		return testJsonPathCondition(c, message)
+		flag := testJsonPathCondition(c, message)
+		if flag && c.ReturnValueJsonpath != nil {
+			extraDataTemp := map[string]interface{}{}
+			for k, v := range c.ReturnValueJsonpath {
+				extraDataBytes, _ := jsonslice.Get(*message.RequestJsonRaw, v)
+				var tempInterface interface{}
+				err := json.Unmarshal(extraDataBytes, &tempInterface)
+				if err == nil {
+					extraDataTemp[k] = tempInterface
+				}
+				//extraDataTemp := string(extraDataBytes)
+				//extraDataTemp, _ = removeQuotes(extraDataTemp)
+			}
+			return flag, []map[string]interface{}{extraDataTemp}
+		}
+		return flag, []map[string]interface{}{}
 
 	default:
 		log.Printf("condition keyword not supported: %+v\n", c) // was log.Fatalf
-		return false
+		return false, []map[string]interface{}{}
 	}
-	return result
+	return result, []map[string]interface{}{}
 }
 
 func testSenderAttributeCondition(c *Condition, message *MessageAttributes) bool {
@@ -536,6 +551,11 @@ func removeQuotesAndBrackets(valueToCompareString string) string {
 	if valueToCompareString == "[]" {
 		valueToCompareString = ""
 	}
+	if len(valueToCompareString) >= 2 {
+		if valueToCompareString[0] == '"' && valueToCompareString[len(valueToCompareString)-1] == '"' {
+			valueToCompareString = valueToCompareString[1 : len(valueToCompareString)-1]
+		}
+	}
 	return valueToCompareString
 }
 
@@ -689,10 +709,14 @@ func getArrayOfJsons(a AnyAllNode, message *MessageAttributes) ([][]byte, error)
 	arrayData := []byte{}
 	err := errors.New("error")
 	parentJsonpath := a.GetParentJsonpathAttribute()
-	if strings.HasPrefix(parentJsonpath, "$RELATIVE.") || strings.HasPrefix(parentJsonpath, "$KEY.") || strings.HasPrefix(parentJsonpath, "$VALUE.") { // to-do: create a flag once when parsing!
+
+	if strings.HasPrefix(parentJsonpath, "$RELATIVE.") || parentJsonpath == "$RELATIVE*" || strings.HasPrefix(parentJsonpath, "$KEY.") || strings.HasPrefix(parentJsonpath, "$VALUE.") { // to-do: create a flag once when parsing!
 		parentJsonpath = strings.Replace(parentJsonpath, "$RELATIVE.", "$.", 1)
 		parentJsonpath = strings.Replace(parentJsonpath, "$KEY.", "$.", 1)
 		parentJsonpath = strings.Replace(parentJsonpath, "$VALUE.", "$.", 1)
+		if parentJsonpath == "$RELATIVE*" {
+			parentJsonpath = "$*"
+		}
 		arrayData, err = jsonslice.Get(*message.RequestJsonRawRelative, parentJsonpath)
 	} else {
 		arrayData, err = jsonslice.Get(*message.RequestJsonRaw, parentJsonpath)
