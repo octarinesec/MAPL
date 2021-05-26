@@ -151,6 +151,36 @@ func TestStartLocalMongo(t *testing.T) {
 	})
 }
 
+func TestMongoPluginDebugging(t *testing.T) {
+
+	logging := false
+	if logging {
+		// setup a log outfile file
+		f, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777) //create your file with desired read/write permissions
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Sync()
+		defer f.Close()
+		log.SetOutput(f) //set output of logs to f
+	} else {
+		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
+	}
+
+	reporting.QuietMode()
+	Convey("tests", t, func() {
+
+		// numbers:
+		results, _ := test_plugin("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_1.json", "raw")
+		So(results[0], ShouldEqual, false)
+		results, _ = test_plugin("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_2.json", "raw")
+		So(results[0], ShouldEqual, true)
+		results, _ = test_plugin("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_3.json", "raw")
+		So(results[0], ShouldEqual, false)
+
+	})
+}
+
 func TestMongoPluginBasic(t *testing.T) {
 
 	logging := false
@@ -349,7 +379,6 @@ func TestMongoPluginPrefix(t *testing.T) {
 
 	})
 }
-
 
 func TestMongoPluginAndOrNot(t *testing.T) {
 
@@ -573,7 +602,6 @@ func TestMongoPluginKeyValue(t *testing.T) {
 	})
 }
 
-
 func test_plugin(rulesFilename, jsonRawFilename, prefix string) ([]bool, error) {
 
 	rules, data, err := readRulesAndRawData(rulesFilename, jsonRawFilename)
@@ -647,7 +675,7 @@ func test_plugin(rulesFilename, jsonRawFilename, prefix string) ([]bool, error) 
 
 	}
 
-	err = deleteDocument(id,collectionName)
+	err = deleteDocument(id, collectionName)
 	if err != nil {
 		return []bool{}, err
 	}
