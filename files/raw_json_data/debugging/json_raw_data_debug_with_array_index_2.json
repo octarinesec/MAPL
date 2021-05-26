@@ -1,0 +1,93 @@
+{
+	"spec": {
+		"template": {
+			"metadata": {
+				"creationTimestamp": null,
+				"labels": {
+					"app": "local-path-provisioner"
+				}
+			},
+			"spec": {
+				"containers": [
+					{
+						"name": "cont1",
+						"image": "rancher/local-path-provisioner:v0.0.14",
+						"imagePullPolicy": "IfNotPresent"
+					},
+					{
+						"name": "abc",
+						"image": "rancher/local-path-provisioner:v0.0.14",
+						"imagePullPolicy": "IfNotPresent"
+					}
+				],
+				"dnsPolicy": "ClusterFirst",
+				"schedulerName": "default-scheduler",
+				"serviceAccount": "local-path-provisioner-service-account",
+				"serviceAccountName": "local-path-provisioner-service-account",
+				"nodeSelector": {
+					"kubernetes.io/os": "linux"
+				},
+				"restartPolicy": "Always",
+				"securityContext": {
+				},
+				"terminationGracePeriodSeconds": 30,
+				"tolerations": [
+					{
+						"effect": "NoSchedule",
+						"key": "node-role.kubernetes.io/master",
+						"operator": "Equal"
+					}
+				],
+				"volumes": [
+					{
+						"configMap": {
+							"defaultMode": 420,
+							"name": "local-path-config"
+						},
+						"name": "config-volume"
+					}
+				]
+			}
+		},
+		"progressDeadlineSeconds": 600,
+		"replicas": 1,
+		"revisionHistoryLimit": 10,
+		"selector": {
+			"matchLabels": {
+				"app": "local-path-provisioner"
+			}
+		},
+		"strategy": {
+			"rollingUpdate": {
+				"maxSurge": "25%",
+				"maxUnavailable": "25%"
+			},
+			"type": "RollingUpdate"
+		}
+	},
+	"status": {
+		"availableReplicas": 1,
+		"conditions": [
+			{
+				"reason": "NewReplicaSetAvailable",
+				"status": "True",
+				"type": "Progressing",
+				"lastTransitionTime": "2020-10-18T18:18:56Z",
+				"lastUpdateTime": "2020-10-18T18:19:28Z",
+				"message": "ReplicaSet \"local-path-provisioner-5f4b769cdf\" has successfully progressed."
+			},
+			{
+				"message": "Deployment has minimum availability.",
+				"reason": "MinimumReplicasAvailable",
+				"status": "True",
+				"type": "Available",
+				"lastTransitionTime": "2020-10-19T09:26:26Z",
+				"lastUpdateTime": "2020-10-19T09:26:26Z"
+			}
+		],
+		"observedGeneration": 1,
+		"readyReplicas": 1,
+		"replicas": 1,
+		"updatedReplicas": 1
+	}
+}
