@@ -73,6 +73,13 @@ func validateAttribute(condition *Condition) (bool, error) {
 		if strings.Contains(condition.Attribute, "[:]") {
 			return false, fmt.Errorf("jsonpath condition contains array reference. need to use parent node of type ANY/ALL")
 		}
+		if strings.Contains(condition.Attribute, "[]") {
+			return false, fmt.Errorf("jsonpath condition contains empty sqaure brackets")
+		}
+		if !validateArraysWithIndex(condition.Attribute) {
+			return false, fmt.Errorf("jsonpath condition contains array reference (not an integer index). need to use parent node of type ANY/ALL")
+		}
+
 	}
 
 	flagLabels, err := validateConditionOnLabels(condition)
@@ -87,6 +94,34 @@ func validateAttribute(condition *Condition) (bool, error) {
 
 	return true, nil
 
+}
+
+func validateArraysWithIndex(att string) bool {
+	startIndex := 0
+	for i := 0; i < len(att); i++ {
+		if att[i] == '[' {
+			startIndex = i
+		}
+		if att[i] == ']' {
+			insideBrackets := att[startIndex+1 : i]
+
+			if insideBrackets[0] == '"' && insideBrackets[len(insideBrackets)-1] == '"' { // we allow strings. example: jsonpath:$.metadata.labels['foo']
+				continue
+			}
+			if insideBrackets[0] == '\'' && insideBrackets[len(insideBrackets)-1] == '\'' { // we allow strings. example: jsonpath:$.metadata.labels['foo']
+				continue
+			}
+
+			num, err := strconv.Atoi(insideBrackets)
+			if err != nil {
+				return false
+			}
+			if num < 0 {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func validateMethod(condition *Condition) (bool, error) {

@@ -9,6 +9,7 @@ require (
 	github.com/maxwellhealth/go-dotaccess v0.0.0-20190924013105-74ea4f4ca4eb // indirect
 	github.com/oleiade/reflections v1.0.0 // indirect
 	github.com/smartystreets/goconvey v1.6.4
+	github.com/tidwall/pretty v1.0.0
 	github.com/toolkits/slice v0.0.0-20141116085117-e44a80af2484
 	go.mongodb.org/mongo-driver v1.4.1
 	gopkg.in/getlantern/deepcopy.v1 v1.0.0-20140913144530-b923171e8640

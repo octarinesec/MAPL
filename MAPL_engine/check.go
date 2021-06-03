@@ -2,11 +2,11 @@
 package MAPL_engine
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/bhmj/jsonslice"
+	"github.com/tidwall/pretty"
 	"log"
 	"regexp"
 	"strconv"
@@ -742,7 +742,7 @@ func getArrayOfJsons(a AnyAllNode, message *MessageAttributes) ([][]byte, error)
 	return arrayJson, nil
 }
 
-func getArrayOfJsonsFromInterfaceArray(arrayData []byte) ([][]byte, error) {
+func getArrayOfJsonsFromInterfaceArrayOriginal(arrayData []byte) ([][]byte, error) {
 	var arrayInterface []interface{}
 	arrayJson := [][]byte{}
 	err := json.Unmarshal([]byte(arrayData), &arrayInterface)
@@ -756,6 +756,44 @@ func getArrayOfJsonsFromInterfaceArray(arrayData []byte) ([][]byte, error) {
 		}
 		arrayJson = append(arrayJson, y)
 	}
+	return arrayJson, nil
+}
+
+func getArrayOfJsonsFromInterfaceArray(arrayData []byte) ([][]byte, error) {
+	// faster then getArrayOfJsonsFromInterfaceArrayOriginal
+	// by a factor of about 20
+
+	if len(arrayData) == 0 {
+		return [][]byte{}, nil
+	}
+
+	if arrayData[0] == '{' { // this is not array of jsons ( []interface{} ) but map of jsons ( map[string]interface{} )
+		return [][]byte{}, fmt.Errorf("not array of jsons")
+	}
+
+	arrayJson := [][]byte{}
+	c := 0
+	start := -1
+	for i := 0; i < len(arrayData); i++ {
+		if arrayData[i] == '{' {
+			if c == 0 {
+				start = i
+			}
+			c += 1
+		}
+		if arrayData[i] == '}' {
+			c -= 1
+		}
+		if c == 0 {
+			if start == -1 {
+				continue
+			}
+			y := arrayData[start : i+1]
+			start = -1
+			arrayJson = append(arrayJson, y)
+		}
+	}
+
 	return arrayJson, nil
 }
 
@@ -783,12 +821,16 @@ func getArrayFromArrayOfArrays(arrayData []byte) ([]byte, error) {
 		return arrayData, nil
 	}
 
+	/*  slow. using pretty.Ugly instead
 	buffer := new(bytes.Buffer) // clean the json
 	err := json.Compact(buffer, arrayData)
 	if err != nil {
 		return []byte{}, err
 	}
-	arrayDataNew := buffer.Bytes()
+	arrayDataNew = buffer.Bytes()
+	*/
+
+	arrayDataNew := pretty.Ugly(arrayData) // faster then json.Compact by a factor of ~6
 
 	if arrayDataNew[0] != '[' || arrayDataNew[1] != '[' {
 		return arrayDataNew, nil

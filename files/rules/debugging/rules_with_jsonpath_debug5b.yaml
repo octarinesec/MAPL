@@ -1,0 +1,18 @@
+rules:
+  - rule_id: 0
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "workload"
+    protocol: "*"
+    resource:
+      resourceType: "*"
+      resourceName: "*"
+    operation: "*"
+    conditions:
+      attribute: "jsonpath:$.spec.template.spec.containers[123].name"
+      method: EQ
+      value: "abc"
+    decision: block

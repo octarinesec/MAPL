@@ -1359,6 +1359,35 @@ func TestRuleValidation(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
+		isvalid, err := test_RuleValidity("../files/rules/invalid_rules/rules_with_jsonpath_debug5a.yaml")
+		fmt.Println(err)
+		So(err, ShouldNotBeNil)
+		So(isvalid, ShouldEqual, false)
+
+		isvalid, err = test_RuleValidity("../files/rules/debugging/rules_with_jsonpath_debug5b.yaml")
+		So(err, ShouldBeNil)
+		So(isvalid, ShouldEqual, true)
+
+		isvalid, err = test_RuleValidity("../files/rules/invalid_rules/rules_with_jsonpath_debug5c.yaml")
+		fmt.Println(err)
+		So(err, ShouldNotBeNil)
+		So(isvalid, ShouldEqual, false)
+
+		isvalid, err = test_RuleValidity("../files/rules/invalid_rules/rules_with_jsonpath_debug5d.yaml")
+		fmt.Println(err)
+		So(err, ShouldNotBeNil)
+		So(isvalid, ShouldEqual, false)
+
+		isvalid, err = test_RuleValidity("../files/rules/invalid_rules/rules_with_jsonpath_debug5e.yaml")
+		fmt.Println(err)
+		So(err, ShouldNotBeNil)
+		So(isvalid, ShouldEqual, false)
+
+		isvalid, err = test_RuleValidity("../files/rules/invalid_rules/rules_with_jsonpath_debug5f.yaml")
+		fmt.Println(err)
+		So(err, ShouldNotBeNil)
+		So(isvalid, ShouldEqual, false)
+		//--------------------------
 		isvalid_all, err := test_RuleValidity("../files/rules/invalid_rules/invalid_rule_name_list.yaml")
 		fmt.Println(err)
 		So(isvalid_all, ShouldEqual, false)
