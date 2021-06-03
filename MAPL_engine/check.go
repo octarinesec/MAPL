@@ -731,7 +731,28 @@ func getArrayOfJsons(a AnyAllNode, message *MessageAttributes) ([][]byte, error)
 		return [][]byte{}, err
 	}
 
+	/*
+		arrayJson0:=[][]byte{}
+		var err0 error
+
+		t0:=time.Now()
+		for i:=0;i<10000;i++ {
+			arrayJson0, err0 = getArrayOfJsonsFromInterfaceArrayOriginal(arrayData)
+		}
+		elapsed0:=time.Since(t0)
+		fmt.Printf("elasped0 = %v\n",elapsed0)
+		fmt.Println(arrayJson0)
+		fmt.Println(err0)
+
+		t0=time.Now()
+		for i:=0;i<10000;i++ {
+			arrayJson0, err0 = getArrayOfJsonsFromInterfaceArray(arrayData)
+		}
+		elapsed1:=time.Since(t0)
+		fmt.Printf("elasped1 = %v\n",elapsed1)
+	*/
 	arrayJson, err := getArrayOfJsonsFromInterfaceArray(arrayData)
+
 	if err != nil {
 		arrayJson, err := getArrayOfJsonsFromMapStringInterface(arrayData)
 		if err != nil {
@@ -760,6 +781,16 @@ func getArrayOfJsonsFromInterfaceArrayOriginal(arrayData []byte) ([][]byte, erro
 }
 
 func getArrayOfJsonsFromInterfaceArray(arrayData []byte) ([][]byte, error) {
+	// faster then getArrayOfJsonsFromInterfaceArrayOriginal
+	// by a factor of about 20
+
+	if len(arrayData) == 0 {
+		return [][]byte{}, nil
+	}
+
+	if arrayData[0] == '{' { // this is not array of jsons ( []interface{} ) but map of jsons ( map[string]interface{} )
+		return [][]byte{}, fmt.Errorf("not array of jsons")
+	}
 
 	arrayJson := [][]byte{}
 	c := 0
@@ -779,6 +810,7 @@ func getArrayOfJsonsFromInterfaceArray(arrayData []byte) ([][]byte, error) {
 				continue
 			}
 			y := arrayData[start : i+1]
+			start = -1
 			arrayJson = append(arrayJson, y)
 		}
 	}
@@ -810,15 +842,16 @@ func getArrayFromArrayOfArrays(arrayData []byte) ([]byte, error) {
 		return arrayData, nil
 	}
 
-	/*
-		buffer := new(bytes.Buffer) // clean the json
-		err := json.Compact(buffer, arrayData)
-		if err != nil {
-			return []byte{}, err
-		}
-		arrayDataNew := buffer.Bytes()
+	/*  slow. using pretty.Ugly instead
+	buffer := new(bytes.Buffer) // clean the json
+	err := json.Compact(buffer, arrayData)
+	if err != nil {
+		return []byte{}, err
+	}
+	arrayDataNew = buffer.Bytes()
 	*/
-	arrayDataNew := pretty.Ugly(arrayData)
+
+	arrayDataNew := pretty.Ugly(arrayData) // faster then json.Compact by a factor of ~6
 
 	if arrayDataNew[0] != '[' || arrayDataNew[1] != '[' {
 		return arrayDataNew, nil

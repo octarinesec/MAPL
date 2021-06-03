@@ -80,7 +80,7 @@ func TestJsonUnmarhshal(t *testing.T) {
 		}
 
 		for _, file := range files {
-			fmt.Println(file)
+			fmt.Printf("going to test %v\n",file)
 			testUnmarshalForOneFile(file)
 		}
 

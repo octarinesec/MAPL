@@ -540,28 +540,28 @@ func TestMongoPluginKeyValue(t *testing.T) {
 
 		results, err := test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_json5.yaml", "../files/raw_json_data/key_value/json_raw_data_labels_relative.json", "raw")
 		strErr := fmt.Sprintf("%v", err)
-		fmt.Println(strErr)
+		//fmt.Println(strErr)
 		So(strErr, ShouldEqual, "VALUE within array is not supported")
 
 		results, err = test_plugin("../files/rules/mongo_plugin/key_value/invalid_rules_with_jsonpath_conditions_key_json.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json", "raw")
 		strErr = fmt.Sprintf("%v", err)
-		fmt.Println(strErr)
+		//fmt.Println(strErr)
 		So(strErr, ShouldEqual, "jsonpath condition $KEY must not have a subfield [jsonpath:$KEY.def2]")
 
 		results, err = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_relative.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
-		fmt.Println(results)
+		//fmt.Println(results)
 		strErr = fmt.Sprintf("%v", err)
-		fmt.Println(strErr)
+		//fmt.Println(strErr)
 		So(strErr, ShouldEqual, "VALUE within array is not supported")
 
 		results, err = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_relative_ALL.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
 		strErr = fmt.Sprintf("%v", err)
-		fmt.Println(strErr)
+		//fmt.Println(strErr)
 		So(strErr, ShouldEqual, "VALUE within array is not supported")
 
 		results, err = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_key_relative.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
 		strErr = fmt.Sprintf("%v", err)
-		fmt.Println(strErr)
+		//fmt.Println(strErr)
 		So(strErr, ShouldEqual, "KEY within array is not supported")
 
 	})
@@ -641,7 +641,7 @@ func test_plugin(rulesFilename, jsonRawFilename, prefix string) ([]bool, error) 
 
 	}
 
-	err = deleteDocument(id,collectionName)
+	err = deleteDocument(id, collectionName)
 	if err != nil {
 		return []bool{}, err
 	}
