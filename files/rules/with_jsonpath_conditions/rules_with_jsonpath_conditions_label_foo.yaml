@@ -13,7 +13,7 @@ rules:
       resourceName: "*"
     operation: "*"
     conditions:
-      attribute: jsonpath:$.metadata.labels['foo']
+      attribute: jsonpath:$.metadata.labels["foo"]
       method: EX
 
     decision: block

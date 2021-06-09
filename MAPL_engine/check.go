@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/bhmj/jsonslice"
 	"github.com/tidwall/pretty"
+	"github.com/yalp/jsonpath"
 	"log"
 	"regexp"
 	"strconv"
@@ -326,7 +327,12 @@ func testOneCondition(c *Condition, message *MessageAttributes) (bool, []map[str
 		return testReceiverLabelCondition(c, message), []map[string]interface{}{}
 
 	case ("jsonpath"):
-		flag := testJsonPathCondition(c, message)
+		var flag bool
+		if message.RequestRawInterface != nil {
+			flag = testJsonPathConditionOnInterface(c, message)
+		} else {
+			flag = testJsonPathCondition(c, message)
+		}
 		if flag && c.ReturnValueJsonpath != nil {
 			extraDataTemp := map[string]interface{}{}
 			for k, v := range c.ReturnValueJsonpath {
@@ -478,6 +484,109 @@ func testJsonPathCondition(c *Condition, message *MessageAttributes) bool {
 	}
 
 	valueToCompareString := string(valueToCompareBytes)
+	if len(valueToCompareString) == 0 {
+		return whatToReturnInCaseOfEmptyResult(*c)
+	}
+
+	valueToCompareString = removeQuotesAndBrackets(valueToCompareString)
+	if len(valueToCompareString) == 0 {
+		return whatToReturnInCaseOfEmptyResult(*c)
+	}
+
+	result := false
+	L := len(valueToCompareString) - 1
+	if L > 0 {
+		if valueToCompareString[0] == '"' && valueToCompareString[L] != '"' {
+			log.Println("quotation marks not aligned")
+			return false
+		}
+		if valueToCompareString[L] == '"' && valueToCompareString[0] != '"' {
+			log.Println("quotation marks not aligned")
+			return false
+		}
+		if valueToCompareString[L] == '"' && valueToCompareString[0] == '"' {
+			valueToCompareString = valueToCompareString[1:L]
+		}
+	}
+
+	method := strings.ToUpper(c.Method)
+	switch method {
+	case "GE", "GT", "LE", "LT", "EQ", "NEQ", "NE":
+		valueStringWithoutUnits, factor := convertStringWithUnits(valueToCompareString) // if the conversion to float doesn't work we still want to use the original string so we use a temporary one
+		valueToCompareFloat, err := strconv.ParseFloat(valueStringWithoutUnits, 64)
+		valueToCompareFloat = valueToCompareFloat * factor
+
+		if err != nil {
+			if method == "EQ" || method == "NEQ" {
+				result = compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex) // compare strings with wildcards
+			} else {
+				log.Println("can't parse jsonpath value [float]")
+				return false
+			}
+		} else {
+			result = compareFloatFunc(valueToCompareFloat, c.Method, c.ValueFloat)
+		}
+	case "RE", "NRE":
+		result = compareRegexFunc(valueToCompareString, c.Method, c.ValueRegex)
+	case "EX", "NEX":
+		if len(valueToCompareString) == 0 {
+			return method == "NEX" // just test the existence of the key
+		} else {
+			return method == "EX" // just test the existence of the key
+		}
+	default:
+		log.Printf("method not supported: %v", method)
+		return false
+	}
+
+	return result
+}
+
+func testJsonPathConditionOnInterface(c *Condition, message *MessageAttributes) bool {
+
+	if c.AttributeIsJsonpath == false {
+		log.Println("jsonpath without the correct format")
+		return false
+	}
+	// valueToCompareBytes := []byte{}
+	var valueToCompareInterface interface{}
+	err := errors.New("error")
+	if c.AttributeIsJsonpathRelative {
+		if (*message).RequestRawInterfaceRelative == nil {
+			return false // By definition
+		}
+		if c.AttributeJsonpathQuery == "$KEY" || strings.HasPrefix(c.AttributeJsonpathQuery, "$VALUE") {
+			valueToCompareBytes, _ := getKeyValue(*message.RequestJsonRawRelative, c.AttributeJsonpathQuery)
+			if strings.HasPrefix(c.AttributeJsonpathQuery, "$VALUE.") {
+				tempQuery := strings.Replace(c.AttributeJsonpathQuery, "$VALUE.", "$.", 1)
+				var valueToCompareBytesInterface interface{}
+				json.Unmarshal(valueToCompareBytes, &valueToCompareBytesInterface)
+				valueToCompareInterface, err = jsonpath.Read(valueToCompareBytesInterface, tempQuery)
+			}
+		} else {
+			//valueToCompareInterface, err = jsonpath.Read(*message.RequestRawInterfaceRelative, c.AttributeJsonpathQuery)
+			valueToCompareInterface, err = c.PreparedJsonpathQuery(*message.RequestRawInterfaceRelative)
+		}
+	} else {
+		if (*message).RequestRawInterfaceRelative == nil {
+			return false // By definition
+		}
+
+		//valueToCompareBytes, err = jsonslice.Get(*message.RequestJsonRaw, c.AttributeJsonpathQuery)
+		//valueToCompareInterface, err = jsonpath.Read(*message.RequestRawInterface, c.AttributeJsonpathQuery)
+		valueToCompareInterface, err = c.PreparedJsonpathQuery(*message.RequestRawInterfaceRelative)
+
+	}
+
+	if err != nil {
+		if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
+			return true
+		}
+		return false
+	}
+
+	valueToCompareStringBytes, _ := json.Marshal(valueToCompareInterface) // make it faster
+	valueToCompareString := string(valueToCompareStringBytes)
 	if len(valueToCompareString) == 0 {
 		return whatToReturnInCaseOfEmptyResult(*c)
 	}
@@ -704,9 +813,42 @@ func compareRegexFunc(value1 string, method string, value2 *regexp.Regexp) bool 
 //-------------------------------
 // functions for Any/All Node
 //-------------------------------
+
+func getArrayOfInterfaces(a AnyAllNode, message *MessageAttributes) ([]interface{}, error) {
+	// used in eval of ANY/ALL node (getting the data from the message attributes by the parentJsonpath)
+	var arrayDataInterface interface{}
+	err := errors.New("error")
+	parentJsonpath := a.GetParentJsonpathAttribute()
+
+	if strings.HasPrefix(parentJsonpath, "$RELATIVE.") || parentJsonpath == "$RELATIVE*" || strings.HasPrefix(parentJsonpath, "$KEY.") || strings.HasPrefix(parentJsonpath, "$VALUE.") { // to-do: create a flag once when parsing!
+		parentJsonpath = strings.Replace(parentJsonpath, "$RELATIVE.", "$.", 1)
+		parentJsonpath = strings.Replace(parentJsonpath, "$KEY.", "$.", 1)
+		parentJsonpath = strings.Replace(parentJsonpath, "$VALUE.", "$.", 1)
+		if parentJsonpath == "$RELATIVE*" {
+			parentJsonpath = "$*"
+		}
+
+		//arrayDataInterface, err = jsonpath.Read(*message.RequestRawInterface, parentJsonpath)
+		jsonpathQueryFunc := a.GetPreparedJsonpathQuery()
+		arrayDataInterface, err = jsonpathQueryFunc(*message.RequestRawInterfaceRelative)
+
+	} else {
+
+		//arrayDataInterface, err = jsonpath.Read(*message.RequestRawInterface, parentJsonpath)
+		jsonpathQueryFunc := a.GetPreparedJsonpathQuery()
+		arrayDataInterface, err = jsonpathQueryFunc(*message.RequestRawInterface)
+
+	}
+	if arrayDataInterface != nil {
+		return arrayDataInterface.([]interface{}), nil
+	}
+	return []interface{}{}, err
+}
+
 func getArrayOfJsons(a AnyAllNode, message *MessageAttributes) ([][]byte, error) {
 	// used in eval of ANY/ALL node (getting the data from the message attributes by the parentJsonpath)
 	arrayData := []byte{}
+
 	err := errors.New("error")
 	parentJsonpath := a.GetParentJsonpathAttribute()
 

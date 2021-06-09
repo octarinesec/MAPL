@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/toolkits/slice"
+	"github.com/yalp/jsonpath"
 	dc "gopkg.in/getlantern/deepcopy.v1"
 	"net"
 	"regexp"
@@ -74,9 +75,10 @@ type Condition struct {
 	AttributeReceiverObjectAttribute string `yaml:"-" json:"-,omitempty" bson:"attributeReceiverObjectAttribute,omitempty" structs:"attributeReceiverObjectAttribute,omitempty"`
 	ValueReceiverObject              string `yaml:"-" json:"-,omitempty" bson:"valueReceiverObject,omitempty" structs:"valueReceiverObject,omitempty"`
 
-	AttributeIsJsonpath         bool   `yaml:"-" json:"-,omitempty" bson:"attributeIsJsonpath,omitempty" structs:"attributeIsJsonpath,omitempty"`
-	AttributeIsJsonpathRelative bool   `yaml:"-" json:"-,omitempty" bson:"attributeIsJsonpathRelative,omitempty" structs:"attributeIsJsonpathRelative,omitempty"`
-	AttributeJsonpathQuery      string `yaml:"-" json:"-,omitempty" bson:"attributeJsonpathQuery,omitempty" structs:"attributeJsonpathQuery,omitempty"`
+	AttributeIsJsonpath         bool                `yaml:"-" json:"-,omitempty" bson:"attributeIsJsonpath,omitempty" structs:"attributeIsJsonpath,omitempty"`
+	AttributeIsJsonpathRelative bool                `yaml:"-" json:"-,omitempty" bson:"attributeIsJsonpathRelative,omitempty" structs:"attributeIsJsonpathRelative,omitempty"`
+	AttributeJsonpathQuery      string              `yaml:"-" json:"-,omitempty" bson:"attributeJsonpathQuery,omitempty" structs:"attributeJsonpathQuery,omitempty"`
+	PreparedJsonpathQuery       jsonpath.FilterFunc `yaml:"-" json:"-,omitempty"`
 
 	ReturnValueJsonpath         map[string]string `yaml:"-" json:"-,omitempty"`
 	ReturnValueJsonpathOriginal map[string]string `yaml:"-" json:"-,omitempty"`
@@ -291,8 +293,8 @@ func (c *Condition) MarshalJSON() ([]byte, error) {
 
 	str := fmt.Sprintf(`{"condition":{"attribute":"%v","method":"%v","value":"%v"}}`, attributeString, methodString, valueString)
 
-	if len(returnValueJsonpathJson)>0 {
-		str=fmt.Sprintf(`{"condition":{"attribute":"%v","method":"%v","value":"%v","returnValueJsonpath":%v}}`, attributeString, methodString, valueString,string(returnValueJsonpathJson))
+	if len(returnValueJsonpathJson) > 0 {
+		str = fmt.Sprintf(`{"condition":{"attribute":"%v","method":"%v","value":"%v","returnValueJsonpath":%v}}`, attributeString, methodString, valueString, string(returnValueJsonpathJson))
 	}
 	return []byte(str), nil
 }

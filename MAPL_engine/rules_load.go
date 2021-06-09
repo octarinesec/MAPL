@@ -466,7 +466,8 @@ func handleJsonpathAttribute(condition *Condition) {
 			netConditionAttribute = "$" + netConditionAttribute
 		}
 
-		netConditionAttribute = strings.Replace(netConditionAttribute, "\"", "'", -1)
+		//netConditionAttribute = strings.Replace(netConditionAttribute, "\"", "'", -1)
+		netConditionAttribute = strings.Replace(netConditionAttribute, "'", "\"", -1)
 		condition.AttributeJsonpathQuery = netConditionAttribute
 		condition.Attribute = "jsonpath"
 		//condition.OriginalAttribute = originalAttribute // used in hash

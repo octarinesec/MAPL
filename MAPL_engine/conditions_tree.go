@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/bhmj/jsonslice"
 	"github.com/toolkits/slice"
+	"github.com/yalp/jsonpath"
 	"go.mongodb.org/mongo-driver/bson"
 	dc "gopkg.in/getlantern/deepcopy.v1"
 	"sort"
@@ -111,6 +112,7 @@ type AnyAllNode interface {
 	GetParentJsonpathAttribute() string
 	SetReturnValueJsonpath(returnValueJsonpath map[string]string)
 	GetReturnValueJsonpath() map[string]string
+	GetPreparedJsonpathQuery() jsonpath.FilterFunc
 }
 
 //--------------------------------------
@@ -248,7 +250,8 @@ type Any struct {
 	ParentJsonpathAttributeOriginal string
 	ReturnValueJsonpath             map[string]string
 	ReturnValueJsonpathOriginal     map[string]string
-	Node                            Node `yaml:"condition,omitempty" json:"condition,omitempty" bson:"condition,omitempty" structs:"condition,omitempty"`
+	Node                            Node                `yaml:"condition,omitempty" json:"condition,omitempty" bson:"condition,omitempty" structs:"condition,omitempty"`
+	PreparedJsonpathQuery           jsonpath.FilterFunc `yaml:"-,omitempty" json:"-,omitempty"`
 }
 
 func (a *Any) MarshalJSON() ([]byte, error) {
@@ -279,6 +282,64 @@ func (a *Any) MarshalJSON() ([]byte, error) {
 }
 
 func (a *Any) Eval(message *MessageAttributes) (bool, []map[string]interface{}) { // to-do: return errors
+	if message.RequestRawInterface != nil {
+		return evalAnyRawInterface(a, message)
+	} else {
+		return evalAnyRawBytes(a, message)
+	}
+}
+
+func evalAnyRawInterface(a *Any, message *MessageAttributes) (bool, []map[string]interface{}) {
+
+	rawArrayData, err := getArrayOfInterfaces(a, message)
+	if err != nil {
+		return false, []map[string]interface{}{}
+	}
+
+	extraData := []map[string]interface{}{}
+	result := false
+	checkAllValuesInTheArray := false
+	if len(a.ReturnValueJsonpath) > 0 {
+		checkAllValuesInTheArray = true
+	}
+	originalRequestRawInterfaceRelative := message.RequestRawInterfaceRelative
+	for _, val := range rawArrayData {
+		message.RequestRawInterfaceRelative = &val
+		flag, _ := a.Node.Eval(message)
+		if flag {
+			result = true
+			if a.ReturnValueJsonpath != nil {
+				/*
+				extraDataTemp := map[string]interface{}{}
+
+				for k, v := range a.ReturnValueJsonpath {
+					extraDataBytes, _ := jsonslice.Get(val, v)
+					var tempInterface interface{}
+					err := json.Unmarshal(extraDataBytes, &tempInterface)
+					if err == nil {
+						extraDataTemp[k] = tempInterface
+					}
+					//extraDataTemp := string(extraDataBytes)
+					//extraDataTemp, _ = removeQuotes(extraDataTemp)
+				}
+				extraData = append(extraData, extraDataTemp)
+
+				 */
+			}
+			if !checkAllValuesInTheArray {
+				message.RequestRawInterfaceRelative = originalRequestRawInterfaceRelative
+				return result, extraData
+			}
+		}
+	}
+
+	//if strings.HasSuffix(extraData, ",") {
+	//	extraData = extraData[0 : len(extraData)-1]
+	//}
+	message.RequestRawInterfaceRelative = originalRequestRawInterfaceRelative
+	return result, extraData
+}
+func evalAnyRawBytes(a *Any, message *MessageAttributes) (bool, []map[string]interface{}) {
 
 	rawArrayData, err := getArrayOfJsons(a, message)
 	if err != nil {
@@ -334,6 +395,12 @@ func (a *Any) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) erro
 		return err
 	}
 
+	preparedJsonpath, err := jsonpath.Prepare(a.ParentJsonpathAttribute)
+	if err != nil {
+		return err
+	}
+	a.PreparedJsonpathQuery = preparedJsonpath
+
 	return nil
 }
 
@@ -371,6 +438,10 @@ func (a *Any) GetReturnValueJsonpath() map[string]string {
 	return a.ReturnValueJsonpathOriginal
 }
 
+func (a *Any) GetPreparedJsonpathQuery() jsonpath.FilterFunc {
+	return a.PreparedJsonpathQuery
+}
+
 //--------------------------------------
 // All Node
 //--------------------------------------
@@ -379,7 +450,8 @@ type All struct {
 	ParentJsonpathAttributeOriginal string
 	ReturnValueJsonpath             map[string]string
 	ReturnValueJsonpathOriginal     map[string]string
-	Node                            Node `yaml:"condition,omitempty" json:"condition,omitempty" bson:"condition,omitempty" structs:"condition,omitempty"`
+	Node                            Node                `yaml:"condition,omitempty" json:"condition,omitempty" bson:"condition,omitempty" structs:"condition,omitempty"`
+	PreparedJsonpathQuery           jsonpath.FilterFunc `yaml:"-,omitempty" json:"-,omitempty"`
 }
 
 func (a *All) MarshalJSON() ([]byte, error) {
@@ -437,6 +509,13 @@ func (a *All) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) erro
 	if err != nil {
 		return err
 	}
+
+	preparedJsonpath, err := jsonpath.Prepare(a.ParentJsonpathAttribute)
+	if err != nil {
+		return err
+	}
+	a.PreparedJsonpathQuery = preparedJsonpath
+
 	return nil
 }
 
@@ -472,6 +551,10 @@ func (a *All) SetReturnValueJsonpath(returnValueJsonpath map[string]string) {
 
 func (a *All) GetReturnValueJsonpath() map[string]string {
 	return a.ReturnValueJsonpathOriginal
+}
+
+func (a *All) GetPreparedJsonpathQuery() jsonpath.FilterFunc {
+	return a.PreparedJsonpathQuery
 }
 
 //--------------------------------------
@@ -539,6 +622,17 @@ func (c *Condition) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists
 	if err != nil {
 		return err
 	}
+
+	if (c.AttributeIsJsonpath)  {
+		preparedJsonpath, err := jsonpath.Prepare(c.AttributeJsonpathQuery)
+		if err != nil {
+			return err
+		}
+		c.PreparedJsonpathQuery = preparedJsonpath
+	}
+
+
+
 	return nil
 
 }

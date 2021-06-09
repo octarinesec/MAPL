@@ -75,7 +75,7 @@ func testQuery(query string) {
 
 	t1 := time.Now()
 	for i := 0; i < N; i++ {
-		if i%20 == 0 {
+		if i%10 == 0 {
 			json.Unmarshal(PodRaw, &PodObj)
 		}
 		res2, err = jsonpath.JsonPathLookup(PodObj, query)
