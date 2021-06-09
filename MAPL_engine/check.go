@@ -561,7 +561,7 @@ func testJsonPathConditionOnInterface(c *Condition, message *MessageAttributes) 
 				tempQuery := strings.Replace(c.AttributeJsonpathQuery, "$VALUE.", "$.", 1)
 				var valueToCompareBytesInterface interface{}
 				json.Unmarshal(valueToCompareBytes, &valueToCompareBytesInterface)
-				valueToCompareInterface, err = jsonpath.Read(valueToCompareBytesInterface, tempQuery)
+				valueToCompareInterface, err = jsonpath.Read(valueToCompareBytesInterface, tempQuery) // not correct!!!!
 			}
 		} else {
 			//valueToCompareInterface, err = jsonpath.Read(*message.RequestRawInterfaceRelative, c.AttributeJsonpathQuery)
