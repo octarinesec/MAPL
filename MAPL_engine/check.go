@@ -615,19 +615,27 @@ func testJsonPathConditionOnInterface(c *Condition, message *MessageAttributes) 
 	method := strings.ToUpper(c.Method)
 	switch method {
 	case "GE", "GT", "LE", "LT", "EQ", "NEQ", "NE":
-		valueStringWithoutUnits, factor := convertStringWithUnits(valueToCompareString) // if the conversion to float doesn't work we still want to use the original string so we use a temporary one
-		valueToCompareFloat, err := strconv.ParseFloat(valueStringWithoutUnits, 64)
-		valueToCompareFloat = valueToCompareFloat * factor
-
-		if err != nil {
-			if method == "EQ" || method == "NEQ" {
-				result = compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex) // compare strings with wildcards
-			} else {
+		flagCompareToNumber := false
+		var valueToCompareFloat float64
+		if c.ValueInt != nil || c.ValueFloat != nil {
+			valueStringWithoutUnits, factor := convertStringWithUnits(valueToCompareString) // if the conversion to float doesn't work we still want to use the original string so we use a temporary one
+			valueToCompareFloat, err = strconv.ParseFloat(valueStringWithoutUnits, 64)
+			if err != nil {
 				log.Println("can't parse jsonpath value [float]")
 				return false
 			}
+			valueToCompareFloat = valueToCompareFloat * factor
+			flagCompareToNumber = true
+		}
+
+		if !flagCompareToNumber {
+			if method == "EQ" || method == "NEQ" {
+				return compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex) // compare strings with wildcards
+			} else {
+				return false // can't compare non-number
+			}
 		} else {
-			result = compareFloatFunc(valueToCompareFloat, c.Method, c.ValueFloat)
+			return compareFloatFunc(valueToCompareFloat, c.Method, c.ValueFloat)
 		}
 	case "RE", "NRE":
 		result = compareRegexFunc(valueToCompareString, c.Method, c.ValueRegex)
@@ -713,39 +721,39 @@ func getAttribute(sender_receiver, attribute string, message MessageAttributes) 
 }
 
 // compareIntFunc compares one int value according the method string.
-func compareIntFunc(value1 int64, method string, value2 int64) bool { //value2 is the reference value from the rule
+func compareIntFunc(value1 int64, method string, value2 *int64) bool { //value2 is the reference value from the rule
 	switch (method) {
 	case "EQ", "eq":
-		return (value1 == value2)
+		return (value1 == *value2)
 	case "NEQ", "neq", "ne", "NE":
-		return (value1 != value2)
+		return (value1 != *value2)
 	case "LE", "le":
-		return (value1 <= value2)
+		return (value1 <= *value2)
 	case "LT", "lt":
-		return (value1 < value2)
+		return (value1 < *value2)
 	case "GE", "ge":
-		return (value1 >= value2)
+		return (value1 >= *value2)
 	case "GT", "gt":
-		return (value1 > value2)
+		return (value1 > *value2)
 	}
 	return false
 }
 
 // compareFloatFunc compares one float value according the method string.
-func compareFloatFunc(value1 float64, method string, value2 float64) bool { //value2 is the reference value from the rule
+func compareFloatFunc(value1 float64, method string, value2 *float64) bool { //value2 is the reference value from the rule
 	switch (method) {
 	case "EQ", "eq":
-		return (value1 == value2)
+		return (value1 == *value2)
 	case "NEQ", "neq", "ne", "NE":
-		return (value1 != value2)
+		return (value1 != *value2)
 	case "LE", "le":
-		return (value1 <= value2)
+		return (value1 <= *value2)
 	case "LT", "lt":
-		return (value1 < value2)
+		return (value1 < *value2)
 	case "GE", "ge":
-		return (value1 >= value2)
+		return (value1 >= *value2)
 	case "GT", "gt":
-		return (value1 > value2)
+		return (value1 > *value2)
 	}
 	return false
 }

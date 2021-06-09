@@ -56,8 +56,8 @@ type Condition struct {
 	Attribute        string         `yaml:"attribute,omitempty" json:"attribute" bson:"attribute" structs:"attribute,omitempty"`
 	Method           string         `yaml:"method,omitempty" json:"method" bson:"method" structs:"method,omitempty"`
 	Value            string         `yaml:"value,omitempty" json:"value" bson:"value" structs:"value,omitempty"`
-	ValueInt         int64          `yaml:"-" json:"-,omitempty" bson:"valueInt,omitempty" structs:"valueInt,omitempty"`
-	ValueFloat       float64        `yaml:"-" json:"-,omitempty" bson:"valueFloat,omitempty" structs:"valueFloat,omitempty"`
+	ValueInt         *int64          `yaml:"-" json:"-,omitempty" bson:"valueInt,omitempty" structs:"valueInt,omitempty"`
+	ValueFloat       *float64        `yaml:"-" json:"-,omitempty" bson:"valueFloat,omitempty" structs:"valueFloat,omitempty"`
 	ValueRegex       *regexp.Regexp `yaml:"-" json:"-,omitempty" bson:"valueRegex,omitempty" structs:"valueRegex,omitempty"`
 	ValueStringRegex *regexp.Regexp `yaml:"-" json:"-,omitempty" bson:"valueStringRegex,omitempty" structs:"valueStringRegex,omitempty"`
 

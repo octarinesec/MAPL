@@ -350,11 +350,11 @@ func ConvertConditionStringToIntFloatRegex(condition *Condition) error { // TO-D
 	valFloat, err := strconv.ParseFloat(tempString, 64)
 	valFloat = valFloat * factor
 	if err == nil {
-		condition.ValueFloat = valFloat
+		condition.ValueFloat = &valFloat
 	}
 	valInt, err := strconv.ParseInt(condition.Value, 10, 64)
 	if err == nil {
-		condition.ValueInt = valInt
+		condition.ValueInt = &valInt
 	}
 
 	re, err := regexp.Compile(condition.Value)
