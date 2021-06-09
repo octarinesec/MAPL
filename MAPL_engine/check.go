@@ -583,10 +583,21 @@ func testJsonPathConditionOnInterface(c *Condition, message *MessageAttributes) 
 			return true
 		}
 		return false
+	}else{
+		if c.Method == "NEX" || c.Method == "nex" { // just test the existence of the key
+			return false
+		}
+		if c.Method == "EX" || c.Method == "ex" { // just test the existence of the key
+			return true
+		}
 	}
 
-	valueToCompareStringBytes, _ := json.Marshal(valueToCompareInterface) // make it faster
-	valueToCompareString := string(valueToCompareStringBytes)
+
+
+
+	//valueToCompareStringBytes, _ := json.Marshal(valueToCompareInterface) // make it faster
+	//valueToCompareString := string(valueToCompareStringBytes)
+	valueToCompareString := fmt.Sprintf("%v", valueToCompareInterface)
 	if len(valueToCompareString) == 0 {
 		return whatToReturnInCaseOfEmptyResult(*c)
 	}
