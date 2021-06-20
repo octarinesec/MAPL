@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/bhmj/jsonslice"
 	"github.com/toolkits/slice"
+	"github.com/yalp/jsonpath"
 	"go.mongodb.org/mongo-driver/bson"
 	dc "gopkg.in/getlantern/deepcopy.v1"
+	"log"
 	"sort"
 	"strings"
 )
@@ -111,6 +112,7 @@ type AnyAllNode interface {
 	GetParentJsonpathAttribute() string
 	SetReturnValueJsonpath(returnValueJsonpath map[string]string)
 	GetReturnValueJsonpath() map[string]string
+	GetPreparedJsonpathQuery() jsonpath.FilterFunc
 }
 
 //--------------------------------------
@@ -196,7 +198,6 @@ func (o *Or) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
 			}
 		}
 	}
-	//return false, []map[string]interface{}{}
 	return flagOut, extraDataOut
 }
 func (o *Or) Append(node Node) {
@@ -244,11 +245,14 @@ func (n *Not) String() string {
 // Any Node
 //--------------------------------------
 type Any struct {
-	ParentJsonpathAttribute         string
-	ParentJsonpathAttributeOriginal string
-	ReturnValueJsonpath             map[string]string
-	ReturnValueJsonpathOriginal     map[string]string
-	Node                            Node `yaml:"condition,omitempty" json:"condition,omitempty" bson:"condition,omitempty" structs:"condition,omitempty"`
+	ParentJsonpathAttribute                      string
+	ParentJsonpathAttributeOriginal              string
+	ReturnValueJsonpath                          map[string]string
+	ReturnValuePreparedJsonpathQuery             map[string]jsonpath.FilterFunc
+	ReturnValuePreparedJsonpathQueryRelativeFlag map[string]bool
+	ReturnValueJsonpathOriginal                  map[string]string
+	Node                                         Node                `yaml:"condition,omitempty" json:"condition,omitempty" bson:"condition,omitempty" structs:"condition,omitempty"`
+	PreparedJsonpathQuery                        jsonpath.FilterFunc `yaml:"-,omitempty" json:"-,omitempty"`
 }
 
 func (a *Any) MarshalJSON() ([]byte, error) {
@@ -279,6 +283,49 @@ func (a *Any) MarshalJSON() ([]byte, error) {
 }
 
 func (a *Any) Eval(message *MessageAttributes) (bool, []map[string]interface{}) { // to-do: return errors
+	if message.RequestRawInterface != nil && a.PreparedJsonpathQuery != nil {
+		return evalAnyRawInterface(a, message)
+	} else {
+		return evalAnyRawBytes(a, message)
+	}
+}
+
+func evalAnyRawInterface(a *Any, message *MessageAttributes) (bool, []map[string]interface{}) {
+
+	rawArrayData, err := getArrayOfInterfaces(a, message)
+	if err != nil {
+		return false, []map[string]interface{}{}
+	}
+
+	extraData := []map[string]interface{}{}
+	result := false
+	checkAllValuesInTheArray := false
+	if len(a.ReturnValueJsonpath) > 0 {
+		checkAllValuesInTheArray = true
+	}
+	originalRequestRawInterfaceRelative := message.RequestRawInterfaceRelative
+	for _, val := range rawArrayData {
+		message.RequestRawInterfaceRelative = &val
+		flag, _ := a.Node.Eval(message)
+		if flag {
+			result = true
+			if a.ReturnValueJsonpath != nil {
+
+				extraDataTemp := getExtraDataFromInterface(a.ReturnValuePreparedJsonpathQuery, a.ReturnValuePreparedJsonpathQueryRelativeFlag, a.ReturnValueJsonpath, message)
+				extraData = append(extraData, extraDataTemp)
+
+			}
+			if !checkAllValuesInTheArray {
+				message.RequestRawInterfaceRelative = originalRequestRawInterfaceRelative
+				return result, extraData
+			}
+		}
+	}
+
+	message.RequestRawInterfaceRelative = originalRequestRawInterfaceRelative
+	return result, extraData
+}
+func evalAnyRawBytes(a *Any, message *MessageAttributes) (bool, []map[string]interface{}) {
 
 	rawArrayData, err := getArrayOfJsons(a, message)
 	if err != nil {
@@ -298,17 +345,7 @@ func (a *Any) Eval(message *MessageAttributes) (bool, []map[string]interface{}) 
 		if flag {
 			result = true
 			if a.ReturnValueJsonpath != nil {
-				extraDataTemp := map[string]interface{}{}
-				for k, v := range a.ReturnValueJsonpath {
-					extraDataBytes, _ := jsonslice.Get(val, v)
-					var tempInterface interface{}
-					err := json.Unmarshal(extraDataBytes, &tempInterface)
-					if err == nil {
-						extraDataTemp[k] = tempInterface
-					}
-					//extraDataTemp := string(extraDataBytes)
-					//extraDataTemp, _ = removeQuotes(extraDataTemp)
-				}
+				extraDataTemp := getExtraDataFromByteArray(a.ReturnValueJsonpath, a.ReturnValuePreparedJsonpathQueryRelativeFlag, message)
 				extraData = append(extraData, extraDataTemp)
 			}
 			if !checkAllValuesInTheArray {
@@ -318,9 +355,6 @@ func (a *Any) Eval(message *MessageAttributes) (bool, []map[string]interface{}) 
 		}
 	}
 
-	//if strings.HasSuffix(extraData, ",") {
-	//	extraData = extraData[0 : len(extraData)-1]
-	//}
 	message.RequestJsonRawRelative = originalRequestJsonRawRelative
 	return result, extraData
 }
@@ -334,7 +368,38 @@ func (a *Any) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) erro
 		return err
 	}
 
+	preparedJsonpath, err := prepareJsonpathQuery(a.GetParentJsonpathAttribute())
+	if err != nil {
+		return err
+	}
+	a.PreparedJsonpathQuery = preparedJsonpath
 	return nil
+}
+
+func prepareJsonpathQuery(query string) (jsonpath.FilterFunc, error) {
+	query = strings.Replace(query, "$RELATIVE", "$", -1)
+	if query == "$..spec.containers[:]" {
+		query = "$..containers[:]"
+		log.Println("$..spec.containers[:]->$..containers[:]")
+	}
+	if query == "$..spec.containers" {
+		query = "$..containers"
+		log.Println("$..spec.containers->$..containers")
+	}
+	if query == "$*" {
+		query = "$.*"
+	}
+	if strings.Contains(query, "$KEY") || strings.Contains(query, "$VALUE") {
+		preparedJsonpath, _ := jsonpath.Prepare("$.*") // just instead of nil. we are not going to use it
+		return preparedJsonpath, nil
+	} else {
+		preparedJsonpath, err := jsonpath.Prepare(query)
+		if err != nil {
+			return nil, err
+		}
+		return preparedJsonpath, err
+
+	}
 }
 
 func (a *Any) String() string {
@@ -362,8 +427,20 @@ func (a *Any) GetParentJsonpathAttribute() string {
 func (a *Any) SetReturnValueJsonpath(returnValueJsonpath map[string]string) {
 	dc.Copy(&a.ReturnValueJsonpathOriginal, &returnValueJsonpath)
 	dc.Copy(&a.ReturnValueJsonpath, &returnValueJsonpath)
-	for k, v := range returnValueJsonpath {
-		a.ReturnValueJsonpath[k] = strings.Replace(v, "jsonpath:$RELATIVE", "$", 1)
+	a.ReturnValuePreparedJsonpathQuery = make(map[string]jsonpath.FilterFunc)
+	a.ReturnValuePreparedJsonpathQueryRelativeFlag = make(map[string]bool)
+	for queryName, queryString := range returnValueJsonpath {
+		a.ReturnValuePreparedJsonpathQueryRelativeFlag[queryName] = false
+		if strings.HasPrefix(queryString, "jsonpath:$RELATIVE") {
+			a.ReturnValuePreparedJsonpathQueryRelativeFlag[queryName] = true
+		}
+		a.ReturnValueJsonpath[queryName] = strings.Replace(queryString, "jsonpath:$RELATIVE", "$", 1)
+		preparedQuery, err := prepareJsonpathQuery(a.ReturnValueJsonpath[queryName])
+		if err == nil {
+			a.ReturnValuePreparedJsonpathQuery[queryName] = preparedQuery
+		} else {
+			a.ReturnValuePreparedJsonpathQuery[queryName] = nil
+		}
 	}
 }
 
@@ -371,15 +448,22 @@ func (a *Any) GetReturnValueJsonpath() map[string]string {
 	return a.ReturnValueJsonpathOriginal
 }
 
+func (a *Any) GetPreparedJsonpathQuery() jsonpath.FilterFunc {
+	return a.PreparedJsonpathQuery
+}
+
 //--------------------------------------
 // All Node
 //--------------------------------------
 type All struct {
-	ParentJsonpathAttribute         string
-	ParentJsonpathAttributeOriginal string
-	ReturnValueJsonpath             map[string]string
-	ReturnValueJsonpathOriginal     map[string]string
-	Node                            Node `yaml:"condition,omitempty" json:"condition,omitempty" bson:"condition,omitempty" structs:"condition,omitempty"`
+	ParentJsonpathAttribute                      string
+	ParentJsonpathAttributeOriginal              string
+	ReturnValueJsonpath                          map[string]string
+	ReturnValueJsonpathOriginal                  map[string]string
+	ReturnValuePreparedJsonpathQuery             map[string]jsonpath.FilterFunc
+	ReturnValuePreparedJsonpathQueryRelativeFlag map[string]bool
+	Node                                         Node                `yaml:"condition,omitempty" json:"condition,omitempty" bson:"condition,omitempty" structs:"condition,omitempty"`
+	PreparedJsonpathQuery                        jsonpath.FilterFunc `yaml:"-,omitempty" json:"-,omitempty"`
 }
 
 func (a *All) MarshalJSON() ([]byte, error) {
@@ -411,6 +495,37 @@ func (a *All) MarshalJSON() ([]byte, error) {
 
 func (a *All) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
 
+	if message.RequestRawInterface != nil && a.PreparedJsonpathQuery != nil {
+		return evalAllRawInterface(a, message)
+	} else {
+		return evalAllRawBytes(a, message)
+	}
+}
+func evalAllRawInterface(a *All, message *MessageAttributes) (bool, []map[string]interface{}) {
+
+	rawArrayData, err := getArrayOfInterfaces(a, message)
+	if err != nil {
+		return false, []map[string]interface{}{}
+	}
+
+	originalRequestRawInterfaceRelative := message.RequestRawInterfaceRelative
+
+	for _, val := range rawArrayData {
+		message.RequestRawInterfaceRelative = &val
+		flag, _ := a.Node.Eval(message)
+		if !flag {
+
+			message.RequestRawInterfaceRelative = originalRequestRawInterfaceRelative
+			return false, []map[string]interface{}{}
+
+		}
+	}
+	message.RequestRawInterfaceRelative = originalRequestRawInterfaceRelative
+	return true, []map[string]interface{}{}
+
+}
+
+func evalAllRawBytes(a *All, message *MessageAttributes) (bool, []map[string]interface{}) {
 	rawArrayData, err := getArrayOfJsons(a, message)
 	if err != nil {
 		return false, []map[string]interface{}{}
@@ -429,6 +544,7 @@ func (a *All) Eval(message *MessageAttributes) (bool, []map[string]interface{}) 
 	message.RequestJsonRawRelative = originalRequestJsonRawRelative
 	return true, []map[string]interface{}{}
 }
+
 func (a *All) Append(node Node) {
 	a.Node = node
 }
@@ -437,6 +553,11 @@ func (a *All) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) erro
 	if err != nil {
 		return err
 	}
+	preparedJsonpath, err := prepareJsonpathQuery(a.GetParentJsonpathAttribute())
+	if err != nil {
+		return err
+	}
+	a.PreparedJsonpathQuery = preparedJsonpath
 	return nil
 }
 
@@ -465,13 +586,30 @@ func (a *All) GetParentJsonpathAttribute() string {
 func (a *All) SetReturnValueJsonpath(returnValueJsonpath map[string]string) {
 	dc.Copy(&a.ReturnValueJsonpathOriginal, &returnValueJsonpath)
 	dc.Copy(&a.ReturnValueJsonpath, &returnValueJsonpath)
-	for k, v := range returnValueJsonpath {
-		a.ReturnValueJsonpath[k] = strings.Replace(v, "jsonpath:$RELATIVE", "$", 1)
+	a.ReturnValuePreparedJsonpathQuery = make(map[string]jsonpath.FilterFunc)
+	a.ReturnValuePreparedJsonpathQueryRelativeFlag = make(map[string]bool)
+	for queryName, queryString := range returnValueJsonpath {
+		a.ReturnValuePreparedJsonpathQueryRelativeFlag[queryName] = false
+		if strings.HasPrefix(queryString, "jsonpath:$RELATIVE") {
+			a.ReturnValuePreparedJsonpathQueryRelativeFlag[queryName] = true
+		}
+		a.ReturnValueJsonpath[queryName] = strings.Replace(queryString, "jsonpath:$RELATIVE", "$", 1)
+		preparedQuery, err := prepareJsonpathQuery(a.ReturnValueJsonpath[queryName])
+		if err == nil {
+			a.ReturnValuePreparedJsonpathQuery[queryName] = preparedQuery
+		} else {
+			a.ReturnValuePreparedJsonpathQuery[queryName] = nil
+		}
+
 	}
 }
 
 func (a *All) GetReturnValueJsonpath() map[string]string {
 	return a.ReturnValueJsonpathOriginal
+}
+
+func (a *All) GetPreparedJsonpathQuery() jsonpath.FilterFunc {
+	return a.PreparedJsonpathQuery
 }
 
 //--------------------------------------
@@ -539,6 +677,15 @@ func (c *Condition) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists
 	if err != nil {
 		return err
 	}
+
+	if (c.AttributeIsJsonpath) {
+		preparedJsonpath, err := prepareJsonpathQuery(c.AttributeJsonpathQuery)
+		if err != nil {
+			return err
+		}
+		c.PreparedJsonpathQuery = preparedJsonpath
+	}
+
 	return nil
 
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/toolkits/slice"
+	"github.com/yalp/jsonpath"
 	dc "gopkg.in/getlantern/deepcopy.v1"
 	"net"
 	"regexp"
@@ -55,8 +56,8 @@ type Condition struct {
 	Attribute        string         `yaml:"attribute,omitempty" json:"attribute" bson:"attribute" structs:"attribute,omitempty"`
 	Method           string         `yaml:"method,omitempty" json:"method" bson:"method" structs:"method,omitempty"`
 	Value            string         `yaml:"value,omitempty" json:"value" bson:"value" structs:"value,omitempty"`
-	ValueInt         int64          `yaml:"-" json:"-,omitempty" bson:"valueInt,omitempty" structs:"valueInt,omitempty"`
-	ValueFloat       float64        `yaml:"-" json:"-,omitempty" bson:"valueFloat,omitempty" structs:"valueFloat,omitempty"`
+	ValueInt         *int64         `yaml:"-" json:"-,omitempty" bson:"valueInt,omitempty" structs:"valueInt,omitempty"`
+	ValueFloat       *float64       `yaml:"-" json:"-,omitempty" bson:"valueFloat,omitempty" structs:"valueFloat,omitempty"`
 	ValueRegex       *regexp.Regexp `yaml:"-" json:"-,omitempty" bson:"valueRegex,omitempty" structs:"valueRegex,omitempty"`
 	ValueStringRegex *regexp.Regexp `yaml:"-" json:"-,omitempty" bson:"valueStringRegex,omitempty" structs:"valueStringRegex,omitempty"`
 
@@ -74,12 +75,15 @@ type Condition struct {
 	AttributeReceiverObjectAttribute string `yaml:"-" json:"-,omitempty" bson:"attributeReceiverObjectAttribute,omitempty" structs:"attributeReceiverObjectAttribute,omitempty"`
 	ValueReceiverObject              string `yaml:"-" json:"-,omitempty" bson:"valueReceiverObject,omitempty" structs:"valueReceiverObject,omitempty"`
 
-	AttributeIsJsonpath         bool   `yaml:"-" json:"-,omitempty" bson:"attributeIsJsonpath,omitempty" structs:"attributeIsJsonpath,omitempty"`
-	AttributeIsJsonpathRelative bool   `yaml:"-" json:"-,omitempty" bson:"attributeIsJsonpathRelative,omitempty" structs:"attributeIsJsonpathRelative,omitempty"`
-	AttributeJsonpathQuery      string `yaml:"-" json:"-,omitempty" bson:"attributeJsonpathQuery,omitempty" structs:"attributeJsonpathQuery,omitempty"`
+	AttributeIsJsonpath         bool                `yaml:"-" json:"-,omitempty" bson:"attributeIsJsonpath,omitempty" structs:"attributeIsJsonpath,omitempty"`
+	AttributeIsJsonpathRelative bool                `yaml:"-" json:"-,omitempty" bson:"attributeIsJsonpathRelative,omitempty" structs:"attributeIsJsonpathRelative,omitempty"`
+	AttributeJsonpathQuery      string              `yaml:"-" json:"-,omitempty" bson:"attributeJsonpathQuery,omitempty" structs:"attributeJsonpathQuery,omitempty"`
+	PreparedJsonpathQuery       jsonpath.FilterFunc `yaml:"-" json:"-,omitempty"`
 
-	ReturnValueJsonpath         map[string]string `yaml:"-" json:"-,omitempty"`
-	ReturnValueJsonpathOriginal map[string]string `yaml:"-" json:"-,omitempty"`
+	ReturnValueJsonpath                          map[string]string              `yaml:"-" json:"-,omitempty"`
+	ReturnValueJsonpathOriginal                  map[string]string              `yaml:"-" json:"-,omitempty"`
+	PreparedReturnValueJsonpathQuery             map[string]jsonpath.FilterFunc `yaml:"-" json:"-,omitempty"`
+	PreparedReturnValueJsonpathQueryRelativeFlag map[string]bool                `yaml:"-" json:"-,omitempty"`
 
 	OriginalAttribute string `yaml:"-" json:"-,omitempty" bson:"originalAttribute,omitempty" structs:"originalAttribute,omitempty"` // used in hash
 	OriginalMethod    string `yaml:"-" json:"-,omitempty" bson:"originalMethod,omitempty" structs:"originalMethod,omitempty"`       // used in hash
@@ -134,11 +138,27 @@ func ConditionFromConditionNode(c ConditionNode) Condition {
 	c_out.Value = c.Value
 	c_out.ReturnValueJsonpath = c.ReturnValueJsonpath
 
+	c_out.PreparedReturnValueJsonpathQuery = make(map[string]jsonpath.FilterFunc)
+	c_out.PreparedReturnValueJsonpathQueryRelativeFlag = make(map[string]bool)
+
 	dc.Copy(&c_out.ReturnValueJsonpathOriginal, &c.ReturnValueJsonpath)
 	dc.Copy(&c_out.ReturnValueJsonpath, &c.ReturnValueJsonpath)
 	for k, v := range c_out.ReturnValueJsonpath {
+		relativeFlag := false
+		if strings.HasPrefix(c.ReturnValueJsonpath[k], "jsonpath:$RELATIVE") {
+			relativeFlag = true
+		}
 		c_out.ReturnValueJsonpath[k] = strings.Replace(v, "jsonpath:$RELATIVE", "$", 1)
 		c_out.ReturnValueJsonpath[k] = strings.Replace(v, "jsonpath:$", "$", 1)
+
+		tempAtt := c_out.ReturnValueJsonpath[k]
+		p, err := jsonpath.Prepare(tempAtt)
+		if err != nil {
+			c_out.PreparedReturnValueJsonpathQuery[k] = nil
+		} else {
+			c_out.PreparedReturnValueJsonpathQuery[k] = p
+		}
+		c_out.PreparedReturnValueJsonpathQueryRelativeFlag[k] = relativeFlag
 	}
 
 	return c_out
@@ -291,8 +311,8 @@ func (c *Condition) MarshalJSON() ([]byte, error) {
 
 	str := fmt.Sprintf(`{"condition":{"attribute":"%v","method":"%v","value":"%v"}}`, attributeString, methodString, valueString)
 
-	if len(returnValueJsonpathJson)>0 {
-		str=fmt.Sprintf(`{"condition":{"attribute":"%v","method":"%v","value":"%v","returnValueJsonpath":%v}}`, attributeString, methodString, valueString,string(returnValueJsonpathJson))
+	if len(returnValueJsonpathJson) > 0 {
+		str = fmt.Sprintf(`{"condition":{"attribute":"%v","method":"%v","value":"%v","returnValueJsonpath":%v}}`, attributeString, methodString, valueString, string(returnValueJsonpathJson))
 	}
 	return []byte(str), nil
 }

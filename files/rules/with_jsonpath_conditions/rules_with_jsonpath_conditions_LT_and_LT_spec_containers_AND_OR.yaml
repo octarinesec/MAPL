@@ -18,7 +18,7 @@ rules:
             - attribute: "jsonpath:$.resources.limits.cpu"
               method: LT
               value: 4
-            - attribute: "jsonpath:.$.resources.limits.cpu"
+            - attribute: "jsonpath:$.resources.limits.cpu"
               method: NEX
         - OR:
             - attribute: "jsonpath:$.resources.limits.memory"

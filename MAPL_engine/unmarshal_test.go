@@ -41,7 +41,6 @@ func TestJsonUnmarhshal(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
-		//testUnmarshalForOneFile("../files/rules/predefined_strings/rule_zooz.yaml")
 		testUnmarshalForOneFile("../files/rules/condition_keyword/rules_with_condition_keyword_and_return_value.yaml")
 		testUnmarshalForOneFile("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY2.yaml")
 		testUnmarshalForOneFile("../files/rules/with_conditions/rules_with_conditions.yaml")
@@ -80,7 +79,7 @@ func TestJsonUnmarhshal(t *testing.T) {
 		}
 
 		for _, file := range files {
-			fmt.Println(file)
+			fmt.Printf("going to test %v\n",file)
 			testUnmarshalForOneFile(file)
 		}
 

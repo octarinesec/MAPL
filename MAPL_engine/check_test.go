@@ -8,12 +8,85 @@ import (
 	"github.com/ghodss/yaml"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/smartystreets/goconvey/convey/reporting"
+	"time"
+
+	//jsonpath2 "github.com/PaesslerAG/jsonpath"
+	jsonpath2 "github.com/yalp/jsonpath"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 	"testing"
 )
+
+const TestPerfomance = true
+const NumberOfChecks = 10000
+
+var elapsedBytes time.Duration = 0
+var elapsedInterface time.Duration = 0
+
+func TestMain(m *testing.M) {
+	testResult := m.Run()
+	time.Sleep(time.Second * 1)
+	fmt.Println("finished all")
+	fmt.Printf("elapsed bytes = %v\n", elapsedBytes)
+	fmt.Printf("elapsed interface = %v\n", elapsedInterface)
+	fmt.Printf("using interface is faster (on average) by a factor of %v\n", float32(elapsedBytes)/float32(elapsedInterface))
+	os.Exit(testResult)
+}
+
+func TestYalpPackage(t *testing.T) {
+	Convey("tests", t, func() {
+		jsonpathQuery := `$.metadata.annotations["container.apparmor.security.beta.kubernetes.io/hello"]`
+		_, err := jsonpath2.Prepare(jsonpathQuery)
+		So(err, ShouldBeNil)
+		//---------------------
+		//jsonpathQuery2 := `$..spec.containers[:]`
+		//jsonpathQuery2 := `$..B[:]`
+		jsonpathQuery2 := `$..A.B[:]`
+		preparedJsonpathQuery2, err2 := jsonpath2.Prepare(jsonpathQuery2)
+		So(err2, ShouldBeNil)
+
+		//data, err := ReadBinaryFile("../files/raw_json_data/deepscan/json_raw_data_2containers_dep2.json")
+		data, err := ReadBinaryFile("../files/raw_json_data/deepscan/json_raw_data_debug.json")
+		var dataInterface interface{}
+		err3 := json.Unmarshal(data, &dataInterface)
+		So(err3, ShouldBeNil)
+
+		result, err4 := preparedJsonpathQuery2(dataInterface)
+		So(err4, ShouldBeNil)
+		fmt.Println(result)
+
+		data, err = ReadBinaryFile("../files/raw_json_data/deepscan/json_raw_data_debug2.json")
+		err5 := json.Unmarshal(data, &dataInterface)
+		So(err5, ShouldBeNil)
+
+		result2, err6 := preparedJsonpathQuery2(dataInterface)
+		So(err6, ShouldBeNil)
+		fmt.Println(result2)
+
+		// ----------------------------
+		//jsonpathQuery3 := `$..spec.containers`
+		//jsonpathQuery3 := `$..spec.containers[:]`
+		//jsonpathQuery3 := `$..containers[:]`
+		jsonpathQuery3 := `$..containers`
+
+		preparedJsonpathQuery3, err7 := jsonpath2.Prepare(jsonpathQuery3)
+		So(err7, ShouldBeNil)
+
+		data, err8 := ReadBinaryFile("../files/raw_json_data/deepscan/json_raw_data_2containers_dep2.json")
+		So(err8, ShouldBeNil)
+
+		err9 := json.Unmarshal(data, &dataInterface)
+		So(err9, ShouldBeNil)
+
+		result3, err10 := preparedJsonpathQuery3(dataInterface)
+		So(err10, ShouldBeNil)
+		fmt.Println(result3)
+
+	})
+
+}
 
 func TestMaplEngine(t *testing.T) {
 
@@ -536,12 +609,14 @@ func TestMaplEngineJsonConditions(t *testing.T) {
 
 		str := "test jsonpath conditions"
 		fmt.Println(str)
+
 		results, _ := test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions/rules_with_jsonpath_conditions_GT.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1.json")
 		So(results[0], ShouldEqual, DEFAULT)
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions/rules_with_jsonpath_conditions_GT.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data2.json")
 		So(results[0], ShouldEqual, BLOCK)
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions/rules_with_jsonpath_conditions_EQ.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1.json")
 		So(results[0], ShouldEqual, BLOCK)
+
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions/rules_with_jsonpath_conditions_label_foo.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1.json")
 		So(results[0], ShouldEqual, BLOCK)
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions/rules_with_jsonpath_conditions_label_foofoo.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1a.json")
@@ -947,6 +1022,7 @@ func TestMaplEngineJsonConditionsOnArraysAnyAll2(t *testing.T) {
 
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NEQ_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_EQ1.json")
 		So(results[0], ShouldEqual, DEFAULT)
+
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NEQ_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_EQ2.json")
 		So(results[0], ShouldEqual, BLOCK)
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY2/rules_with_jsonpath_NEQ_on_array.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_EQ3.json")
@@ -1794,17 +1870,52 @@ func test_CheckMessagesWithRawData(rulesFilename, messagesFilename, rawFilename 
 
 	var outputResults []int
 
-	for i_message, message := range (messages.Messages) {
+	for _, message := range (messages.Messages) {
 
 		message.RequestJsonRaw = &data
 
-		result, msg, relevantRuleIndex, _, appliedRulesIndices, _, _ := Check(&message, &rules)
-		if relevantRuleIndex >= 0 {
-			fmt.Printf("message #%v: decision=%v [%v] by rule #%v ; applicable rules =%v \n", i_message, result, msg, rules.Rules[relevantRuleIndex].RuleID, appliedRulesIndices)
-		} else {
-			fmt.Printf("message #%v: decision=%v [%v]\n", i_message, result, msg)
+		result, msg, relevantRuleIndex, _, appliedRulesIndices, _, extraData := Check(&message, &rules)
+
+		if TestPerfomance {
+			t0 := time.Now()
+			for i := 0; i < NumberOfChecks; i++ {
+				Check(&message, &rules)
+			}
+			d := time.Since(t0)
+			elapsedBytes += d
+			fmt.Printf("%v : elapsed [bytes] = %v\n", rulesFilename, d)
 		}
+
+		//if relevantRuleIndex >= 0 {
+		//	fmt.Printf("message #%v: decision=%v [%v] by rule #%v ; applicable rules =%v \n", i_message, result, msg, rules.Rules[relevantRuleIndex].RuleID, appliedRulesIndices)
+		//} else {
+		//	fmt.Printf("message #%v: decision=%v [%v]\n", i_message, result, msg)
+		//}
 		outputResults = append(outputResults, result)
+
+		var dataInterface interface{}
+		err := json.Unmarshal(data, &dataInterface)
+		if err == nil {
+			message.RequestJsonRaw = nil
+			message.RequestRawInterface = &dataInterface
+		} else {
+			message.RequestRawInterface = nil
+		}
+		result2, msg2, relevantRuleIndex2, _, appliedRulesIndices2, _, extraData2 := Check(&message, &rules)
+		if TestPerfomance {
+			t0 := time.Now()
+			for i := 0; i < NumberOfChecks; i++ {
+				Check(&message, &rules)
+			}
+			d := time.Since(t0)
+			elapsedInterface += d
+			fmt.Printf("%v : elapsed [interface] = %v\n", rulesFilename, d)
+		}
+		So(result, ShouldEqual, result2)
+		So(msg, ShouldEqual, msg2)
+		So(relevantRuleIndex, ShouldEqual, relevantRuleIndex2)
+		So(fmt.Sprintf("%v", appliedRulesIndices), ShouldEqual, fmt.Sprintf("%v", appliedRulesIndices2))
+		So(fmt.Sprintf("%v", extraData), ShouldEqual, fmt.Sprintf("%v", extraData2))
 
 	}
 	return outputResults, nil
@@ -1820,18 +1931,52 @@ func test_CheckMessagesWithRawDataWithReturnValue(rulesFilename, messagesFilenam
 	var outputResults []int
 	var outputResultsExtraData [][]map[string]interface{}
 
-	for i_message, message := range (messages.Messages) {
+	for _, message := range (messages.Messages) {
 
 		message.RequestJsonRaw = &data
 
 		result, msg, relevantRuleIndex, _, appliedRulesIndices, _, extraData := Check(&message, &rules)
-		if relevantRuleIndex >= 0 {
-			fmt.Printf("message #%v: decision=%v [%v] by rule #%v ; applicable rules =%v \n", i_message, result, msg, rules.Rules[relevantRuleIndex].RuleID, appliedRulesIndices)
-		} else {
-			fmt.Printf("message #%v: decision=%v [%v]\n", i_message, result, msg)
+
+		if TestPerfomance {
+			t0 := time.Now()
+			for i := 0; i < NumberOfChecks; i++ {
+				Check(&message, &rules)
+			}
+			d := time.Since(t0)
+			elapsedBytes += d
+			fmt.Printf("%v : elapsed [bytes] = %v\n", rulesFilename, d)
 		}
+
 		outputResults = append(outputResults, result)
 		outputResultsExtraData = append(outputResultsExtraData, extraData[0])
+
+		var dataInterface interface{}
+		err := json.Unmarshal(data, &dataInterface)
+		if err == nil {
+			message.RequestJsonRaw = nil
+			message.RequestRawInterface = &dataInterface
+		} else {
+			message.RequestRawInterface = nil
+		}
+
+		result2, msg2, relevantRuleIndex2, _, appliedRulesIndices2, _, extraData2 := Check(&message, &rules)
+
+		if TestPerfomance {
+			t0 := time.Now()
+			for i := 0; i < NumberOfChecks; i++ {
+				Check(&message, &rules)
+			}
+			d := time.Since(t0)
+			elapsedInterface += d
+			fmt.Printf("%v : elapsed [interface] = %v\n", rulesFilename, d)
+		}
+
+		So(result, ShouldEqual, result2)
+		So(msg, ShouldEqual, msg2)
+		So(relevantRuleIndex, ShouldEqual, relevantRuleIndex2)
+		So(fmt.Sprintf("%v", appliedRulesIndices), ShouldEqual, fmt.Sprintf("%v", appliedRulesIndices2))
+		So(fmt.Sprintf("%+v", extraData), ShouldEqual, fmt.Sprintf("%+v", extraData2))
+
 	}
 	return outputResults, outputResultsExtraData, nil
 }
@@ -1845,17 +1990,45 @@ func test_CheckMessagesWithRawDataAndPredefinedStrings(rulesFilename, messagesFi
 
 	var outputResults []int
 
-	for i_message, message := range (messages.Messages) {
+	for _, message := range (messages.Messages) {
 
 		message.RequestJsonRaw = &data
 
 		result, msg, relevantRuleIndex, _, appliedRulesIndices, _, _ := Check(&message, &rules)
-		if relevantRuleIndex >= 0 {
-			fmt.Printf("message #%v: decision=%v [%v] by rule #%v ; applicable rules =%v \n", i_message, result, msg, rules.Rules[relevantRuleIndex].RuleID, appliedRulesIndices)
-		} else {
-			fmt.Printf("message #%v: decision=%v [%v]\n", i_message, result, msg)
+		if TestPerfomance {
+			t0 := time.Now()
+			for i := 0; i < NumberOfChecks; i++ {
+				Check(&message, &rules)
+			}
+			d := time.Since(t0)
+			elapsedBytes += d
+			fmt.Printf("%v : elapsed [bytes] = %v\n", rulesFilename, d)
 		}
 		outputResults = append(outputResults, result)
+
+		var dataInterface interface{}
+		err := json.Unmarshal(data, &dataInterface)
+		if err == nil {
+			message.RequestJsonRaw = nil
+			message.RequestRawInterface = &dataInterface
+		} else {
+			message.RequestRawInterface = nil
+		}
+
+		result2, msg2, relevantRuleIndex2, _, appliedRulesIndices2, _, _ := Check(&message, &rules)
+		if TestPerfomance {
+			t0 := time.Now()
+			for i := 0; i < NumberOfChecks; i++ {
+				Check(&message, &rules)
+			}
+			d := time.Since(t0)
+			elapsedInterface += d
+			fmt.Printf("%v : elapsed [interface] = %v\n", rulesFilename, d)
+		}
+		So(result, ShouldEqual, result2)
+		So(msg, ShouldEqual, msg2)
+		So(relevantRuleIndex, ShouldEqual, relevantRuleIndex2)
+		So(fmt.Sprintf("%v", appliedRulesIndices), ShouldEqual, fmt.Sprintf("%v", appliedRulesIndices2))
 
 	}
 	return outputResults, rules, nil
@@ -1880,11 +2053,41 @@ func test_ConditionsWithJsonRaw(rulesFilename string, messagesFilename string, r
 			message.RequestJsonRaw = &data
 
 			result, extraData := TestConditions(&rule, &message)
+			if TestPerfomance {
+				t0 := time.Now()
+				for i := 0; i < NumberOfChecks; i++ {
+					TestConditions(&rule, &message)
+				}
+				d := time.Since(t0)
+				elapsedBytes += d
+				fmt.Printf("%v : elapsed [bytes] = %v\n", rulesFilename, d)
+			}
 			outputResults[i_message][i_rule] = result
 			outputResultsExtraData[i_message][i_rule] = extraData
 
 			result2, _ := rule.TestConditions(&message)
 			So(result, ShouldEqual, result2)
+
+			var dataInterface interface{}
+			err := json.Unmarshal(data, &dataInterface)
+			if err == nil {
+				message.RequestJsonRaw = nil
+				message.RequestRawInterface = &dataInterface
+			} else {
+				message.RequestRawInterface = nil
+			}
+
+			result3, _ := rule.TestConditions(&message)
+			if TestPerfomance {
+				t0 := time.Now()
+				for i := 0; i < NumberOfChecks; i++ {
+					TestConditions(&rule, &message)
+				}
+				d := time.Since(t0)
+				elapsedInterface += d
+				fmt.Printf("%v : elapsed [interface] = %v\n", rulesFilename, d)
+			}
+			So(result, ShouldEqual, result3)
 
 		}
 	}

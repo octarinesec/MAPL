@@ -154,12 +154,12 @@ func convertAndValidateNumericalValues(condition *Condition) (bool, error) {
 	valFloat, err := strconv.ParseFloat(tempString, 64)
 	valFloat = valFloat * factor
 	if err == nil {
-		condition.ValueFloat = valFloat
+		condition.ValueFloat = &valFloat
 		isNum = true
 	}
 	valInt, err := strconv.ParseInt(condition.Value, 10, 64)
 	if err == nil {
-		condition.ValueInt = valInt
+		condition.ValueInt = &valInt
 		isNum = true
 	}
 
