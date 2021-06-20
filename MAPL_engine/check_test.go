@@ -31,7 +31,7 @@ func TestMain(m *testing.M) {
 	fmt.Println("finished all")
 	fmt.Printf("elapsed bytes = %v\n", elapsedBytes)
 	fmt.Printf("elapsed interface = %v\n", elapsedInterface)
-	fmt.Printf("using interface is faster (on average) by a factor of %v", float32(elapsedBytes)/float32(elapsedInterface))
+	fmt.Printf("using interface is faster (on average) by a factor of %v\n", float32(elapsedBytes)/float32(elapsedInterface))
 	os.Exit(testResult)
 }
 
@@ -410,7 +410,14 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
-		results, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug4.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug2.json")
+		results, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_1.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_2.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_3.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+		results, _ = test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug4.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug2.json")
 		So(results[0], ShouldEqual, BLOCK)
 		results, _ = test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug4b.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug2.json")
 		So(results[0], ShouldEqual, DEFAULT)

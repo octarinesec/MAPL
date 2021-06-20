@@ -9,7 +9,6 @@ import (
 	"github.com/tidwall/pretty"
 	"github.com/yalp/jsonpath"
 	"log"
-	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -933,9 +932,8 @@ func getArrayOfInterfaces(a AnyAllNode, message *MessageAttributes) ([]interface
 			tempArray := arrayDataInterface.([]interface{})
 			tempArrayOut := []interface{}{}
 			for _, x := range tempArray {
-				val := reflect.ValueOf(x)
-				switch val.Kind() {
-				case reflect.Slice: // in case of deepscan we get [][]interface{} and not []interface{}. here we re-arrange it.
+				switch x.(type) {
+				case []interface{}: // in case of deepscan we get [][]interface{} and not []interface{}. here we re-arrange it.
 					tempArray2 := x.([]interface{})
 					for _, y := range tempArray2 {
 						tempArrayOut = append(tempArrayOut, y)

@@ -442,7 +442,6 @@ func (a *Any) SetReturnValueJsonpath(returnValueJsonpath map[string]string) {
 			a.ReturnValuePreparedJsonpathQuery[queryName] = nil
 		}
 	}
-
 }
 
 func (a *Any) GetReturnValueJsonpath() map[string]string {
@@ -680,25 +679,11 @@ func (c *Condition) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists
 	}
 
 	if (c.AttributeIsJsonpath) {
-		tempAtt := strings.Replace(c.AttributeJsonpathQuery, "$RELATIVE", "$", -1)
-		if tempAtt == "$..spec.containers[:]" {
-			log.Println("$..spec.containers[:]->$..containers[:]")
-			tempAtt = "$..containers[:]"
+		preparedJsonpath, err := prepareJsonpathQuery(c.AttributeJsonpathQuery)
+		if err != nil {
+			return err
 		}
-		if tempAtt == "$..spec.containers" {
-			tempAtt = "$..containers"
-			log.Println("$..spec.containers->$..containers")
-		}
-		if strings.Contains(tempAtt, "$KEY") || strings.Contains(tempAtt, "$VALUE") {
-			preparedJsonpath, _ := jsonpath.Prepare("$.*") // just instead of nil. we are not going to use it
-			c.PreparedJsonpathQuery = preparedJsonpath
-		} else {
-			preparedJsonpath, err := jsonpath.Prepare(tempAtt)
-			if err != nil {
-				return err
-			}
-			c.PreparedJsonpathQuery = preparedJsonpath
-		}
+		c.PreparedJsonpathQuery = preparedJsonpath
 	}
 
 	return nil
