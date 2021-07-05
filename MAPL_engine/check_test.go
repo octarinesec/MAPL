@@ -431,16 +431,29 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 		So(results[0], ShouldEqual, BLOCK)
 		results2, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug.json")
 		So(results2[0], ShouldEqual, BLOCK)
+		results2b, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug2b.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug.json")
+		So(results2b[0], ShouldEqual, BLOCK)
+		results2c, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug2c.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug.json")
+		So(results2c[0], ShouldEqual, BLOCK)
+
 
 		results3, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/yaml_raw_data_debug.yaml")
 		So(results3[0], ShouldEqual, BLOCK)
 		results4, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/yaml_raw_data_debug.yaml")
 		So(results4[0], ShouldEqual, DEFAULT)
+		results4b, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug2b.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/yaml_raw_data_debug.yaml")
+		So(results4b[0], ShouldEqual, DEFAULT)
+		results4c, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug2c.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/yaml_raw_data_debug.yaml")
+		So(results4c[0], ShouldEqual, DEFAULT)
 
 		results5, _ := test_ConditionsWithJsonRaw("../files/rules/debugging/rules_with_jsonpath_debug.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug.json")
 		So(results5[0][0], ShouldEqual, true)
 		results6, _ := test_ConditionsWithJsonRaw("../files/rules/debugging/rules_with_jsonpath_debug2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug.json")
 		So(results6[0][0], ShouldEqual, true)
+		results6b, _ := test_ConditionsWithJsonRaw("../files/rules/debugging/rules_with_jsonpath_debug2b.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug.json")
+		So(results6b[0][0], ShouldEqual, true)
+		results6c, _ := test_ConditionsWithJsonRaw("../files/rules/debugging/rules_with_jsonpath_debug2c.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug.json")
+		So(results6c[0][0], ShouldEqual, true)
 
 	})
 }
@@ -1460,6 +1473,11 @@ func TestRuleValidation(t *testing.T) {
 		So(isvalid, ShouldEqual, false)
 
 		isvalid, err = test_RuleValidity("../files/rules/invalid_rules/rules_with_jsonpath_debug5f.yaml")
+		fmt.Println(err)
+		So(err, ShouldNotBeNil)
+		So(isvalid, ShouldEqual, false)
+
+		isvalid, err = test_RuleValidity("../files/rules/invalid_rules/rules_with_jsonpath_debug5h.yaml")
 		fmt.Println(err)
 		So(err, ShouldNotBeNil)
 		So(isvalid, ShouldEqual, false)
