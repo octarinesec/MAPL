@@ -74,7 +74,7 @@ func validateAttribute(condition *Condition) (bool, error) {
 			return false, fmt.Errorf("jsonpath condition contains array reference. need to use parent node of type ANY/ALL")
 		}
 		if strings.Contains(condition.Attribute, "[]") {
-			return false, fmt.Errorf("jsonpath condition contains empty sqaure brackets")
+			return false, fmt.Errorf("jsonpath condition contains empty square brackets")
 		}
 		if !validateArraysWithIndex(condition.Attribute) {
 			return false, fmt.Errorf("jsonpath condition contains array reference (not an integer index). need to use parent node of type ANY/ALL")

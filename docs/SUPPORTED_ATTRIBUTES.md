@@ -10,7 +10,9 @@ The following keywords are used in MAPL conditions with the value to-compare-wit
 | requestUseragent | message.RequestUseragent |
 | utcHoursFromMidnight | message.RequestTimeHoursFromMidnightUTC<br>(extracted from message.RequestTime)||
 | senderLabel[key]* | message.SourceLabels[key] |
-| receiverLabel[key]* | message.DestinationLabels[key] |  
+| receiverLabel[key]* | message.DestinationLabels[key] | 
+| jsonpath: $[path] | message.RequestJsonRaw |
+| jsonpath: $[path] | message.RequestRawInterface |
 
 \* see [Sender/Receiver Labels](#Sender/Receiver Labels)
 
