@@ -14,7 +14,7 @@ require (
 	github.com/smartystreets/goconvey v1.6.4
 	github.com/tidwall/pretty v1.0.0
 	github.com/toolkits/slice v0.0.0-20141116085117-e44a80af2484
-	github.com/yalp/jsonpath v0.0.0-20180219094614-024efa345fa9
+	github.com/yalp/jsonpath v0.0.0-20180802001716-5cc68e5049a0
 	go.mongodb.org/mongo-driver v1.4.1
 	gopkg.in/getlantern/deepcopy.v1 v1.0.0-20140913144530-b923171e8640
 	gopkg.in/yaml.v2 v2.3.0

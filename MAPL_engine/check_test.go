@@ -8,6 +8,7 @@ import (
 	"github.com/ghodss/yaml"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/smartystreets/goconvey/convey/reporting"
+	"reflect"
 	"time"
 
 	//jsonpath2 "github.com/PaesslerAG/jsonpath"
@@ -19,7 +20,7 @@ import (
 	"testing"
 )
 
-const TestPerfomance = true
+const TestPerformance = true
 const NumberOfChecks = 10000
 
 var elapsedBytes time.Duration = 0
@@ -42,8 +43,8 @@ func TestYalpPackage(t *testing.T) {
 		So(err, ShouldBeNil)
 		//---------------------
 		//jsonpathQuery2 := `$..spec.containers[:]`
-		//jsonpathQuery2 := `$..B[:]`
-		jsonpathQuery2 := `$..A.B[:]`
+		jsonpathQuery2 := `$..B[:]`
+		//jsonpathQuery2 := `$..A.B[:]`
 		preparedJsonpathQuery2, err2 := jsonpath2.Prepare(jsonpathQuery2)
 		So(err2, ShouldBeNil)
 
@@ -58,10 +59,11 @@ func TestYalpPackage(t *testing.T) {
 		fmt.Println(result)
 
 		data, err = ReadBinaryFile("../files/raw_json_data/deepscan/json_raw_data_debug2.json")
-		err5 := json.Unmarshal(data, &dataInterface)
+		var dataInterface5 interface{}
+		err5 := json.Unmarshal(data, &dataInterface5)
 		So(err5, ShouldBeNil)
 
-		result2, err6 := preparedJsonpathQuery2(dataInterface)
+		result2, err6 := preparedJsonpathQuery2(dataInterface5)
 		So(err6, ShouldBeNil)
 		fmt.Println(result2)
 
@@ -86,6 +88,56 @@ func TestYalpPackage(t *testing.T) {
 
 	})
 
+}
+
+func TestYalpPackageDeepscan(t *testing.T) {
+	Convey("tests", t, func() {
+		testYalpPackageDeepscanInner("../files/raw_json_data/deepscan/json_raw_data_2containers.json")
+		testYalpPackageDeepscanInner("../files/raw_json_data/deepscan/json_raw_data_2containers_dep.json")
+		testYalpPackageDeepscanInner("../files/raw_json_data/deepscan/json_raw_data_2containers_dep2.json")
+	})
+}
+
+func testYalpPackageDeepscanInner(filename string) {
+	jsonpathQuery1 := `$..spec.containers`
+	jsonpathQuery2 := `$..spec.containers[:]`
+	jsonpathQuery3 := `$..spec.containers[*]`
+
+	preparedJsonpathQuery1, err := jsonpath2.Prepare(jsonpathQuery1)
+	So(err, ShouldBeNil)
+	preparedJsonpathQuery2, err := jsonpath2.Prepare(jsonpathQuery2)
+	So(err, ShouldBeNil)
+	preparedJsonpathQuery3, err := jsonpath2.Prepare(jsonpathQuery3)
+	So(err, ShouldBeNil)
+
+	data, err := ReadBinaryFile(filename)
+	So(err, ShouldBeNil)
+
+	var dataInterface interface{}
+	err = json.Unmarshal(data, &dataInterface)
+	So(err, ShouldBeNil)
+
+	result1, err := preparedJsonpathQuery1(dataInterface)
+	So(err, ShouldBeNil)
+	fmt.Println(result1)
+
+	result2, err := preparedJsonpathQuery2(dataInterface)
+	So(err, ShouldBeNil)
+	fmt.Println(result2)
+
+	result3, err := preparedJsonpathQuery3(dataInterface)
+	So(err, ShouldBeNil)
+	fmt.Println(result3)
+
+	result1 = ArrangeArrayInterface(result1)
+	result2 = ArrangeArrayInterface(result2)
+	result3 = ArrangeArrayInterface(result3)
+
+	flag := reflect.DeepEqual(result1, result2)
+	So(flag, ShouldEqual, true)
+
+	flag = reflect.DeepEqual(result1, result3)
+	So(flag, ShouldEqual, true)
 }
 
 func TestMaplEngine(t *testing.T) {
@@ -436,7 +488,6 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 		results2c, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug2c.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug.json")
 		So(results2c[0], ShouldEqual, BLOCK)
 
-
 		results3, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/yaml_raw_data_debug.yaml")
 		So(results3[0], ShouldEqual, BLOCK)
 		results4, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/yaml_raw_data_debug.yaml")
@@ -551,7 +602,7 @@ func TestMaplEngineJsonConditionsWildcards(t *testing.T) {
 				fmt.Println(string(z2))
 			}
 			So(len(z1), ShouldEqual, len(z2))
-			for i_z, _ := range (z1) {
+			for i_z, _ := range z1 {
 				So(z1[i_z], ShouldEqual, z2[i_z])
 			}
 
@@ -568,7 +619,7 @@ func TestMaplEngineJsonConditionsWildcards(t *testing.T) {
 				fmt.Println(string(z4))
 			}
 			So(len(z3b), ShouldEqual, len(z4b))
-			for i_z, _ := range (z3b) {
+			for i_z, _ := range z3b {
 				So(z3b[i_z], ShouldEqual, z4b[i_z])
 			}
 		}
@@ -805,6 +856,11 @@ func TestMaplEngineJsonConditionsOnArraysAny(t *testing.T) {
 
 		results, _ := test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_1container.json")
 		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANYb.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_1container.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANYc.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_1container.json")
+		So(results[0], ShouldEqual, BLOCK)
+
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000.json")
 		So(results[0], ShouldEqual, BLOCK)
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000b.json")
@@ -827,6 +883,21 @@ func TestMaplEngineJsonConditionsOnArraysAny(t *testing.T) {
 		So(results[0], ShouldEqual, BLOCK)
 
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY_EX.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu_missing_from_one_A2.json")
+		So(results[0], ShouldEqual, DEFAULT)
+// test [:] vs [*]:
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY_EX2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_env.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY_EX2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_env_missing.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY_EX2b.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_env.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY_EX2b.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_env_missing.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY_EX2c.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_env.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY_EX2c.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_env_missing.json")
 		So(results[0], ShouldEqual, DEFAULT)
 
 	})
@@ -1598,7 +1669,7 @@ func TestRulesWithPredefinedStrings(t *testing.T) {
 
 		//---------
 		predefined_lists := []string{"../files/lists/predefined_list_workload.yaml", "../files/lists/predefined_list_workload2.yaml", "../files/lists/predefined_list_workload3.yaml", "../files/lists/predefined_list_workload4.yaml"}
-		for _, f := range (predefined_lists) {
+		for _, f := range predefined_lists {
 			results, rules, _ = test_CheckMessagesWithRawDataAndPredefinedStrings("../files/rules/predefined_strings/rules_with_condition_translation_list.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/predefined_strings/json_raw_workload_dep.json", f)
 			z := rules.Rules[0].preparedRule.Conditions.ConditionsTree.String()
 			//So(z, ShouldEqual, "<jsonpath:$.kind-RE-^Deployment$|^Pod$>")
@@ -1772,7 +1843,7 @@ func test_CheckMessages(rulesFilename string, messagesFilename string) ([]int, e
 
 	var outputResults []int
 
-	for i_message, message := range (messages.Messages) {
+	for i_message, message := range messages.Messages {
 
 		result, msg, relevantRuleIndex, _, appliedRulesIndices, _, _ := Check(&message, &rules)
 		if relevantRuleIndex >= 0 {
@@ -1816,7 +1887,7 @@ func test_CheckMessagesWithPredefinedStrings(rulesFilename string, messagesFilen
 
 	var outputResults []int
 
-	for i_message, message := range (messages.Messages) {
+	for i_message, message := range messages.Messages {
 
 		result, msg, relevantRuleIndex, _, appliedRulesIndices, _, _ := Check(&message, &rules)
 		if relevantRuleIndex >= 0 {
@@ -1888,13 +1959,13 @@ func test_CheckMessagesWithRawData(rulesFilename, messagesFilename, rawFilename 
 
 	var outputResults []int
 
-	for _, message := range (messages.Messages) {
+	for _, message := range messages.Messages {
 
 		message.RequestJsonRaw = &data
 
 		result, msg, relevantRuleIndex, _, appliedRulesIndices, _, extraData := Check(&message, &rules)
 
-		if TestPerfomance {
+		if TestPerformance {
 			t0 := time.Now()
 			for i := 0; i < NumberOfChecks; i++ {
 				Check(&message, &rules)
@@ -1920,7 +1991,7 @@ func test_CheckMessagesWithRawData(rulesFilename, messagesFilename, rawFilename 
 			message.RequestRawInterface = nil
 		}
 		result2, msg2, relevantRuleIndex2, _, appliedRulesIndices2, _, extraData2 := Check(&message, &rules)
-		if TestPerfomance {
+		if TestPerformance {
 			t0 := time.Now()
 			for i := 0; i < NumberOfChecks; i++ {
 				Check(&message, &rules)
@@ -1949,13 +2020,13 @@ func test_CheckMessagesWithRawDataWithReturnValue(rulesFilename, messagesFilenam
 	var outputResults []int
 	var outputResultsExtraData [][]map[string]interface{}
 
-	for _, message := range (messages.Messages) {
+	for _, message := range messages.Messages {
 
 		message.RequestJsonRaw = &data
 
 		result, msg, relevantRuleIndex, _, appliedRulesIndices, _, extraData := Check(&message, &rules)
 
-		if TestPerfomance {
+		if TestPerformance {
 			t0 := time.Now()
 			for i := 0; i < NumberOfChecks; i++ {
 				Check(&message, &rules)
@@ -1979,7 +2050,7 @@ func test_CheckMessagesWithRawDataWithReturnValue(rulesFilename, messagesFilenam
 
 		result2, msg2, relevantRuleIndex2, _, appliedRulesIndices2, _, extraData2 := Check(&message, &rules)
 
-		if TestPerfomance {
+		if TestPerformance {
 			t0 := time.Now()
 			for i := 0; i < NumberOfChecks; i++ {
 				Check(&message, &rules)
@@ -2008,12 +2079,12 @@ func test_CheckMessagesWithRawDataAndPredefinedStrings(rulesFilename, messagesFi
 
 	var outputResults []int
 
-	for _, message := range (messages.Messages) {
+	for _, message := range messages.Messages {
 
 		message.RequestJsonRaw = &data
 
 		result, msg, relevantRuleIndex, _, appliedRulesIndices, _, _ := Check(&message, &rules)
-		if TestPerfomance {
+		if TestPerformance {
 			t0 := time.Now()
 			for i := 0; i < NumberOfChecks; i++ {
 				Check(&message, &rules)
@@ -2034,7 +2105,7 @@ func test_CheckMessagesWithRawDataAndPredefinedStrings(rulesFilename, messagesFi
 		}
 
 		result2, msg2, relevantRuleIndex2, _, appliedRulesIndices2, _, _ := Check(&message, &rules)
-		if TestPerfomance {
+		if TestPerformance {
 			t0 := time.Now()
 			for i := 0; i < NumberOfChecks; i++ {
 				Check(&message, &rules)
@@ -2063,15 +2134,15 @@ func test_ConditionsWithJsonRaw(rulesFilename string, messagesFilename string, r
 	outputResults = make([][]bool, len(messages.Messages))
 	var outputResultsExtraData [][][]map[string]interface{}
 	outputResultsExtraData = make([][][]map[string]interface{}, len(messages.Messages))
-	for i_message, message := range (messages.Messages) {
+	for i_message, message := range messages.Messages {
 		outputResults[i_message] = make([]bool, len(rules.Rules))
 		outputResultsExtraData[i_message] = make([][]map[string]interface{}, len(rules.Rules))
-		for i_rule, rule := range (rules.Rules) {
+		for i_rule, rule := range rules.Rules {
 
 			message.RequestJsonRaw = &data
 
 			result, extraData := TestConditions(&rule, &message)
-			if TestPerfomance {
+			if TestPerformance {
 				t0 := time.Now()
 				for i := 0; i < NumberOfChecks; i++ {
 					TestConditions(&rule, &message)
@@ -2096,7 +2167,7 @@ func test_ConditionsWithJsonRaw(rulesFilename string, messagesFilename string, r
 			}
 
 			result3, _ := rule.TestConditions(&message)
-			if TestPerfomance {
+			if TestPerformance {
 				t0 := time.Now()
 				for i := 0; i < NumberOfChecks; i++ {
 					TestConditions(&rule, &message)
@@ -2120,7 +2191,7 @@ func test_RuleValidity(rulesFilename string) (bool, error) {
 		return false, err
 	}
 
-	for _, r := range (rules.Rules) {
+	for _, r := range rules.Rules {
 		err = r.SetPredefinedStringsAndLists(PredefinedStringsAndLists{})
 		if err != nil {
 			return false, err
@@ -2139,7 +2210,7 @@ func test_MD5Hash(rulesFilename string) ([]string, error) {
 	}
 
 	var outputHashes []string
-	for i_rule, rule := range (rules.Rules) {
+	for i_rule, rule := range rules.Rules {
 
 		md5hash := RuleMD5Hash(rule)
 		fmt.Printf("rule #%v: md5hash = %v\n", i_rule, md5hash)
