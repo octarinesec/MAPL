@@ -45,7 +45,7 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 	sem := make(chan int, N) // semaphore pattern
 	if false {               // check in parallel
 
-		for i, rule := range (rules.Rules) { // check all the rules in parallel
+		for i, rule := range rules.Rules { // check all the rules in parallel
 			go func(in_i int, in_rule Rule) {
 				results[in_i], checkExtraData[in_i] = CheckOneRule(message, &in_rule)
 				if desc, ok := in_rule.Metadata["description"]; ok {
@@ -65,7 +65,7 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 
 	} else { // used only for debugging
 
-		for in_i, in_rule := range (rules.Rules) {
+		for in_i, in_rule := range rules.Rules {
 			results[in_i], checkExtraData[in_i] = CheckOneRule(message, &in_rule)
 			if desc, ok := in_rule.Metadata["description"]; ok {
 				ruleDescriptions[in_i] = desc
@@ -182,7 +182,7 @@ func TestSender(rule *Rule, message *MessageAttributes) bool {
 	}
 
 	match := false
-	for _, expandedSender := range (rule.Sender.SenderList) {
+	for _, expandedSender := range rule.Sender.SenderList {
 		match_temp := false
 
 		switch expandedSender.Type {
@@ -214,7 +214,7 @@ func TestReceiver(rule *Rule, message *MessageAttributes) bool {
 	}
 
 	match := false
-	for _, expandedReceiver := range (rule.Receiver.ReceiverList) {
+	for _, expandedReceiver := range rule.Receiver.ReceiverList {
 		match_temp := false
 
 		switch expandedReceiver.Type {
@@ -271,7 +271,7 @@ func testOneCondition(c *Condition, message *MessageAttributes) (bool, []map[str
 
 	result := false
 	// select type of test by types of attribute and methods
-	switch (c.Attribute) {
+	switch c.Attribute {
 	case "true", "TRUE":
 		result = true
 
@@ -788,7 +788,7 @@ func getAttribute(sender_receiver, attribute string, message MessageAttributes) 
 
 // compareIntFunc compares one int value according the method string.
 func compareIntFunc(value1 int64, method string, value2 *int64) bool { //value2 is the reference value from the rule
-	switch (method) {
+	switch method {
 	case "EQ", "eq":
 		return (value1 == *value2)
 	case "NEQ", "neq", "ne", "NE":
@@ -807,7 +807,7 @@ func compareIntFunc(value1 int64, method string, value2 *int64) bool { //value2 
 
 // compareFloatFunc compares one float value according the method string.
 func compareFloatFunc(value1 float64, method string, value2 *float64) bool { //value2 is the reference value from the rule
-	switch (method) {
+	switch method {
 	case "EQ", "eq":
 		return (value1 == *value2)
 	case "NEQ", "neq", "ne", "NE":
@@ -826,7 +826,7 @@ func compareFloatFunc(value1 float64, method string, value2 *float64) bool { //v
 
 // compareStringFunc compares one string value according the method string
 func compareStringFunc(value1 string, method string, value2 string) bool {
-	switch (method) {
+	switch method {
 	case "EQ", "eq":
 		return (value1 == value2)
 	case "NEQ", "neq", "ne", "NE":
@@ -840,7 +840,7 @@ func compareStringWithWildcardsFunc(value1 string, method string, value2 *regexp
 	//log.Printf("%v ?%v? %v",value1,method,value2)
 
 	if value2 == nil {
-		switch (method) {
+		switch method {
 		case "EQ", "eq":
 			return false
 		case "NEQ", "neq", "ne", "NE":
@@ -848,7 +848,7 @@ func compareStringWithWildcardsFunc(value1 string, method string, value2 *regexp
 		}
 	}
 
-	switch (method) {
+	switch method {
 
 	case "EX", "ex":
 		return len(value1) > 0
@@ -867,7 +867,7 @@ func compareStringWithWildcardsFunc(value1 string, method string, value2 *regexp
 func compareRegexFunc(value1 string, method string, value2 *regexp.Regexp) bool { //value2 is the reference value from the rule
 
 	if value2 == nil {
-		switch (method) {
+		switch method {
 		case "RE", "re":
 			return false
 		case "NRE", "nre":
@@ -875,7 +875,7 @@ func compareRegexFunc(value1 string, method string, value2 *regexp.Regexp) bool 
 		}
 	}
 
-	switch (method) {
+	switch method {
 	case "RE", "re":
 		return (value2.MatchString(value1))
 	case "NRE", "nre":
@@ -918,34 +918,37 @@ func getArrayOfInterfaces(a AnyAllNode, message *MessageAttributes) ([]interface
 
 	}
 	if arrayDataInterface != nil {
-
-		switch arrayDataInterface.(type) {
-		case map[string]interface{}:
-			tempArray := arrayDataInterface.(map[string]interface{})
-			tempArrayOut := []interface{}{}
-			for k, v := range (tempArray) {
-				tempArrayOut = append(tempArrayOut, map[string]interface{}{k: v})
-			}
-			return tempArrayOut, nil
-		default:
-
-			tempArray := arrayDataInterface.([]interface{})
-			tempArrayOut := []interface{}{}
-			for _, x := range tempArray {
-				switch x.(type) {
-				case []interface{}: // in case of deepscan we get [][]interface{} and not []interface{}. here we re-arrange it.
-					tempArray2 := x.([]interface{})
-					for _, y := range tempArray2 {
-						tempArrayOut = append(tempArrayOut, y)
-					}
-				default:
-					return tempArray, nil
-				}
-			}
-			return tempArrayOut, nil
-		}
+		return ArrangeArrayInterface(arrayDataInterface), nil
 	}
 	return []interface{}{}, err
+}
+
+func ArrangeArrayInterface(arrayDataInterface interface{}) []interface{} {
+	switch arrayDataInterface.(type) {
+	case map[string]interface{}:
+		tempArray := arrayDataInterface.(map[string]interface{})
+		tempArrayOut := []interface{}{}
+		for k, v := range tempArray {
+			tempArrayOut = append(tempArrayOut, map[string]interface{}{k: v})
+		}
+		return tempArrayOut
+	default:
+
+		tempArray := arrayDataInterface.([]interface{})
+		tempArrayOut := []interface{}{}
+		for _, x := range tempArray {
+			switch x.(type) {
+			case []interface{}: // in case of deepscan we get [][]interface{} and not []interface{}. here we re-arrange it.
+				tempArray2 := x.([]interface{})
+				for _, y := range tempArray2 {
+					tempArrayOut = append(tempArrayOut, y)
+				}
+			default:
+				return tempArray
+			}
+		}
+		return tempArrayOut
+	}
 }
 
 func getArrayOfJsons(a AnyAllNode, message *MessageAttributes) ([][]byte, error) {
@@ -995,7 +998,7 @@ func getArrayOfJsonsFromInterfaceArrayOriginal(arrayData []byte) ([][]byte, erro
 	if err != nil {
 		return [][]byte{}, err
 	}
-	for _, x := range (arrayInterface) {
+	for _, x := range arrayInterface {
 		y, err := json.Marshal(x)
 		if err != nil {
 			return [][]byte{}, err
@@ -1050,7 +1053,7 @@ func getArrayOfJsonsFromMapStringInterface(arrayData []byte) ([][]byte, error) {
 	if err != nil {
 		return [][]byte{}, err
 	}
-	for i_x, x := range (arrayInterface) {
+	for i_x, x := range arrayInterface {
 		z := map[string]interface{}{}
 		z[i_x] = x
 		y, err := json.Marshal(z)

@@ -1,0 +1,23 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "workload"
+    protocol: "*"
+    resource:
+      resourceType: "*"
+      resourceName: "*"
+    operation: "*"
+    conditions:
+      AND:
+      - ANY:
+          parentJsonpathAttribute: "jsonpath:$.spec.containers[*]"
+          condition:
+            attribute: "jsonpath:$RELATIVE.env"
+            method: EX
+
+    decision: block

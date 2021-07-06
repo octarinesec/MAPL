@@ -8,7 +8,6 @@ import (
 	"github.com/yalp/jsonpath"
 	"go.mongodb.org/mongo-driver/bson"
 	dc "gopkg.in/getlantern/deepcopy.v1"
-	"log"
 	"sort"
 	"strings"
 )
@@ -378,14 +377,6 @@ func (a *Any) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) erro
 
 func prepareJsonpathQuery(query string) (jsonpath.FilterFunc, error) {
 	query = strings.Replace(query, "$RELATIVE", "$", -1)
-	if query == "$..spec.containers[:]" {
-		query = "$..containers[:]"
-		log.Println("$..spec.containers[:]->$..containers[:]")
-	}
-	if query == "$..spec.containers" {
-		query = "$..containers"
-		log.Println("$..spec.containers->$..containers")
-	}
 	if query == "$*" {
 		query = "$.*"
 	}
@@ -398,7 +389,6 @@ func prepareJsonpathQuery(query string) (jsonpath.FilterFunc, error) {
 			return nil, err
 		}
 		return preparedJsonpath, err
-
 	}
 }
 
