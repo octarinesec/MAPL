@@ -1799,6 +1799,104 @@ func TestMaplEngineJsonConditionsKeyValue(t *testing.T) {
 	})
 }
 
+func TestMaplEngineParentJsonpathAttributeList(t *testing.T) {
+
+	logging := false
+	if logging {
+		// setup a log outfile file
+		f, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777) //create your file with desired read/write permissions
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Sync()
+		defer f.Close()
+		log.SetOutput(f) //set output of logs to f
+	} else {
+		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
+	}
+
+	reporting.QuietMode()
+	Convey("tests", t, func() {
+
+		// test on arrays
+		str := "test jsonpath parent attribute list"
+		fmt.Println(str)
+
+		results, _ := test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_1container.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_1container_dep.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000b.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000c.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu3_mem1100.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu5_mem1000.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu5_mem2000.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000_dep.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000b_dep.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000c_dep.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu3_mem1100_dep.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu5_mem1000_dep.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu5_mem2000_dep.json")
+		So(results[0], ShouldEqual, DEFAULT)
+// multi-level:
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B2.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_C.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+		//---dep---
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_dep.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B_dep.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_dep.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B_dep.json")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_dep.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B_dep.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B2_dep.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_C_dep.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+	})
+
+}
+
+
 func TestRulesWithPredefinedStringsZooz(t *testing.T) {
 
 	logging := false

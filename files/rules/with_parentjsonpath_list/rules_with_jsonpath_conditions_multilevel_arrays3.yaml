@@ -1,0 +1,26 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "workload"
+    protocol: "*"
+    resource:
+      resourceType: "*"
+      resourceName: "*"
+    operation: "*"
+    conditions:
+      ALL:
+        parentJsonpathAttribute: "jsonpath:$.spec.containers[:],$.spec.template.spec.containers[:]"
+        ALL:
+          parentJsonpathAttribute: "jsonpath:$RELATIVE.volumeMounts[:]"
+          condition:
+            attribute: "jsonpath:$RELATIVE.name"
+            method: EQ
+            value: "xxx"
+
+
+    decision: block

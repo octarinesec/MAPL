@@ -908,14 +908,25 @@ func getArrayOfInterfaces(a AnyAllNode, message *MessageAttributes) ([]interface
 			return temp, nil
 		}
 
-		jsonpathQueryFunc := a.GetPreparedJsonpathQuery()
-		arrayDataInterface, err = jsonpathQueryFunc(*message.RequestRawInterfaceRelative)
-
+		returnArray := []interface{}{}
+		for _, jsonpathQueryFunc := range a.GetPreparedJsonpathQuery() {
+			arrayDataInterface, err = jsonpathQueryFunc(*message.RequestRawInterfaceRelative)
+			a := ArrangeArrayInterface(arrayDataInterface)
+			for _, aa := range a {
+				returnArray = append(returnArray, aa)
+			}
+		}
+		return returnArray, nil
 	} else {
-
-		jsonpathQueryFunc := a.GetPreparedJsonpathQuery()
-		arrayDataInterface, err = jsonpathQueryFunc(*message.RequestRawInterface)
-
+		returnArray := []interface{}{}
+		for _, jsonpathQueryFunc := range a.GetPreparedJsonpathQuery() {
+			arrayDataInterface, err = jsonpathQueryFunc(*message.RequestRawInterface)
+			a := ArrangeArrayInterface(arrayDataInterface)
+			for _, aa := range a {
+				returnArray = append(returnArray, aa)
+			}
+		}
+		return returnArray, nil
 	}
 	if arrayDataInterface != nil {
 		return ArrangeArrayInterface(arrayDataInterface), nil
@@ -933,7 +944,9 @@ func ArrangeArrayInterface(arrayDataInterface interface{}) []interface{} {
 		}
 		return tempArrayOut
 	default:
-
+		if arrayDataInterface == nil {
+			return []interface{}{}
+		}
 		tempArray := arrayDataInterface.([]interface{})
 		tempArrayOut := []interface{}{}
 		for _, x := range tempArray {
@@ -954,20 +967,32 @@ func ArrangeArrayInterface(arrayDataInterface interface{}) []interface{} {
 func getArrayOfJsons(a AnyAllNode, message *MessageAttributes) ([][]byte, error) {
 	// used in eval of ANY/ALL node (getting the data from the message attributes by the parentJsonpath)
 	arrayData := []byte{}
+	arrayDataTemp := []byte{}
 
 	err := errors.New("error")
-	parentJsonpath := a.GetParentJsonpathAttribute()
-
-	if strings.HasPrefix(parentJsonpath, "$RELATIVE.") || parentJsonpath == "$RELATIVE*" || strings.HasPrefix(parentJsonpath, "$KEY.") || strings.HasPrefix(parentJsonpath, "$VALUE.") { // to-do: create a flag once when parsing!
-		parentJsonpath = strings.Replace(parentJsonpath, "$RELATIVE.", "$.", 1)
-		parentJsonpath = strings.Replace(parentJsonpath, "$KEY.", "$.", 1) // to do: this is not supported. remove
-		parentJsonpath = strings.Replace(parentJsonpath, "$VALUE.", "$.", 1)
-		if parentJsonpath == "$RELATIVE*" {
-			parentJsonpath = "$*"
+	parentJsonpathList := a.GetParentJsonpathAttributeArray()
+	for _, parentJsonpath := range parentJsonpathList {
+		if strings.HasPrefix(parentJsonpath, "$RELATIVE.") || parentJsonpath == "$RELATIVE*" || strings.HasPrefix(parentJsonpath, "$KEY.") || strings.HasPrefix(parentJsonpath, "$VALUE.") { // to-do: create a flag once when parsing!
+			parentJsonpath = strings.Replace(parentJsonpath, "$RELATIVE.", "$.", 1)
+			parentJsonpath = strings.Replace(parentJsonpath, "$KEY.", "$.", 1) // to do: this is not supported. remove
+			parentJsonpath = strings.Replace(parentJsonpath, "$VALUE.", "$.", 1)
+			if parentJsonpath == "$RELATIVE*" {
+				parentJsonpath = "$*"
+			}
+			arrayDataTemp, err = jsonslice.Get(*message.RequestJsonRawRelative, parentJsonpath)
+		} else {
+			arrayDataTemp, err = jsonslice.Get(*message.RequestJsonRaw, parentJsonpath)
 		}
-		arrayData, err = jsonslice.Get(*message.RequestJsonRawRelative, parentJsonpath)
-	} else {
-		arrayData, err = jsonslice.Get(*message.RequestJsonRaw, parentJsonpath)
+		if err == nil {
+			if len(arrayData)==0 {
+				arrayData = arrayDataTemp
+			}else {
+				if len(arrayDataTemp) != 0 {
+					arrayData = append(arrayData, ',')
+					arrayData = append(arrayData, arrayDataTemp...)
+				}
+			}
+		}
 	}
 
 	if err != nil {
