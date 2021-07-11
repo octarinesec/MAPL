@@ -61,17 +61,16 @@ func (n *Not) ToMongoQuery(base string, parentString string, inArrayCounter int)
 }
 
 func (a *All) ToMongoQuery(base string, parentString string, inArrayCounter int) (bson.M, []bson.M, error) { //parentString is irrelevant here
-
-	if strings.HasSuffix(a.ParentJsonpathAttributeOriginal, "[:]") {
+	if strings.HasSuffix(a.ParentJsonpathAttributeOriginal, "[:]") || strings.HasSuffix(a.ParentJsonpathAttributeOriginal, "[*]") {
 		inArrayCounter += 1
 	}
-
 	if strings.HasPrefix(a.ParentJsonpathAttributeOriginal, "jsonpath:$..") {
 		return bson.M{}, []bson.M{}, fmt.Errorf("deepscan is not supported")
 	}
 	parentField := strings.Replace(a.ParentJsonpathAttributeOriginal, "jsonpath:$.", base+".", 1)
 	parentField = strings.Replace(parentField, "jsonpath:$RELATIVE.", "", 1)
 	parentField = strings.Replace(parentField, "[:]", "", -1)
+	parentField = strings.Replace(parentField, "[*]", "", -1)
 
 	q, pipeline, err := a.Node.ToMongoQuery(base, "", inArrayCounter+1)
 	if err != nil {
@@ -91,7 +90,7 @@ func (a *All) ToMongoQuery(base string, parentString string, inArrayCounter int)
 
 func (a *Any) ToMongoQuery(base string, parentString string, inArrayCounter int) (bson.M, []bson.M, error) { //parentString is irrelevant here
 
-	if strings.HasSuffix(a.ParentJsonpathAttributeOriginal, "[:]") {
+	if strings.HasSuffix(a.ParentJsonpathAttributeOriginal, "[:]") || strings.HasSuffix(a.ParentJsonpathAttributeOriginal, "[*]") {
 		inArrayCounter += 1
 	}
 
@@ -101,6 +100,7 @@ func (a *Any) ToMongoQuery(base string, parentString string, inArrayCounter int)
 	parentField := strings.Replace(a.ParentJsonpathAttributeOriginal, "jsonpath:$.", base+".", 1)
 	parentField = strings.Replace(parentField, "jsonpath:$RELATIVE.", "", 1)
 	parentField = strings.Replace(parentField, "[:]", "", -1)
+	parentField = strings.Replace(parentField, "[*]", "", -1)
 
 	q, pipeline, err := a.Node.ToMongoQuery(base, parentField, inArrayCounter+1)
 	if err != nil {
