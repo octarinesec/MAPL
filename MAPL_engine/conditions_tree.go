@@ -109,9 +109,10 @@ type AnyAllNode interface {
 	Node
 	SetParentJsonpathAttribute(parentJsonpathAttribute string)
 	GetParentJsonpathAttribute() string
+	GetParentJsonpathAttributeArray() []string
 	SetReturnValueJsonpath(returnValueJsonpath map[string]string)
 	GetReturnValueJsonpath() map[string]string
-	GetPreparedJsonpathQuery() jsonpath.FilterFunc
+	GetPreparedJsonpathQuery() []jsonpath.FilterFunc
 }
 
 //--------------------------------------
@@ -192,7 +193,7 @@ func (o *Or) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
 		//}
 		flagOut = flagOut || flag
 		if flag {
-			for _, e := range (extraData) {
+			for _, e := range extraData {
 				extraDataOut = append(extraDataOut, e)
 			}
 		}
@@ -245,13 +246,14 @@ func (n *Not) String() string {
 //--------------------------------------
 type Any struct {
 	ParentJsonpathAttribute                      string
+	ParentJsonpathAttributeArray                 []string
 	ParentJsonpathAttributeOriginal              string
 	ReturnValueJsonpath                          map[string]string
 	ReturnValuePreparedJsonpathQuery             map[string]jsonpath.FilterFunc
 	ReturnValuePreparedJsonpathQueryRelativeFlag map[string]bool
 	ReturnValueJsonpathOriginal                  map[string]string
-	Node                                         Node                `yaml:"condition,omitempty" json:"condition,omitempty" bson:"condition,omitempty" structs:"condition,omitempty"`
-	PreparedJsonpathQuery                        jsonpath.FilterFunc `yaml:"-,omitempty" json:"-,omitempty"`
+	Node                                         Node                  `yaml:"condition,omitempty" json:"condition,omitempty" bson:"condition,omitempty" structs:"condition,omitempty"`
+	PreparedJsonpathQuery                        []jsonpath.FilterFunc `yaml:"-,omitempty" json:"-,omitempty"`
 }
 
 func (a *Any) MarshalJSON() ([]byte, error) {
@@ -367,11 +369,15 @@ func (a *Any) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) erro
 		return err
 	}
 
-	preparedJsonpath, err := prepareJsonpathQuery(a.GetParentJsonpathAttribute())
-	if err != nil {
-		return err
+	a.ParentJsonpathAttributeArray = strings.Split(a.GetParentJsonpathAttribute(), ",")
+
+	for _, j := range a.GetParentJsonpathAttributeArray() {
+		preparedJsonpath, err := prepareJsonpathQuery(j)
+		if err != nil {
+			return err
+		}
+		a.PreparedJsonpathQuery = append(a.PreparedJsonpathQuery, preparedJsonpath)
 	}
-	a.PreparedJsonpathQuery = preparedJsonpath
 	return nil
 }
 
@@ -414,6 +420,10 @@ func (a *Any) GetParentJsonpathAttribute() string {
 	return a.ParentJsonpathAttribute
 }
 
+func (a *Any) GetParentJsonpathAttributeArray() []string {
+	return a.ParentJsonpathAttributeArray
+}
+
 func (a *Any) SetReturnValueJsonpath(returnValueJsonpath map[string]string) {
 	dc.Copy(&a.ReturnValueJsonpathOriginal, &returnValueJsonpath)
 	dc.Copy(&a.ReturnValueJsonpath, &returnValueJsonpath)
@@ -438,7 +448,7 @@ func (a *Any) GetReturnValueJsonpath() map[string]string {
 	return a.ReturnValueJsonpathOriginal
 }
 
-func (a *Any) GetPreparedJsonpathQuery() jsonpath.FilterFunc {
+func (a *Any) GetPreparedJsonpathQuery() []jsonpath.FilterFunc {
 	return a.PreparedJsonpathQuery
 }
 
@@ -447,13 +457,14 @@ func (a *Any) GetPreparedJsonpathQuery() jsonpath.FilterFunc {
 //--------------------------------------
 type All struct {
 	ParentJsonpathAttribute                      string
+	ParentJsonpathAttributeArray                 []string
 	ParentJsonpathAttributeOriginal              string
 	ReturnValueJsonpath                          map[string]string
 	ReturnValueJsonpathOriginal                  map[string]string
 	ReturnValuePreparedJsonpathQuery             map[string]jsonpath.FilterFunc
 	ReturnValuePreparedJsonpathQueryRelativeFlag map[string]bool
-	Node                                         Node                `yaml:"condition,omitempty" json:"condition,omitempty" bson:"condition,omitempty" structs:"condition,omitempty"`
-	PreparedJsonpathQuery                        jsonpath.FilterFunc `yaml:"-,omitempty" json:"-,omitempty"`
+	Node                                         Node                  `yaml:"condition,omitempty" json:"condition,omitempty" bson:"condition,omitempty" structs:"condition,omitempty"`
+	PreparedJsonpathQuery                        []jsonpath.FilterFunc `yaml:"-,omitempty" json:"-,omitempty"`
 }
 
 func (a *All) MarshalJSON() ([]byte, error) {
@@ -484,7 +495,6 @@ func (a *All) MarshalJSON() ([]byte, error) {
 }
 
 func (a *All) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
-
 	if message.RequestRawInterface != nil && a.PreparedJsonpathQuery != nil {
 		return evalAllRawInterface(a, message)
 	} else {
@@ -543,11 +553,17 @@ func (a *All) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) erro
 	if err != nil {
 		return err
 	}
-	preparedJsonpath, err := prepareJsonpathQuery(a.GetParentJsonpathAttribute())
-	if err != nil {
-		return err
+
+	a.ParentJsonpathAttributeArray = strings.Split(a.GetParentJsonpathAttribute(), ",")
+
+	for _, j := range a.GetParentJsonpathAttributeArray() {
+		preparedJsonpath, err := prepareJsonpathQuery(j)
+		if err != nil {
+			return err
+		}
+		a.PreparedJsonpathQuery = append(a.PreparedJsonpathQuery, preparedJsonpath)
 	}
-	a.PreparedJsonpathQuery = preparedJsonpath
+
 	return nil
 }
 
@@ -571,6 +587,10 @@ func (a *All) SetParentJsonpathAttribute(parentJsonpathAttribute string) {
 
 func (a *All) GetParentJsonpathAttribute() string {
 	return a.ParentJsonpathAttribute
+}
+
+func (a *All) GetParentJsonpathAttributeArray() []string {
+	return a.ParentJsonpathAttributeArray
 }
 
 func (a *All) SetReturnValueJsonpath(returnValueJsonpath map[string]string) {
@@ -598,7 +618,7 @@ func (a *All) GetReturnValueJsonpath() map[string]string {
 	return a.ReturnValueJsonpathOriginal
 }
 
-func (a *All) GetPreparedJsonpathQuery() jsonpath.FilterFunc {
+func (a *All) GetPreparedJsonpathQuery() []jsonpath.FilterFunc {
 	return a.PreparedJsonpathQuery
 }
 
@@ -668,7 +688,7 @@ func (c *Condition) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists
 		return err
 	}
 
-	if (c.AttributeIsJsonpath) {
+	if c.AttributeIsJsonpath {
 		preparedJsonpath, err := prepareJsonpathQuery(c.AttributeJsonpathQuery)
 		if err != nil {
 			return err
