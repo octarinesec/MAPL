@@ -35,90 +35,90 @@ rule.TestConditions(&message)
 
 1) One condition:
 ```
- - conditions:
-      attribute: jsonpath:$.abc
-      method: EQ
-      value: "ABC"
+conditions:
+  attribute: jsonpath:$.abc
+  method: EQ
+  value: "ABC"
 ```
 The following is essentially the same: [the **condition** keyword]
 ```
- - conditions:
-     condition:    
-       Attribute: jsonpath:$.abc
-       Method: EQ
-       Value: "ABC"
+conditions:
+  condition:    
+    attribute: jsonpath:$.abc
+    method: EQ
+    value: "ABC"
 ```
 The following is essentially the same: [the **conditionsTree** keyword]
 ```
- - conditions:
-     conditionsTree:    
-       Attribute: jsonpath:$.abc
-       Method: EQ
-       Value: "ABC"
+conditions:
+  conditionsTree:    
+    attribute: jsonpath:$.abc
+    method: EQ
+    value: "ABC"
 ```
 
 2) AND Node: [AND between sub-nodes. AND between two conditions in this example]
 ```
- - conditions:
-     AND:
-     - Attribute: jsonpath:$.kind
-       Method: EQ
-       Value: "Deployment"
-     - Attribute: jsonpath:$.abc
-        Method: EQ
-        Value: "ABC"
+conditions:
+  AND:
+  - attribute: jsonpath:$.kind
+    method: EQ
+    value: "Deployment"
+  - attribute: jsonpath:$.abc
+    method: EQ
+    value: "ABC"
 ```
 3) OR Node:  [OR between sub-nodes. OR between two conditions in this example]
 ```
- - conditions:
-     OR:
-     - Attribute: jsonpath:$.kind
-       Method: EQ
-       Value: "Deployment"
-     - Attribute: jsonpath:$.abc
-       Method: EQ
-       Value: "ABC"
+conditions:
+  OR:
+  - attribute: jsonpath:$.kind
+    method: EQ
+    value: "Deployment"
+  - attribute: jsonpath:$.abc
+    method: EQ
+    value: "ABC"
 ```
 4) Not Node:  [NOT of one sub-node. NOT of one condition in this example]
 ```
- - conditions:
-     NOT:
-       Attribute: jsonpath:$.abc
-       Method: EQ
-       Value: "ABC"
+conditions:
+  NOT:
+    attribute: jsonpath:$.abc
+    method: EQ
+    value: "ABC"
 ```
 5) Multi-level conditions:
 
 example I:
 ```
- - conditions:
-     AND:
-     - Attribute: jsonpath:$.kind
-       Method: EQ
-       Value: "Deployment"
-     - OR:
-       - Attribute: jsonpath:$.abc
-         Method: EQ
-         Value: "ABC"
-       - Attribute: jsonpath:$.xyz
-         Method: EQ
-         Value: "XYZ"
+conditions:
+  AND:
+  - attribute: jsonpath:$.kind
+    method: EQ
+    value: "Deployment"
+  - OR:
+    - attribute: jsonpath:$.abc
+      method: EQ
+      value: "ABC"
+    - attribute: jsonpath:$.xyz
+      method: EQ
+      value: "XYZ"
 ```
 example II:
 ```
- - conditions:
-     OR:
-     - NOT: 
-         Attribute: jsonpath:$.kind
-         Method: EQ
-         Value: "Deployment"
-     - AND:
-       - Attribute: jsonpath:$.abc
-         Method: EQ
-         Value: "ABC"
-       - Attribute: jsonpath:$.xyz
-         Method: EQ
-         Value: "XYZ"
+conditions:
+  OR:
+  - NOT: 
+      attribute: jsonpath:$.kind
+      method: EQ
+      value: "Deployment"
+  - AND:
+    - attribute: jsonpath:$.abc
+      method: EQ
+      value: "ABC"
+    - attribute: jsonpath:$.xyz
+      method: EQ
+      value: "XYZ"
 ```
 
 etc...
@@ -136,41 +136,41 @@ The **$RELATIVE** keyword means that the jsonpath refers to the sub-document giv
 6a) ALL:
 The following condition Tree will return true if there is at least one container without resource limits on the cpu or memory.
 ```
-- conditions:
-    NOT:
-      ALL:
-        parentJsonpathAttribute: "jsonpath:$.spec.containers[:]"
-        condition:
-          AND:
-          - attribute: "jsonpath:$RELATIVE.resources.limits.cpu"
-            method: EX
-          - attribute: "jsonpath:$RELATIVE.resources.limits.memory"
-            method: EX
+conditions:
+  NOT:
+    ALL:
+      parentJsonpathAttribute: "jsonpath:$.spec.containers[:]"
+      condition:
+        AND:
+        - attribute: "jsonpath:$RELATIVE.resources.limits.cpu"
+          method: EX
+        - attribute: "jsonpath:$RELATIVE.resources.limits.memory"
+          method: EX
 ```
 6b) ANY:
 This example is equivalent to the previous one
 ```
-- conditions:
-    ANY:
-      parentJsonpathAttribute: "jsonpath:$.spec.containers[:]"
-      OR:
-      - attribute: "jsonpath:$RELATIVE.resources.limits.cpu"
-        method: NEX    
-      - attribute: "jsonpath:$RELATIVE.resources.limits.memory"
-        method: NEX
+conditions:
+  ANY:
+    parentJsonpathAttribute: "jsonpath:$.spec.containers[:]"
+    OR:
+    - attribute: "jsonpath:$RELATIVE.resources.limits.cpu"
+      method: NEX    
+    - attribute: "jsonpath:$RELATIVE.resources.limits.memory"
+      method: NEX
 ```
 
 6c) Multi-level arrays:
 ```
-- conditions:
-    ALL:
-      parentJsonpathAttribute: "jsonpath:$.spec.containers[:]"
-      ANY:
-        parentJsonpathAttribute: "jsonpath:$RELATIVE.volumeMounts[:]"
-        condition:
-          attribute: "jsonpath:$RELATIVE.name"
-          method: EQ
-          value: "xxx"
+conditions:
+  ALL:
+    parentJsonpathAttribute: "jsonpath:$.spec.containers[:]"
+    ANY:
+      parentJsonpathAttribute: "jsonpath:$RELATIVE.volumeMounts[:]"
+      condition:
+        attribute: "jsonpath:$RELATIVE.name"
+        method: EQ
+        value: "xxx"
 ```
 6d) key-value:
 
@@ -178,36 +178,36 @@ The **$KEY** and **$VALUE** keywords may be used on sub-documents as follows:
 
 Check if a label with key “abc” exists:
 ```
-- conditions:
-    ANY:
-      parentJsonpathAttribute: "jsonpath:$.metadata.labels"
-      condition:
-        attribute: "jsonpath:$KEY"
-        method: EQ
-        value: "abc"
+conditions:
+  ANY:
+    parentJsonpathAttribute: "jsonpath:$.metadata.labels"
+    condition:
+      attribute: "jsonpath:$KEY"
+      method: EQ
+      value: "abc"
 ```
 Check if a label with value “abc” exists:
 ```
-- conditions:
-    ANY:
-      parentJsonpathAttribute: "jsonpath:$.metadata.labels"
-      condition:
-        attribute: "jsonpath:$VALUE"
-        method: EQ
-        value: "abc"
+conditions:
+  ANY:
+    parentJsonpathAttribute: "jsonpath:$.metadata.labels"
+    condition:
+      attribute: "jsonpath:$VALUE"
+      method: EQ
+      value: "abc"
 ```
 
 multi-level:
 ```
-- conditions:
+conditions:
+  ANY:
+    parentJsonpathAttribute: "jsonpath:$.spec.containers"
     ANY:
-      parentJsonpathAttribute: "jsonpath:$.spec.containers"
-      ANY:
-        parentJsonpathAttribute: "jsonpath:$RELATIVE.metadata.labels"
-        condition:
-          attribute: "jsonpath:$VALUE"
-          method: EQ
-          value: "DEF"
+      parentJsonpathAttribute: "jsonpath:$RELATIVE.metadata.labels"
+      condition:
+        attribute: "jsonpath:$VALUE"
+        method: EQ
+        value: "DEF"
 ```
 
 6e) return values:
@@ -216,37 +216,37 @@ Nodes of type ANY may return values collected from their array sub-documents.
 The returnValueJsonpath field is a map[string]string of jsonpath attributes that are returned for every sub-document which satisfies the node conditions.
 In the following rule the name, resources sub-document and the complete sub-document are all returned as interfaces.
 ```
-- conditions:
-    ANY:
-      parentJsonpathAttribute: "jsonpath:$.spec.containers[:]"
-      returnValueJsonpath:
-        name: "jsonpath:$RELATIVE.name"
-        resources: "jsonpath:$RELATIVE.resources"
-        all: "jsonpath:$RELATIVE*"
-      AND:
-       - attribute: "jsonpath:$RELATIVE.resources.limits.cpu"
-         method: EX
-       - attribute: "jsonpath:$RELATIVE.resources.limits.memory"
-         method: EX
+conditions:
+  ANY:
+    parentJsonpathAttribute: "jsonpath:$.spec.containers[:]"
+    returnValueJsonpath:
+      name: "jsonpath:$RELATIVE.name"
+      resources: "jsonpath:$RELATIVE.resources"
+      all: "jsonpath:$RELATIVE*"
+    AND:
+     - attribute: "jsonpath:$RELATIVE.resources.limits.cpu"
+       method: EX
+     - attribute: "jsonpath:$RELATIVE.resources.limits.memory"
+       method: EX
 ```
 
 Return values flow up the nodes to the parent node from the ANY nodes. For example this rule will get the return value “name” from the ANY node both the ANY node and the condition on the resource kind are satisfied.
 
 ```
-- conditions:
-    AND:
-    - Attribute: jsonpath:$.kind
-      Method: EQ
-      Value: "Deployment"
-    - ANY:
-        parentJsonpathAttribute: "jsonpath:$.spec.containers[:]"
-        returnValueJsonpath:
-          name: "jsonpath:$RELATIVE.name"
-       AND:
-       - attribute: "jsonpath:$RELATIVE.resources.limits.cpu"
-         method: EX
-       - attribute: "jsonpath:$RELATIVE.resources.limits.memory"
-         method: EX
+conditions:
+  AND:
+  - Attribute: jsonpath:$.kind
+    Method: EQ
+    Value: "Deployment"
+  - ANY:
+      parentJsonpathAttribute: "jsonpath:$.spec.containers[:]"
+      returnValueJsonpath:
+        name: "jsonpath:$RELATIVE.name"
+     AND:
+     - attribute: "jsonpath:$RELATIVE.resources.limits.cpu"
+       method: EX
+     - attribute: "jsonpath:$RELATIVE.resources.limits.memory"
+       method: EX
 ```
 
 More than one “ANY” nodes under one parent nodes are handled as follows:

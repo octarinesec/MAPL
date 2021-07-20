@@ -476,21 +476,45 @@ func TestMongoPluginAnyAll(t *testing.T) {
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/invalid_rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
 		errString = fmt.Sprintf("%v", err)
 		So(errString, ShouldEqual, "deepscan is not supported")
-		// ANY:
+		// ANY: with [:]
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
 		So(results[0], ShouldEqual, true)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_B.json", "raw")
 		So(results[0], ShouldEqual, false)
+		// ANY: with [*]
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY2.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
+		So(results[0], ShouldEqual, true)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY2.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_B.json", "raw")
+		So(results[0], ShouldEqual, false)
+		// ANY: with nothing
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY3.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
+		So(results[0], ShouldEqual, true)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY3.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_B.json", "raw")
+		So(results[0], ShouldEqual, false)
 
-		// ALL:
+		// ALL: with [:]
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
 		So(results[0], ShouldEqual, false)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_B.json", "raw")
 		So(results[0], ShouldEqual, false)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_C.json", "raw")
 		So(results[0], ShouldEqual, true)
+		// ALL: with [*]
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL2.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
+		So(results[0], ShouldEqual, false)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL2.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_B.json", "raw")
+		So(results[0], ShouldEqual, false)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL2.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_C.json", "raw")
+		So(results[0], ShouldEqual, true)
+		// ALL: with nothing
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL3.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
+		So(results[0], ShouldEqual, false)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL3.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_B.json", "raw")
+		So(results[0], ShouldEqual, false)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL3.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_C.json", "raw")
+		So(results[0], ShouldEqual, true)
 
-		// Multi-level:
+		// Multi-level: with [:]
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json", "raw")
 		So(results[0], ShouldEqual, false)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json", "raw")
@@ -508,6 +532,46 @@ func TestMongoPluginAnyAll(t *testing.T) {
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B2.json", "raw")
 		So(results[0], ShouldEqual, true)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_C.json", "raw")
+		So(results[0], ShouldEqual, false)
+
+		// Multi-level: with [*]
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays_wildcard.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json", "raw")
+		So(results[0], ShouldEqual, false)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays_wildcard.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json", "raw")
+		So(results[0], ShouldEqual, true)
+
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays2_wildcard.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json", "raw")
+		So(results[0], ShouldEqual, true)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays2_wildcard.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json", "raw")
+		So(results[0], ShouldEqual, true)
+
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3_wildcard.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json", "raw")
+		So(results[0], ShouldEqual, false)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3_wildcard.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json", "raw")
+		So(results[0], ShouldEqual, false)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3_wildcard.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B2.json", "raw")
+		So(results[0], ShouldEqual, true)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3_wildcard.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_C.json", "raw")
+		So(results[0], ShouldEqual, false)
+
+		// Multi-level: with nothing
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays_nothing.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json", "raw")
+		So(results[0], ShouldEqual, false)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays_nothing.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json", "raw")
+		So(results[0], ShouldEqual, true)
+
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays2_nothing.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json", "raw")
+		So(results[0], ShouldEqual, true)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays2_nothing.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json", "raw")
+		So(results[0], ShouldEqual, true)
+
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3_nothing.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json", "raw")
+		So(results[0], ShouldEqual, false)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3_nothing.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json", "raw")
+		So(results[0], ShouldEqual, false)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3_nothing.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B2.json", "raw")
+		So(results[0], ShouldEqual, true)
+		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3_nothing.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_C.json", "raw")
 		So(results[0], ShouldEqual, false)
 
 	})
