@@ -462,6 +462,20 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
+		c := ConditionsTree{}
+
+		dataJson:=`{ "conditions":
+                      { "conditionsTree":
+						{"AND": 
+							[
+			{"condition": {"attribute": "jsonpath:$.apiVersion","method": "NEQ","value": "test","returnValueJsonpath": {"xyz":"XYZ"}	}}
+							]
+						}
+					  }
+					}`
+		err := json.Unmarshal([]byte(dataJson), &c)
+		So(err, ShouldBeNil)
+
 		results, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_1.json")
 		So(results[0], ShouldEqual, DEFAULT)
 		results, _ = test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_2.json")
@@ -474,7 +488,7 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 		results, _ = test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug4b.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug2.json")
 		So(results[0], ShouldEqual, DEFAULT)
 
-		results, err := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug.json")
+		results, err = test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug.json")
 		fmt.Println(err)
 
 		So(err, ShouldEqual, nil)
@@ -510,7 +524,7 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 }
 
 func TestMaplEngineJsonConditionWithReturnValues(t *testing.T) {
-
+//TODO: add tests
 	logging := false
 	if logging {
 		// setup a log outfile file
@@ -532,12 +546,24 @@ func TestMaplEngineJsonConditionWithReturnValues(t *testing.T) {
 		str := "test jsonpath condition"
 		fmt.Println(str)
 
-		results, extraData, _ := test_CheckMessagesWithRawDataWithReturnValue("../files/rules/condition_keyword/rules_with_condition_keyword_and_return_value.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data_condition_with_return_values.json")
+		results, extraData, _ := test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_return_value/rules_with_condition_keyword_and_return_value.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data_condition_with_return_values.json")
 		So(len(extraData[0]), ShouldEqual, 1)
 		So(len(extraData[0][0]), ShouldEqual, 2)
 		So(extraData[0][0]["name"], ShouldEqual, "containerName")
 		So(extraData[0][0]["command"], ShouldEqual, "containerCommand")
 		So(results[0], ShouldEqual, ALLOW)
+
+		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_return_value/rules_with_condition_keyword_and_return_value2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data_condition_with_return_values.json")
+		So(len(extraData[0]), ShouldEqual, 1)
+		So(len(extraData[0][0]), ShouldEqual, 1) // when we have more than one returnValues we keep only the last one!
+		So(extraData[0][0]["otherStuff"], ShouldEqual, "otherStuff")
+		So(results[0], ShouldEqual, ALLOW)
+
+		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_return_value/rules_with_jsonpath_EQ_on_array_with_return_value.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_EQ1.json")
+		So(len(extraData[0]), ShouldEqual, 0) // in ANY node we use the ANY global return value and not the return value within the condition!
+		So(results[0], ShouldEqual, BLOCK)
+
+
 	})
 }
 
@@ -2162,7 +2188,7 @@ func test_CheckMessagesWithRawDataWithReturnValue(rulesFilename, messagesFilenam
 		So(msg, ShouldEqual, msg2)
 		So(relevantRuleIndex, ShouldEqual, relevantRuleIndex2)
 		So(fmt.Sprintf("%v", appliedRulesIndices), ShouldEqual, fmt.Sprintf("%v", appliedRulesIndices2))
-		So(fmt.Sprintf("%+v", extraData), ShouldEqual, fmt.Sprintf("%+v", extraData2))
+		So(fmt.Sprintf("%+v", extraData), ShouldEqual, fmt.Sprintf("%+v", extraData2)) // this checks the returnValueJsonpath
 
 	}
 	return outputResults, outputResultsExtraData, nil

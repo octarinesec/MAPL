@@ -768,7 +768,7 @@ func handleMapStringInterface(v2 map[string]interface{}, parentString string) (N
 	case "NOT":
 		notNode, err := getNotNode(v2, parentString)
 		return notNode, err
-	case "OR", "AND", "", "condition", "conditionsTree":
+	case "OR", "AND", "", "condition", "conditions", "conditionsTree":
 		val, nodeType, err := getNodeValType(v2, parentString)
 		if err != nil {
 			return nil, err
