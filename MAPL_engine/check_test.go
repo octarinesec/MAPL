@@ -468,7 +468,7 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
                       { "conditionsTree":
 						{"AND": 
 							[
-			{"condition": {"attribute": "jsonpath:$.apiVersion","method": "NEQ","value": "test","returnValueJsonpath": {"xyz":"XYZ"}	}}
+			{"condition": {"attribute": "jsonpath:$.apiVersion","method": "NEQ","value": "test","returnValueJsonpath": null}}
 							]
 						}
 					  }
