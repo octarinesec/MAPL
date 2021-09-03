@@ -170,8 +170,19 @@ func TestMongoPluginDebugging(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
+		// empty
+		dataJson:=[]byte(`{"conditions": {}}`)
+		var rule MAPL_engine.Rule
+		err := json.Unmarshal(dataJson, &rule)
+		So(err, ShouldBeNil)
+		resultQuery, err := rule.ToMongoQuery("raw")
+		So(err, ShouldBeNil)
+		fmt.Println(resultQuery)
+		results, _ := test_plugin("../files/rules/debugging/rules_with_empty_conditions.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_1.json", "raw")
+		So(results[0], ShouldEqual, false)
+
 		// numbers:
-		results, _ := test_plugin("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_1.json", "raw")
+		results, _ = test_plugin("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_1.json", "raw")
 		So(results[0], ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_2.json", "raw")
 		So(results[0], ShouldEqual, true)

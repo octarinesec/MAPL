@@ -462,6 +462,94 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
+
+		r:=Rule{}
+		dataJson:=`{"ruleID" : "647b5764-c3ef-4b00-ac30-719b130601c7",
+		"sender" : {
+			"senderName" : ""
+		},
+		"receiver" : {
+			"receiverName" : ""
+		},
+		"protocol" : "",
+		"resource" : {
+		},
+		"operation" : "",
+		"conditions" : {
+			"conditionsTree" : {
+				"OR" : [
+					{
+						"ANY" : {
+							"parentJsonpathAttribute" : "jsonpath:$.containers[:]",
+							"condition" : {
+								"OR" : [
+									{
+										"condition" : {
+											"value" : "0",
+											"attribute" : "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+											"method" : "GT"
+										}
+									},
+									{
+										"condition" : {
+											"method" : "GT",
+											"value" : "0",
+											"attribute" : "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount"
+										}
+									}
+								]
+							}
+						}
+					},
+					{
+						"ANY" : {
+							"parentJsonpathAttribute" : "jsonpath:$.initContainers[:]",
+							"condition" : {
+								"OR" : [
+									{
+										"condition" : {
+											"value" : "0",
+											"attribute" : "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+											"method" : "GT"
+										}
+									},
+									{
+										"condition" : {
+											"attribute" : "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+											"method" : "GT",
+											"value" : "0"
+										}
+									}
+								]
+							}
+						}
+					}
+				]
+			}
+		},
+		"decision" : "",
+		"metadata" : {
+			"name" : "Fatih-rule",
+			"description" : "some custom rule"
+		},
+		"hash" : ""
+	}`
+		err := json.Unmarshal([]byte(dataJson), &r)
+		So(err, ShouldBeNil)
+
+		c := ConditionsTree{}
+		dataJson=`{ "conditions":
+                      { "conditionsTree":
+						{"AND": 
+							[
+			{"condition": {"attribute": "jsonpath:$.apiVersion","method": "NEQ","value": "test","returnValueJsonpath": null}}
+							]
+						}
+					  }
+					}`
+		err = json.Unmarshal([]byte(dataJson), &c)
+		So(err, ShouldBeNil)
+
 		results, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_1.json")
 		So(results[0], ShouldEqual, DEFAULT)
 		results, _ = test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_2.json")
@@ -474,7 +562,7 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 		results, _ = test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug4b.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug2.json")
 		So(results[0], ShouldEqual, DEFAULT)
 
-		results, err := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug.json")
+		results, err = test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug.json")
 		fmt.Println(err)
 
 		So(err, ShouldEqual, nil)
