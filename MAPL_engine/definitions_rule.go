@@ -80,8 +80,8 @@ type Condition struct {
 	AttributeJsonpathQuery      string              `yaml:"-" json:"-,omitempty" bson:"attributeJsonpathQuery,omitempty" structs:"attributeJsonpathQuery,omitempty"`
 	PreparedJsonpathQuery       jsonpath.FilterFunc `yaml:"-" json:"-,omitempty"`
 
-	ReturnValueJsonpath                          map[string]string              `yaml:"-" json:"-,omitempty"`
-	ReturnValueJsonpathOriginal                  map[string]string              `yaml:"-" json:"-,omitempty"`
+	ReturnValueJsonpath                          map[string]string              `yaml:"-" json:"returnValueJsonpath,omitempty" bson:"returnValueJsonpath,omitempty"`
+	ReturnValueJsonpathOriginal                  map[string]string              `yaml:"-" json:"returnValueJsonpathOriginal,omitempty" bson:"returnValueJsonpath,omitempty"`
 	PreparedReturnValueJsonpathQuery             map[string]jsonpath.FilterFunc `yaml:"-" json:"-,omitempty"`
 	PreparedReturnValueJsonpathQueryRelativeFlag map[string]bool                `yaml:"-" json:"-,omitempty"`
 

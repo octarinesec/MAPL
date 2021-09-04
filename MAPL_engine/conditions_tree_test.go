@@ -170,7 +170,7 @@ func TestConditionsTree3(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
-		rules, err := YamlReadRulesFromFile("../files/rules/condition_keyword/rules_with_condition_keyword_and_return_value.yaml")
+		rules, err := YamlReadRulesFromFile("../files/rules/with_return_value/rules_with_condition_keyword_and_return_value.yaml")
 		So(rules.Rules[0].Conditions.ConditionsTree,ShouldNotEqual,nil)
 		So(err, ShouldEqual, nil)
 
