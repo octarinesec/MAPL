@@ -468,12 +468,26 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
                       { "conditionsTree":
 						{"AND": 
 							[
-			{"condition": {"attribute": "jsonpath:$.apiVersion","method": "NEQ","value": "test","returnValueJsonpath": null}}
+			{"condition": {"attribute": "jsonpath:$.apiVersion","method": "NEQ","value": "test","returnValueJsonpath": {"xyz":"XYZ"}	}}
 							]
 						}
 					  }
 					}`
 		err := json.Unmarshal([]byte(dataJson), &c)
+		So(err, ShouldBeNil)
+
+		c2 := ConditionsTree{}
+
+		dataJson2:=`{ "conditions":
+                      { "conditionsTree":
+						{"AND": 
+							[
+			{"condition": {"attribute": "jsonpath:$.apiVersion","method": "NEQ","value": "test","returnValueJsonpath": null	}}
+							]
+						}
+					  }
+					}`
+		err = json.Unmarshal([]byte(dataJson2), &c2)
 		So(err, ShouldBeNil)
 
 		results, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_1.json")
