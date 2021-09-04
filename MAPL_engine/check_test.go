@@ -463,7 +463,6 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 	Convey("tests", t, func() {
 
 		c := ConditionsTree{}
-
 		dataJson:=`{ "conditions":
                       { "conditionsTree":
 						{"AND": 
@@ -477,7 +476,6 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		c2 := ConditionsTree{}
-
 		dataJson2:=`{ "conditions":
                       { "conditionsTree":
 						{"AND": 
