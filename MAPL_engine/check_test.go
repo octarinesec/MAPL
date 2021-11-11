@@ -462,8 +462,41 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
+
 		c := ConditionsTree{}
-		dataJson:=`{ "conditions":
+		dataJson:=`
+		{"conditions" : 
+			{"conditionsTree" : 
+				{"AND" : [
+							{
+								"condition" : {
+									"attribute" : "jsonpath:$.spec.template.spec.containers[*].env[?(@.name=='http_proxy')].value",
+									"method" : "EX",
+									"value" : ""
+								}
+							},
+							{
+								"condition" : {
+									"attribute" : "jsonpath:$.spec.template.spec.containers[*].env[?(@.name=='http_proxy')].value",
+									"method" : "NEQ",
+									"value" : "http://squid.doubleverify.prod:3128"
+								}
+							}
+						]
+				}
+			}
+		}`
+		err := json.Unmarshal([]byte(dataJson), &c)
+		So(err, ShouldNotBeNil)
+
+		dataJsonB,err:=convertAttributesWithArraysToANYNode(dataJson)
+		So(err, ShouldBeNil)
+
+		err = json.Unmarshal([]byte(dataJsonB), &c)
+		So(err, ShouldBeNil)
+
+		c1 := ConditionsTree{}
+		dataJson1:=`{ "conditions":
                       { "conditionsTree":
 						{"AND": 
 							[
@@ -472,7 +505,7 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 						}
 					  }
 					}`
-		err := json.Unmarshal([]byte(dataJson), &c)
+		err = json.Unmarshal([]byte(dataJson1), &c1)
 		So(err, ShouldBeNil)
 
 		c2 := ConditionsTree{}
