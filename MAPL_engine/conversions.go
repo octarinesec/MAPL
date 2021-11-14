@@ -1,16 +1,26 @@
 package MAPL_engine
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
 	"strings"
 )
 
-func convertAttributesWithArraysToANYNode(jsonStr string) (string, error) {
-	jsonStr0 := jsonStr
+// Some conversions that help trasnform MAPL v1 rules to MAPL v2
+func convertAttributesWithArraysToANYNode(jsonStr0 string) (string, error) {
+	// --- condense ---
+	var aux interface{}
+	if err := json.Unmarshal([]byte(jsonStr0),&aux); err != nil {
+		return "",err
+	}
+	jsonBytes,err:=json.Marshal(aux)
+	if err != nil {
+		return "",err
+	}
+	jsonStr:=string(jsonBytes)
+	// ----------------
 	exitLoop:=false
-	err:=errors.New("error")
-	for true {
+	for true { // in each loop we convert one level attribute with array [so that an attribute with tow levels of arrays requires two loops]
 		jsonStr, exitLoop, err = convertAttributesWithArraysToANYNodeInner(jsonStr)
 		if err != nil {
 			return jsonStr0, err
@@ -23,12 +33,14 @@ func convertAttributesWithArraysToANYNode(jsonStr string) (string, error) {
 }
 
 func convertAttributesWithArraysToANYNodeInner(jsonStr string) (string, bool, error) {
-
+	// it is assumed that the attribute key word is the FIRST in the "condition" node
+	// we build a new json string from the old one where we convert attribute with array
+	// to "ANY" node json string
 	jsonStrOut := ""
 	exitLoop := true
-	for true {
+	for true { // we go over all of the attributes
 
-		ind := strings.Index(jsonStr, `"attribute"`)
+		ind := strings.Index(jsonStr, `"attribute"`) // we find the next "attribute"
 		if ind == -1 {
 			jsonStrOut += jsonStr
 			return jsonStrOut, exitLoop, nil
@@ -37,25 +49,23 @@ func convertAttributesWithArraysToANYNodeInner(jsonStr string) (string, bool, er
 		jsonStrOut += jsonStr[0:ind]
 
 		tempStr := jsonStr[ind:]
-		ind = strings.Index(tempStr, `"jsonpath:`)
-		if ind == -1 {
-			return "", true, fmt.Errorf("no jsonpath in attribute")
-		}
-		tempStr2 := tempStr[ind+1:]
+		ind = strings.Index(tempStr, `":"`)
+		ind=ind+3
+		tempStr2 := tempStr[ind:]
 		ind = strings.Index(tempStr2, `"`)
 
-		attribute := tempStr2[0:ind]
+		attribute := tempStr2[0:ind] // this is the attribute string
 		indStart, indEnd := isArrayAttribute(attribute)
 		newStr := ""
 		insertBracketFlag := false
 		if indStart == -1 { // attribute is not an array
 			newStr = fmt.Sprintf(`"attribute":"%v"`, attribute)
 			insertBracketFlag = false
-		} else {
+		} else { // attribute contains an array
 			exitLoop = false
-			startOfArray := attribute[0:indEnd]
+			startOfArray := attribute[0:indEnd] // this is the first array of the attribute
 			endOfArray := attribute[indEnd:]
-
+			// we convert to "ANY" node:
 			newStr = fmt.Sprintf(`"ANY":{"parentJsonpathAttribute":"%v","condition":{"attribute":"jsonpath:$RELATIVE%v"`, startOfArray, endOfArray)
 			insertBracketFlag = true
 		}
@@ -66,7 +76,7 @@ func convertAttributesWithArraysToANYNodeInner(jsonStr string) (string, bool, er
 		jsonStr = tempStr2[ind:]
 
 		if insertBracketFlag {
-			jsonStr = insertTwoBrackets(jsonStr)
+			jsonStr = insertTwoBrackets(jsonStr) // after converting to ANY node we need to close the temporary string with two right brackets "}}" [since the ANY nodes adds left brackets]
 		}
 
 	}

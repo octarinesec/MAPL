@@ -462,9 +462,8 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
-
 		c := ConditionsTree{}
-		dataJson:=`
+		dataJson := `
 		{"conditions" : 
 			{"conditionsTree" : 
 				{"AND" : [
@@ -487,16 +486,20 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 			}
 		}`
 		err := json.Unmarshal([]byte(dataJson), &c)
-		So(err, ShouldNotBeNil)
+		So(err, ShouldBeNil)
 
-		dataJsonB,err:=convertAttributesWithArraysToANYNode(dataJson)
+		dataJsonA,err:=json.Marshal(c)
+		fmt.Println(string(dataJson))
+		fmt.Println(string(dataJsonA))
+
+		dataJsonB, err := convertAttributesWithArraysToANYNode(dataJson)
 		So(err, ShouldBeNil)
 
 		err = json.Unmarshal([]byte(dataJsonB), &c)
 		So(err, ShouldBeNil)
 
 		c1 := ConditionsTree{}
-		dataJson1:=`{ "conditions":
+		dataJson1 := `{ "conditions":
                       { "conditionsTree":
 						{"AND": 
 							[
@@ -509,7 +512,7 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		c2 := ConditionsTree{}
-		dataJson2:=`{ "conditions":
+		dataJson2 := `{ "conditions":
                       { "conditionsTree":
 						{"AND": 
 							[
@@ -607,7 +610,6 @@ func TestMaplEngineJsonConditionWithReturnValues(t *testing.T) {
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_return_value/rules_with_jsonpath_EQ_on_array_with_return_value.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_EQ1.json")
 		So(len(extraData[0]), ShouldEqual, 0) // in ANY node we use the ANY global return value and not the return value within the condition!
 		So(results[0], ShouldEqual, BLOCK)
-
 
 	})
 }
@@ -955,7 +957,7 @@ func TestMaplEngineJsonConditionsOnArraysAny(t *testing.T) {
 
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY_EX.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu_missing_from_one_A2.json")
 		So(results[0], ShouldEqual, DEFAULT)
-// test [:] vs [*]:
+		// test [:] vs [*]:
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY_EX2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_env.json")
 		So(results[0], ShouldEqual, BLOCK)
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY_EX2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_env_missing.json")
@@ -1923,7 +1925,7 @@ func TestMaplEngineParentJsonpathAttributeList(t *testing.T) {
 		So(results[0], ShouldEqual, DEFAULT)
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu5_mem2000_dep.json")
 		So(results[0], ShouldEqual, DEFAULT)
-// multi-level:
+		// multi-level:
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json")
 		So(results[0], ShouldEqual, DEFAULT)
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json")
@@ -1967,7 +1969,6 @@ func TestMaplEngineParentJsonpathAttributeList(t *testing.T) {
 
 }
 
-
 func TestRulesWithPredefinedStringsZooz(t *testing.T) {
 
 	logging := false
@@ -1993,6 +1994,42 @@ func TestRulesWithPredefinedStringsZooz(t *testing.T) {
 			So(results[0], ShouldEqual, BLOCK)
 			fmt.Printf("zooz test #%v passed\n", i)
 		}
+	})
+}
+
+func TestMaplEngineJsonConditionsAttributeWithArrays(t *testing.T) {
+
+	logging := false
+	if logging {
+		// setup a log outfile file
+		f, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777) //create your file with desired read/write permissions
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Sync()
+		defer f.Close()
+		log.SetOutput(f) //set output of logs to f
+	} else {
+		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
+	}
+
+	reporting.QuietMode()
+	Convey("tests", t, func() {
+
+		// test on arrays
+		str := "test jsonpath conditions on arrays"
+		fmt.Println(str)
+
+		results, _ := test_CheckMessagesWithRawData("../files/rules/array_in_attribute/rule_with_array_in_attribute.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_1container.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/array_in_attribute/rule_with_array_in_attribute.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_1container_B.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+		results, _ = test_CheckMessagesWithRawData("../files/rules/array_in_attribute/rule_with_array_in_attribute_multilevel.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_D.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/array_in_attribute/rule_with_array_in_attribute_multilevel.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_D2.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
 	})
 }
 
@@ -2174,7 +2211,6 @@ func test_CheckMessagesWithRawData(rulesFilename, messagesFilename, rawFilename 
 		So(relevantRuleIndex, ShouldEqual, relevantRuleIndex2)
 		So(fmt.Sprintf("%v", appliedRulesIndices), ShouldEqual, fmt.Sprintf("%v", appliedRulesIndices2))
 		So(fmt.Sprintf("%v", extraData), ShouldEqual, fmt.Sprintf("%v", extraData2))
-
 	}
 	return outputResults, nil
 }

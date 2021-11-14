@@ -2,7 +2,9 @@ package MAPL_engine
 
 import (
 	"crypto/md5"
+	"encoding/json"
 	"fmt"
+	yaml2 "github.com/ghodss/yaml"
 	"github.com/toolkits/slice"
 	"gopkg.in/getlantern/deepcopy.v1"
 	"gopkg.in/yaml.v2"
@@ -85,7 +87,7 @@ func (rule *Rule) SetPredefinedStringsAndLists(stringsAndlists PredefinedStrings
 	return nil
 }
 
-func (rule *Rule) GetPreparedRule() (*Rule) { // used in unit tests
+func (rule *Rule) GetPreparedRule() *Rule { // used in unit tests
 
 	if !rule.ruleAlreadyPrepared {
 		r := Rule{}
@@ -98,13 +100,29 @@ func (rule *Rule) GetPreparedRule() (*Rule) { // used in unit tests
 func YamlReadRulesFromStringWithPredefinedStrings(yamlString string, stringsAndlists PredefinedStringsAndLists) (Rules, error) {
 
 	var rules Rules
+
 	err := yaml.Unmarshal([]byte(yamlString), &rules)
 	if err != nil {
-		log.Printf("error: %v", err)
-		return Rules{}, err
+
+		jsonBytes, err2 := yaml2.YAMLToJSON([]byte(yamlString))
+		if err2 != nil {
+			return Rules{}, err
+		}
+
+		jsonString,err3:=convertAttributesWithArraysToANYNode(string(jsonBytes))
+		if err3 != nil {
+			return Rules{}, err
+		}
+
+		err = json.Unmarshal([]byte(jsonString), &rules)
+
+		if err != nil {
+			log.Printf("error: %v", err)
+			return Rules{}, err
+		}
 	}
 
-	for i_r, _ := range (rules.Rules) {
+	for i_r, _ := range rules.Rules {
 		err = rules.Rules[i_r].SetPredefinedStringsAndLists(stringsAndlists)
 		if err != nil {
 			return Rules{}, err
@@ -181,7 +199,7 @@ func ConvertFieldsToRegex(rule *Rule) error {
 
 func PrepareRules(rules *Rules) error {
 
-	for i, _ := range (rules.Rules) {
+	for i, _ := range rules.Rules {
 		err := PrepareOneRule(&rules.Rules[i])
 		if err != nil {
 			return err
@@ -203,7 +221,7 @@ func PrepareOneRule(rule *Rule) error {
 
 func PrepareRulesWithPredefinedStrings(rules *Rules, stringsAndLists PredefinedStringsAndLists) error {
 
-	for i, _ := range (rules.Rules) {
+	for i, _ := range rules.Rules {
 		err := PrepareOneRuleWithPredefinedStrings(&rules.Rules[i], stringsAndLists)
 		if err != nil {
 			return err
@@ -529,8 +547,6 @@ func RuleMD5HashConditions(rule Rule) (md5hash string) {
 func (r Rule) ConditionsEqual(rule Rule) bool {
 	return RuleMD5HashConditions(r) == RuleMD5HashConditions(rule)
 }
-
-
 
 func (rule *Rule) ToLower() {
 	rule.Sender.SenderType = strings.ToLower(rule.Sender.SenderType)

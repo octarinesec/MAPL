@@ -25,6 +25,7 @@ func (c *ConditionsTree) UnmarshalYAML(unmarshal func(interface{}) error) error 
 	if err := unmarshal(&aux); err != nil {
 		return err
 	}
+
 	var n Node
 	n, err := ParseConditionsTree(aux)
 	if err != nil {
@@ -53,10 +54,26 @@ func (c *ConditionsTree) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &aux); err != nil {
 		return err
 	}
-	var n Node
+	//var n Node
 	n, err := ParseConditionsTree(aux)
 	if err != nil {
-		return err
+
+		data2,err2:=convertAttributesWithArraysToANYNode(string(data))
+		if err2 != nil {
+			return err
+		}
+
+		err3 := json.Unmarshal([]byte(data2), &aux)
+		if err3 != nil {
+			return err
+		}
+		n2, err4 := ParseConditionsTree(aux)
+		if err4 != nil {
+			return err
+		}
+		c.ConditionsTree = n2
+		return nil
+
 	}
 
 	c.ConditionsTree = n

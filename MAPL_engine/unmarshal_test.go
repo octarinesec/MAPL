@@ -177,6 +177,7 @@ func testUnmarshalForOneFile(filename string) {
 	var rulesJson_deepcopy2 Rules
 	var rulesJson_deepcopy3 Rules
 	var rulesJson_deepcopy4 Rules
+	var rulesJsonUnmarshal_with_conversion Rules
 
 	dataYaml, err := ioutil.ReadFile(filename)
 	So(err, ShouldEqual, nil)
@@ -186,6 +187,12 @@ func testUnmarshalForOneFile(filename string) {
 	So(err, ShouldEqual, nil)
 	err = yaml.Unmarshal(dataYaml, &rulesYaml)
 	So(err, ShouldEqual, nil)
+
+	//------------
+	// testing that conversions from MAPL v1 to MAPL v2 do not break the code:
+	dataJson_with_conversion,err:=convertAttributesWithArraysToANYNode(string(dataJson))
+	So(err, ShouldEqual, nil)
+	//------------
 
 	err = json.Unmarshal(dataJson, &rulesJson)
 	if err != nil {
@@ -200,6 +207,11 @@ func testUnmarshalForOneFile(filename string) {
 	err = json.Unmarshal(dataJson2a, &rulesJsonUnmarshal1)
 	So(err, ShouldEqual, nil)
 	err = json.Unmarshal(dataJson2b, &rulesJsonUnmarshal2)
+	So(err, ShouldEqual, nil)
+	err = json.Unmarshal([]byte(dataJson_with_conversion), &rulesJsonUnmarshal_with_conversion)
+	if err!=nil{
+		fmt.Println("123")
+	}
 	So(err, ShouldEqual, nil)
 	//---------------------------
 
@@ -231,6 +243,7 @@ func testUnmarshalForOneFile(filename string) {
 		hash6 := RuleMD5Hash(rulesJson_deepcopy2.Rules[i])
 		hash7 := RuleMD5Hash(rulesJson_deepcopy3.Rules[i])
 		hash8 := RuleMD5Hash(rulesJson_deepcopy4.Rules[i])
+		hash9 := RuleMD5Hash(rulesJsonUnmarshal_with_conversion.Rules[i])
 		So(hash1, ShouldEqual, hash2)
 		So(hash1, ShouldEqual, hash3)
 		So(hash1, ShouldEqual, hash4)
@@ -238,6 +251,7 @@ func testUnmarshalForOneFile(filename string) {
 		So(hash1, ShouldEqual, hash6)
 		So(hash1, ShouldEqual, hash7)
 		So(hash1, ShouldEqual, hash8)
+		So(hash1, ShouldEqual, hash9)
 
 		hashes = append(hashes, hash1)
 
