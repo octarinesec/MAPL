@@ -1,0 +1,47 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "spec": {
+    "progressDeadlineSeconds": 600,
+    "replicas": 1,
+    "template": {
+      "spec": {
+        "containers": [
+          {
+            "env": [
+              {
+                "name": "XXX",
+                "value": "true"
+              },
+              {
+                "name": "YYY",
+                "value": "false"
+              },
+              {
+                "name": "http_proxy",
+                "value": "not the expected value"
+              },
+              {
+                "name": "LOG_LEVEL",
+                "value": "debug"
+              },
+              {
+                "name": "TTL_IN_SECONDS",
+                "value": "60"
+              }
+            ],
+            "image": "python/python:3.7",
+            "imagePullPolicy": "Always",
+            "name": "tester",
+            "resources": {
+              "requests": {
+                "cpu": "100m",
+                "memory": "100Mi"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

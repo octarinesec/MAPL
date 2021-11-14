@@ -144,7 +144,8 @@ func TestUnmarshalAfterConversions(t *testing.T) {
 		testConversionOfOneFile(filename)
 		filename = "../files/rules/array_in_attribute/rule_with_array_in_attribute_multilevel.yaml"  // with actual conversion
 		testConversionOfOneFile(filename)
-
+		filename = "../files/rules/array_in_attribute/rule_with_array_in_attribute_multilevel2.yaml"  // with actual conversion
+		testConversionOfOneFile(filename)
 
 	})
 }
@@ -161,6 +162,11 @@ func testConversionOfOneFile(filename string) {
 	So(err, ShouldEqual, nil)
 	//------------
 	var rulesJsonUnmarshal_with_conversion Rules
+
+	var aux interface{}
+	err=json.Unmarshal([]byte(dataJson_with_conversion),&aux)
+	So(err, ShouldEqual, nil)
+
 	err = json.Unmarshal([]byte(dataJson_with_conversion), &rulesJsonUnmarshal_with_conversion)
 	So(err, ShouldEqual, nil)
 }

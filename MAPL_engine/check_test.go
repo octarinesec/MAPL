@@ -2030,6 +2030,12 @@ func TestMaplEngineJsonConditionsAttributeWithArrays(t *testing.T) {
 		results, _ = test_CheckMessagesWithRawData("../files/rules/array_in_attribute/rule_with_array_in_attribute_multilevel.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_D2.json")
 		So(results[0], ShouldEqual, DEFAULT)
 
+		results, _ = test_CheckMessagesWithRawData("../files/rules/array_in_attribute/rule_with_array_in_attribute_multilevel2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_E.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/array_in_attribute/rule_with_array_in_attribute_multilevel2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_E2.json")
+		So(results[0], ShouldEqual, BLOCK)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/array_in_attribute/rule_with_array_in_attribute_multilevel2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_E3.json")
+		So(results[0], ShouldEqual, DEFAULT)
 	})
 }
 

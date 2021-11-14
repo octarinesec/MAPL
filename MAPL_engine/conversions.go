@@ -10,16 +10,16 @@ import (
 func convertAttributesWithArraysToANYNode(jsonStr0 string) (string, error) {
 	// --- condense ---
 	var aux interface{}
-	if err := json.Unmarshal([]byte(jsonStr0),&aux); err != nil {
-		return "",err
+	if err := json.Unmarshal([]byte(jsonStr0), &aux); err != nil {
+		return "", err
 	}
-	jsonBytes,err:=json.Marshal(aux)
+	jsonBytes, err := json.Marshal(aux)
 	if err != nil {
-		return "",err
+		return "", err
 	}
-	jsonStr:=string(jsonBytes)
+	jsonStr := string(jsonBytes)
 	// ----------------
-	exitLoop:=false
+	exitLoop := false
 	for true { // in each loop we convert one level attribute with array [so that an attribute with tow levels of arrays requires two loops]
 		jsonStr, exitLoop, err = convertAttributesWithArraysToANYNodeInner(jsonStr)
 		if err != nil {
@@ -50,38 +50,94 @@ func convertAttributesWithArraysToANYNodeInner(jsonStr string) (string, bool, er
 
 		tempStr := jsonStr[ind:]
 		ind = strings.Index(tempStr, `":"`)
-		ind=ind+3
+		ind = ind + 3
 		tempStr2 := tempStr[ind:]
-		ind = strings.Index(tempStr2, `"`)
 
+		ind = strings.Index(tempStr2, `"`)
 		attribute := tempStr2[0:ind] // this is the attribute string
+
+		ind = strings.Index(tempStr2, attribute) + len(attribute) + 1
+		tempStr3 := tempStr2[ind:]
+
+		ind = strings.Index(tempStr3, `"value":`)
+		var tempStr4 string
+		var tempStr5 string
+		if ind != -1 {
+			tempStr4 = tempStr3[:ind]
+			tempStr5 = tempStr3[ind:]
+		} else {
+			tempStr4 = ""
+			tempStr5 = tempStr3
+		}
+
+		ind = strings.Index(tempStr5, `}`)
+		conditionEnd := tempStr4 + tempStr5[:ind]
+
+		jsonStr = tempStr5[ind:]
+
 		indStart, indEnd := isArrayAttribute(attribute)
 		newStr := ""
 		insertBracketFlag := false
+		insertSquareBracketFlag := false
 		if indStart == -1 { // attribute is not an array
-			newStr = fmt.Sprintf(`"attribute":"%v"`, attribute)
+			newStr = fmt.Sprintf(`"attribute":"%v"%v`, attribute, conditionEnd)
 			insertBracketFlag = false
 		} else { // attribute contains an array
 			exitLoop = false
 			startOfArray := attribute[0:indEnd] // this is the first array of the attribute
 			endOfArray := attribute[indEnd:]
 			// we convert to "ANY" node:
-			newStr = fmt.Sprintf(`"ANY":{"parentJsonpathAttribute":"%v","condition":{"attribute":"jsonpath:$RELATIVE%v"`, startOfArray, endOfArray)
+			newStr, insertSquareBracketFlag = getAnyNode(startOfArray, endOfArray, conditionEnd)
+
 			insertBracketFlag = true
 		}
 
 		jsonStrOut += newStr
 
-		ind = strings.Index(tempStr2, attribute) + len(attribute) + 1
-		jsonStr = tempStr2[ind:]
+		if insertSquareBracketFlag {
+			//	jsonStr = insertSquareBracket(jsonStr) // after converting to ANY node we need to close the temporary string with two right brackets "}}" [since the ANY nodes adds left brackets]
+		}
 
 		if insertBracketFlag {
-			jsonStr = insertTwoBrackets(jsonStr) // after converting to ANY node we need to close the temporary string with two right brackets "}}" [since the ANY nodes adds left brackets]
+		//	jsonStr = insertTwoBrackets(jsonStr) // after converting to ANY node we need to close the temporary string with two right brackets "}}" [since the ANY nodes adds left brackets]
 		}
 
 	}
 	return jsonStrOut, true, nil
 
+}
+
+func getAnyNode(startOfArray, endOfArray, conditionEnd string) (string, bool) {
+
+	newStr := fmt.Sprintf(`"ANY":{"parentJsonpathAttribute":"%v","condition":{"attribute":"jsonpath:$RELATIVE%v"%v}}`, startOfArray, endOfArray, conditionEnd)
+
+	filterArrayFlag := strings.Contains(startOfArray, "[?(@.")
+	if !filterArrayFlag {
+		return newStr, false
+	}
+
+	ind1 := strings.Index(startOfArray, "[")
+	ind2 := strings.Index(startOfArray, "]")
+
+	filter := startOfArray[ind1+1 : ind2]
+	startOfArray = startOfArray[:ind1]
+
+	if !strings.Contains(filter, "==") {
+		return newStr, false
+	}
+	ind3 := strings.Index(filter, "?(@.")
+	ind4 := strings.Index(filter, "==")
+	ind5 := strings.Index(filter, ")")
+	filterName := filter[ind3+3 : ind4]
+	filterValue := filter[ind4+2 : ind5]
+	filterValue, _ = removeQuotes(filterValue)
+
+	cond1 := fmt.Sprintf(`"attribute":"jsonpath:$RELATIVE%v","method":"EQ","value":"%v"`, filterName, filterValue)
+	cond2 := fmt.Sprintf(`"attribute":"jsonpath:$RELATIVE%v"%v`, endOfArray,conditionEnd)
+	andCondition := fmt.Sprintf(`"AND":[{"condition":{%v}},{"condition":{%v}}]`, cond1, cond2)
+	newStr = fmt.Sprintf(`"ANY":{"parentJsonpathAttribute":"%v[*]","condition":{%v}}`, startOfArray, andCondition)
+
+	return newStr, true
 }
 
 func insertTwoBrackets(str string) string {
@@ -103,6 +159,24 @@ func insertTwoBrackets(str string) string {
 
 }
 
+func insertSquareBracket(str string) string {
+	leftCounter := 0
+	for i, c := range str {
+		if c == '[' {
+			leftCounter++
+		}
+		if c == ']' {
+			if leftCounter == 0 {
+				strOut := str[:i] + "]" + str[i:]
+				return strOut
+			} else {
+				leftCounter--
+			}
+		}
+	}
+	return str + "]"
+
+}
 func isArrayAttribute(attribute string) (int, int) {
 	ind1a, ind1b := arrayInAttribute(attribute, "[:]")
 	ind2a, ind2b := arrayInAttribute(attribute, "[*]")
