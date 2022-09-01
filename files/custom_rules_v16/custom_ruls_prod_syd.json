@@ -1,0 +1,303 @@
+[
+  {
+    "_id": {
+      "$oid": "6142f0bb90d34ad78e482525"
+    },
+    "account": "7YLUW6VN",
+    "maplRule": {
+      "ruleID": "97e25e61-f37e-4524-9eab-852ed5f23b9f",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.spec.volumes",
+                "method": "EX",
+                "value": ""
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "21-9-smoke",
+        "description": "Smoke testing"
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "Pod"
+    ],
+    "maplType": "basic",
+    "creator": "ltsonov+prodsyd@vmware.com",
+    "createdOn": 1631776955001
+  },
+  {
+    "_id": {
+      "$oid": "619f0ff4b9dbe4e44507caad"
+    },
+    "account": "N8WU8LW7",
+    "maplRule": {
+      "ruleID": "2bfbd3de-1099-4074-b17c-0d7328db899c",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.image.registry",
+                    "method": "NIN",
+                    "value": "https://harbor.grahamjharvey.net:32488"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "condition": {
+                    "method": "NIN",
+                    "value": "https://harbor.grahamjharvey.net:32488",
+                    "attribute": "jsonpath:$RELATIVE.image.registry"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "condition": {
+                  "condition": {
+                    "method": "NIN",
+                    "value": "harbor.grahamjharvey.net",
+                    "attribute": "jsonpath:$RELATIVE.image.registry"
+                  }
+                },
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]"
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.image.registry",
+                    "method": "NIN",
+                    "value": "harbor.grahamjharvey.net"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Corporate registry",
+        "description": "Harbor registry",
+        "initial-type": "registries"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "gharvey+th@carbonblack.com",
+    "createdOn": 1637814260823
+  },
+  {
+    "_id": {
+      "$oid": "629036e39427528b35e8188b"
+    },
+    "account": "76YUV2VN",
+    "maplRule": {
+      "ruleID": "856b514b-7824-411f-9fb9-9a8605089545",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.spec.template.spec.automountServiceAccountToken",
+                "method": "EQ",
+                "value": "true"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Disable Automount Service Account Token",
+        "description": "When an application does not need to access the service account directly, Kubernetes administrators should ensure that Pod specifications disable the secret token being mounted. This can be accomplished using the “automountServiceAccountToken: false” directive in the Pod’s YAML."
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "Deployment"
+    ],
+    "maplType": "basic",
+    "creator": "cam.snajberg@sonichealthcare.com.au",
+    "createdOn": 1653618403639
+  },
+  {
+    "_id": {
+      "$oid": "629d666cfa923947587eca03"
+    },
+    "account": "76YUV2VN",
+    "maplRule": {
+      "ruleID": "d6c1dd2a-1a50-4cb3-b653-72482db5deba",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.spec.containers.securityContext.readOnlyRootFilesystem",
+                "method": "EQ",
+                "value": "true"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Run Containers with Immutable filesystem",
+        "description": "A read-only root filesystem helps to enforce an immutable infrastructure strategy. The container should only write on mounted volumes that can persist, even if the container exits."
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "DaemonSet",
+      "Deployment",
+      "Pod",
+      "StatefulSet"
+    ],
+    "maplType": "basic",
+    "creator": "febin.velandy@sonichealthcare.com.au",
+    "createdOn": 1654482540615
+  },
+  {
+    "_id": {
+      "$oid": "62a00e58fa923947587eca05"
+    },
+    "account": "76YUV2VN",
+    "maplRule": {
+      "ruleID": "0bdcbe08-33d4-459f-b7ed-1139069f2a7e",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.metadata.labels.['pod-security.kubernetes.io/enforce']",
+                "method": "NEX",
+                "value": ""
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Kubernetes Pod Security Admission",
+        "description": ""
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "Namespace"
+    ],
+    "maplType": "basic",
+    "creator": "febin.velandy@sonichealthcare.com.au",
+    "createdOn": 1654656600939
+  },
+  {
+    "_id": {
+      "$oid": "62a29064e235e9e1afffbc14"
+    },
+    "account": "76YUV2VN",
+    "maplRule": {
+      "ruleID": "dd3c7b64-4847-469f-8e6a-9df61a28a530",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.metadata.labels.['pod-security.kubernetes.io/enforce']",
+                "method": "NEX",
+                "value": ""
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "test",
+        "description": ""
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "Namespace"
+    ],
+    "maplType": "basic",
+    "creator": "febin.velandy@sonichealthcare.com.au",
+    "createdOn": 1654820964315
+  }
+]

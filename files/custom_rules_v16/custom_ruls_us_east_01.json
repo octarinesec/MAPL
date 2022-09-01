@@ -1,0 +1,5063 @@
+[
+  {
+    "_id": {
+      "$oid": "5ffefa21d10b5374c9a8f66e"
+    },
+    "account": "NE2FPPL8",
+    "maplRule": {
+      "ruleID": "a9d27f01-25e3-44c9-8980-b0dec5d77276",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.kind",
+                "method": "EQ",
+                "value": "Namespace"
+              }
+            },
+            {
+              "condition": {
+                "attribute": "jsonpath:$.metadata.name",
+                "method": "RE",
+                "value": "^kube-"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Namespace naming best practice",
+        "description": "Checks for namespace name to follow best practice of avoiding names starting with 'kube-' , since it is reserved for Kubernetes system namespaces"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "advanced",
+    "creator": "mahesh.bandkar@accenture.com",
+    "createdOn": 1610545697839
+  },
+  {
+    "_id": {
+      "$oid": "5fd6421160357bcd33ee7312"
+    },
+    "account": "NXLFZZVZ",
+    "maplRule": {
+      "ruleID": "76d1f2cd-9336-40da-81a8-5a17ae35e13d",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.metadata.name",
+                "method": "RE",
+                "value": "^kube-"
+              }
+            },
+            {
+              "condition": {
+                "value": "Namespace",
+                "attribute": "jsonpath:$.kind",
+                "method": "EQ"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Host_port",
+        "description": "Test Host Port "
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "rimason+guard@carbonblack.com",
+    "createdOn": 1607877137570
+  },
+  {
+    "_id": {
+      "$oid": "6016ccf2d9833ce57cf6ecdb"
+    },
+    "account": "RN4GFZ97",
+    "maplRule": {
+      "ruleID": "9b265480-cbe6-4c2a-8f9f-31eebef76576",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.resources.limits.cpu",
+                    "method": "NEX",
+                    "value": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "description": "sdvsdvsdvsdv",
+        "name": "rule is rule"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "omessir+eap01@carbonblack.com",
+    "createdOn": 1612106994757
+  },
+  {
+    "_id": {
+      "$oid": "605392eb9421c669e362ec36"
+    },
+    "account": "7GXFJV5N",
+    "maplRule": {
+      "ruleID": "7fbb4575-994b-419b-b484-a3b555ef4e7a",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.spec.template.spec.imagePullSecrets",
+                "method": "EX",
+                "value": ""
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Enforce ImagePullSecret",
+        "description": "Enforce ImagePullSecret"
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "DaemonSet",
+      "CronJob",
+      "Deployment",
+      "Job",
+      "ReplicaSet"
+    ],
+    "maplType": "basic",
+    "creator": "Roshan.Bhave@doubleverify.com",
+    "createdOn": 1616089835726
+  },
+  {
+    "_id": {
+      "$oid": "5fcfe8601fbae858a42573de"
+    },
+    "account": "RN4GFZ97",
+    "maplRule": {
+      "ruleID": "dcdee65e-c0ce-42a7-b3c4-713fb3b3d4c6",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.resources.limits.cpu",
+                    "method": "GT",
+                    "value": "80"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "KenDRule1",
+        "description": "This is a basic Rule that uses a template"
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "Deployment",
+      "Pod"
+    ],
+    "maplType": "basic",
+    "creator": "kdoherty+eap01k8s@carbonblack.com",
+    "createdOn": 1607460960758
+  },
+  {
+    "_id": {
+      "$oid": "5fd21155b93eacad7b23206e"
+    },
+    "account": "RN4GFZ97",
+    "maplRule": {
+      "ruleID": "fc4c6549-3f7a-4a84-beb2-8664dabee55c",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.spec.replicas",
+                "method": "GE",
+                "value": "4"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "deployment max 3 replicas",
+        "description": "deployment max 3 replicas"
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "Deployment"
+    ],
+    "maplType": "basic",
+    "creator": "omessir+eap01@carbonblack.com",
+    "createdOn": 1607602517008
+  },
+  {
+    "_id": {
+      "$oid": "5fff2a6ba7786f145134afd2"
+    },
+    "account": "NE2FPPL8",
+    "maplRule": {
+      "ruleID": "22433b08-b7d6-4c47-bcd9-0d9cb8a38d6d",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.image",
+                    "method": "RE",
+                    "value": ".*hyperkube.*"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "value": ".*kube-apiserver.*",
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": ".*--basic-auth-file.*"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "kube-apiserver arg --basic-auth-file not set",
+        "description": "--basic-auth-file not set"
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "Pod"
+    ],
+    "maplType": "basic",
+    "creator": "philip.champon@accenture.com",
+    "createdOn": 1610558059152
+  },
+  {
+    "_id": {
+      "$oid": "5ffe48a1a7786f145134afcf"
+    },
+    "account": "NE2FPPL8",
+    "maplRule": {
+      "ruleID": "004e282c-8420-4e22-b8f7-1157a9faf3b5",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--anonymous-auth=false"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "method": "NRE",
+                    "value": "--basic-auth-file",
+                    "attribute": "jsonpath:$RELATIVE.command"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "NRE",
+                    "value": "--insecure-allow-any-token"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "method": "RE",
+                    "value": "--kubelet-https ",
+                    "attribute": "jsonpath:$RELATIVE.command"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "NRE",
+                    "value": "--insecure-bind-address"
+                  }
+                },
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]"
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "method": "RE",
+                    "value": "--insecure-port=0",
+                    "attribute": "jsonpath:$RELATIVE.command"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--profiling=false"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--repair-malformed-updates=false"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--enable-admission-plugins=[^ ]*AlwaysPullImages"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--enable-admission-plugins=[^ ]*DenyEscalatingExec"
+                  }
+                },
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]"
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "method": "RE",
+                    "value": "--enable-admission-plugins=[^ ]*SecurityContextDeny",
+                    "attribute": "jsonpath:$RELATIVE.command"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--enable-admission-plugins=[^ ]*SecurityContextDeny"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--enable-admission-plugins=[^ ]*NamespaceLifecycle"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--audit-log-path=\\/"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "value": "--audit-log-maxage=[0-9]",
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "value": "--audit-log-maxbackup=[0-9]",
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--audit-log-maxsize=[0-9]"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "NRE",
+                    "value": "--authorization-mode=[^ ]*AlwaysAllow"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "NRE",
+                    "value": "--token-auth-file=\\/"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--kubelet-client-certificate=\\/"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--kubelet-client-key=\\/"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--service-account-lookup(=true)?"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "method": "RE",
+                    "value": "--enable-admission-plugins=[^ ]*PodSecurityPolicy",
+                    "attribute": "jsonpath:$RELATIVE.command"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--service-account-lookup(=true)?"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "method": "RE",
+                    "value": "--service-account-key-file=\\/",
+                    "attribute": "jsonpath:$RELATIVE.command"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--etcd-certfile=\\/"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--etcd-keyfile=\\/"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--enable-admission-plugins=[^ ]*ServiceAccount"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--client-ca-file=\\/"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "value": "--authorization-mode=[^ ]*Node",
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--enable-admission-plugins=[^ ]*NodeRestriction"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "method": "RE",
+                    "value": "--experimental-encryption-provider-config",
+                    "attribute": "jsonpath:$RELATIVE.command"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--enable-admission-plugins=[^ ]*EventRateLimit"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "kube-apiserver",
+        "description": "trying to check kube-apiserver args are set properly"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "philip.champon@accenture.com",
+    "createdOn": 1610500257350
+  },
+  {
+    "_id": {
+      "$oid": "5ffff64a431c0e4713f368a8"
+    },
+    "account": "NE2FPPL8",
+    "maplRule": {
+      "ruleID": "e0ead5ca-249c-454e-b790-2d5d4cc1a9c6",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "condition": {
+            "attribute": "jsonpath:$.metadata.labels.Owner",
+            "method": "NEX",
+            "value": ""
+          }
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Resource owner label",
+        "description": "Checks a label for resource owner exist"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "advanced",
+    "creator": "mahesh.bandkar@accenture.com",
+    "createdOn": 1610610250345
+  },
+  {
+    "_id": {
+      "$oid": "6051f986685435e3608b167b"
+    },
+    "account": "NE2FPPL8",
+    "maplRule": {
+      "ruleID": "50fcb454-0693-4b03-a437-155847c71dbe",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.kind",
+                "method": "EQ",
+                "value": "Pod"
+              }
+            },
+            {
+              "AND": [
+                {
+                  "condition": {
+                    "attribute": "jsonpath:$.kind",
+                    "method": "IN",
+                    "value": "[Deployment,ReplicaSet,StatefulSet]"
+                  }
+                },
+                {
+                  "condition": {
+                    "attribute": "jsonpath:$.spec.replicas",
+                    "method": "LT",
+                    "value": "2"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Pod availability",
+        "description": "Avoid running naked pod(that is, Pods not bound to a ReplicaSet or Deployment) ,naked pods will not be rescheduled in the event of a node failure. Run more than one replica of pod for high availability and less downtime"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "advanced",
+    "creator": "mahesh.bandkar@accenture.com",
+    "createdOn": 1615985030106
+  },
+  {
+    "_id": {
+      "$oid": "60985cdc4bdef01ee7ed4bfe"
+    },
+    "account": "7GXFJV5N",
+    "maplRule": {
+      "ruleID": "313d2045-a836-4384-98cf-decba9332497",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.jobTemplate.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.resources.limits.memory",
+                    "method": "NEX",
+                    "value": ""
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "method": "GT",
+                    "value": "4000m",
+                    "attribute": "jsonpath:$RELATIVE.resources.limits.cpu"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "description": "test-json-2",
+        "name": "test-json-2"
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "CronJob"
+    ],
+    "maplType": "basic",
+    "creator": "Arthur.Hemon@doubleverify.com",
+    "createdOn": 1620597980423
+  },
+  {
+    "_id": {
+      "$oid": "60983f10f625a78455ae0b60"
+    },
+    "account": "7GXFJV5N",
+    "maplRule": {
+      "ruleID": "4fdc7545-4a06-483f-9453-790939c8f34c",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.metadata.name",
+                "method": "EQ",
+                "value": "prism-sample-extractor"
+              }
+            },
+            {
+              "OR": [
+                {
+                  "ANY": {
+                    "parentJsonpathAttribute": "jsonpath:$.spec.jobTemplate.spec.template.spec.containers[:]",
+                    "condition": {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.resources.limits.memory",
+                        "method": "NEX",
+                        "value": ""
+                      }
+                    }
+                  }
+                },
+                {
+                  "ANY": {
+                    "parentJsonpathAttribute": "jsonpath:$.spec.jobTemplate.spec.template.spec.containers[:]",
+                    "condition": {
+                      "condition": {
+                        "method": "GT",
+                        "value": "4096Mi",
+                        "attribute": "jsonpath:$RELATIVE.resources.limits.memory"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "description": "test-yaml",
+        "name": "test-yaml"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "advanced",
+    "creator": "Arthur.Hemon@doubleverify.com",
+    "createdOn": 1620590352723
+  },
+  {
+    "_id": {
+      "$oid": "60b4a2ec65983a2583a8ab63"
+    },
+    "account": "76DF5RE4",
+    "maplRule": {
+      "ruleID": "7cc8fe00-b712-4a4d-8581-6e6276521aa6",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "method": "GT",
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "customrule-highnabove",
+        "description": "customrule-highnabove",
+        "initial-type": "critical-vulnerabilities"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "vhan+vmwaredemo@vmware.com",
+    "createdOn": 1622450924414
+  },
+  {
+    "_id": {
+      "$oid": "60df0469b8a03b62bba8f11f"
+    },
+    "account": "7GXFJV5N",
+    "maplRule": {
+      "ruleID": "b57a667e-d963-4a0a-bdf0-1e9388384af9",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "method": "EQ",
+                "value": "true",
+                "attribute": "jsonpath:$.metadata.labels['app.kubernetes.io/no-delete']"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "description": "Prevent workload deletion",
+        "name": "Prevent workload deletion"
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "CronJob",
+      "Deployment",
+      "StatefulSet"
+    ],
+    "maplType": "basic",
+    "creator": "Arthur.Hemon@doubleverify.com",
+    "createdOn": 1625228393610
+  },
+  {
+    "_id": {
+      "$oid": "601963dad9833ce57cf6ece0"
+    },
+    "account": "7DMFRJZN",
+    "maplRule": {
+      "ruleID": "b90a40f2-2d8a-4fbe-a2e1-d6f13e1005d0",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "method": "RE",
+                "value": "foo",
+                "attribute": "jsonpath:$.metadata.labels.foo"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Foo",
+        "description": "block labeled_workload"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "debbie.lay+sedemo2@carbonblack.com",
+    "createdOn": 1612276698395
+  },
+  {
+    "_id": {
+      "$oid": "60ba8143c8bb1c4b17dbc719"
+    },
+    "account": "NKZFKZK7",
+    "maplRule": {
+      "ruleID": "b22419d5-b4d7-461a-81a8-02bd9e5e9389",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.fixes",
+                        "method": "GT"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.fixes",
+                        "method": "GT"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "initial-type": "vulnerabilities-with-available-fixes",
+        "name": "Bad Scoping Rule",
+        "description": "bad rule. don/t "
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "bill.diamond+cb-internal-se-bill@carbonblack.com",
+    "createdOn": 1622835523253
+  },
+  {
+    "_id": {
+      "$oid": "6091bc1ad4f75c28a30d8c7f"
+    },
+    "account": "NKZFKZK7",
+    "maplRule": {
+      "ruleID": "46df1807-14fc-4724-8142-57e3a59955a4",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "method": "GT",
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                },
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]"
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Vulnerabilities",
+        "description": "Moderate and higher vulnerabilities",
+        "initial-type": "critical-vulnerabilities"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "bill.diamond+cb-internal-se-bill@carbonblack.com",
+    "createdOn": 1620163610260
+  },
+  {
+    "_id": {
+      "$oid": "60644912baa6a2826daff299"
+    },
+    "account": "NE2FPPL8",
+    "maplRule": {
+      "ruleID": "a9919f89-0b5c-441b-b420-164b7eb78899",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "AND": [
+                {
+                  "condition": {
+                    "method": "EQ",
+                    "value": "Pod",
+                    "attribute": "jsonpath:$.kind"
+                  }
+                },
+                {
+                  "condition": {
+                    "attribute": "jsonpath:$.spec.affinity.nodeAffinity",
+                    "method": "NEX",
+                    "value": ""
+                  }
+                }
+              ]
+            },
+            {
+              "AND": [
+                {
+                  "condition": {
+                    "attribute": "jsonpath:$.kind",
+                    "method": "IN",
+                    "value": "[Deployment,ReplicaSet,StatefulSet]"
+                  }
+                },
+                {
+                  "condition": {
+                    "attribute": "jsonpath:$.spec.template.spec.affinity.nodeAffinity",
+                    "method": "NEX",
+                    "value": ""
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Node affinity",
+        "description": "Use nodeAffinity and set \"hard\"/\"soft\" compulsion on preferred node to get control on scheduling of pods "
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "advanced",
+    "creator": "mahesh.bandkar@accenture.com",
+    "createdOn": 1617185042300
+  },
+  {
+    "_id": {
+      "$oid": "601309a9d10b5374c9a8f67d"
+    },
+    "account": "7YZFQX6N",
+    "maplRule": {
+      "ruleID": "90721e58-e615-4182-b022-0045a9be4939",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "value": "test",
+                "attribute": "jsonpath:$.metadata.labels.foo",
+                "method": "NEQ"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "description": "Test",
+        "name": "test"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "charlesmthompson@gmail.com",
+    "createdOn": 1611860393825
+  },
+  {
+    "_id": {
+      "$oid": "5fff24c3431c0e4713f368a5"
+    },
+    "account": "NE2FPPL8",
+    "maplRule": {
+      "ruleID": "e3d95268-0e3c-47c7-9318-95ac7fbffd2a",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.image",
+                    "method": "RE",
+                    "value": ".*hyperkube.*"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "method": "RE",
+                    "value": ".*--anonymous-auth=false.*",
+                    "attribute": "jsonpath:$RELATIVE.command"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": ".*kube-apiserver.*"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "kube-apiserver anonymous auth disabled",
+        "description": "kube-api server arg --anonymous-auth must be set false"
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "Pod"
+    ],
+    "maplType": "basic",
+    "creator": "philip.champon@accenture.com",
+    "createdOn": 1610556611534
+  },
+  {
+    "_id": {
+      "$oid": "60547c96dfd61f7396993ed9"
+    },
+    "account": "7GXFJV5N",
+    "maplRule": {
+      "ruleID": "52b014cf-40da-4331-b387-9efdd20d6424",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.spec.template.spec.containers[*].env[?(@.name=='http_proxy')].value",
+                "method": "EX",
+                "value": ""
+              }
+            },
+            {
+              "condition": {
+                "attribute": "jsonpath:$.spec.template.spec.containers[*].env[?(@.name=='http_proxy')].value",
+                "method": "NEQ",
+                "value": "http://squid.doubleverify.prod:3128"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Restrict http proxy value",
+        "description": "Restrict http proxy value"
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "Deployment",
+      "CronJob",
+      "Job"
+    ],
+    "maplType": "basic",
+    "creator": "Arthur.Hemon@doubleverify.com",
+    "createdOn": 1616149654056
+  },
+  {
+    "_id": {
+      "$oid": "6062dada0b29ad6e83590881"
+    },
+    "account": "NE2FPPL8",
+    "maplRule": {
+      "ruleID": "d8c3b516-e66e-47e2-954e-60c7a254bfec",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "AND": [
+                {
+                  "condition": {
+                    "method": "EX",
+                    "value": "",
+                    "attribute": "jsonpath:$.spec.containers"
+                  }
+                },
+                {
+                  "ALL": {
+                    "parentJsonpathAttribute": "jsonpath:$.spec.containers[:]",
+                    "condition": {
+                      "OR": [
+                        {
+                          "condition": {
+                            "value": "",
+                            "attribute": "jsonpath:$RELATIVE.readinessProbe",
+                            "method": "NEX"
+                          }
+                        },
+                        {
+                          "condition": {
+                            "value": "",
+                            "attribute": "jsonpath:$RELATIVE.livenessProbe",
+                            "method": "NEX"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "AND": [
+                {
+                  "condition": {
+                    "attribute": "jsonpath:$.spec.template.spec.containers",
+                    "method": "EX",
+                    "value": ""
+                  }
+                },
+                {
+                  "ALL": {
+                    "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                    "condition": {
+                      "OR": [
+                        {
+                          "condition": {
+                            "attribute": "jsonpath:$RELATIVE.readinessProbe",
+                            "method": "NEX",
+                            "value": ""
+                          }
+                        },
+                        {
+                          "condition": {
+                            "attribute": "jsonpath:$RELATIVE.livenessProbe",
+                            "method": "NEX",
+                            "value": ""
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "livenessProbe and readinessProbe check",
+        "description": "Liveness and readiness probes help manage a pod’s lifecycle during deployments, restarts, and upgrades. If these checks are not properly configured, pods may be terminated while initializing"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "advanced",
+    "creator": "mahesh.bandkar@accenture.com",
+    "createdOn": 1617091290390
+  },
+  {
+    "_id": {
+      "$oid": "6092edd84a780c49b748d9f8"
+    },
+    "account": "N33FYZ8N",
+    "maplRule": {
+      "ruleID": "e7cbfd7e-3247-4add-ac7d-3bed8e583b02",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "High vulnerability",
+        "description": "test custom",
+        "initial-type": "critical-vulnerabilities"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "jbarosin+THDEMO@carbonblack.com",
+    "createdOn": 1620241880781
+  },
+  {
+    "_id": {
+      "$oid": "60985d11fe2d7c89b43bf342"
+    },
+    "account": "7GXFJV5N",
+    "maplRule": {
+      "ruleID": "2dea23e5-ffbd-49e9-8d16-956531f0f269",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "value": "prism-simple-extractor",
+                "attribute": "jsonpath:$.metadata.name",
+                "method": "EQ"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "test-json-3",
+        "description": "test-json-3"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "Arthur.Hemon@doubleverify.com",
+    "createdOn": 1620598033478
+  },
+  {
+    "_id": {
+      "$oid": "60ad679b515764d01b679f02"
+    },
+    "account": "N2MFKRX7",
+    "maplRule": {
+      "ruleID": "3e4d88de-cd18-4456-b217-9d4c66e6b824",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.image.registry",
+                    "method": "NIN",
+                    "value": "google.com"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.image.registry",
+                    "method": "NIN",
+                    "value": "google.com"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Container belongs to PD's Harbor instance",
+        "description": "Container must belong to harbor.pdmodernapps.com",
+        "initial-type": "registries"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "rclair@vmware.com",
+    "createdOn": 1621976987840
+  },
+  {
+    "_id": {
+      "$oid": "61576dbcfe04c622c2ecdc27"
+    },
+    "account": "N2MFKRX7",
+    "maplRule": {
+      "ruleID": "0fc2d0fc-fb16-4dfc-b0ab-f20cca5d90e4",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.names.categories",
+                "method": "EX",
+                "value": ""
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "description": "sfsfsdfs",
+        "name": "esdrffs"
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "Namespace"
+    ],
+    "maplType": "basic",
+    "creator": "audit@vmtestdrive.com",
+    "createdOn": 1633119676407
+  },
+  {
+    "_id": {
+      "$oid": "615b600c952be6125ac30cb1"
+    },
+    "account": "7V6FQYG3",
+    "maplRule": {
+      "ruleID": "ff94dcfb-e46e-4f1e-8a36-b278e9657e19",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.fixes",
+                        "method": "GT"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "method": "GT",
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.fixes"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "initial-type": "vulnerabilities-with-available-fixes",
+        "name": "CSG - Malware Identified",
+        "description": "Custom rule to detect malware within an environment"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "kevin.dolphin@csgi.com",
+    "createdOn": 1633378316253
+  },
+  {
+    "_id": {
+      "$oid": "6192b90daa08329ea2c41625"
+    },
+    "account": "NKZFKZK7",
+    "maplRule": {
+      "ruleID": "385a54ff-2fd5-47ee-a7ab-b11058f01761",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.apiVersion",
+                "method": "EQ",
+                "value": "v1"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "test 1",
+        "description": "test 1"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "bill.diamond+cb-internal-se-bill@carbonblack.com",
+    "createdOn": 1637005581958
+  },
+  {
+    "_id": {
+      "$oid": "5fffded9a7786f145134afd5"
+    },
+    "account": "NE2FPPL8",
+    "maplRule": {
+      "ruleID": "568b3561-2153-4564-a857-e5048ab240ab",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.kind",
+                "method": "EQ",
+                "value": "Secret"
+              }
+            },
+            {
+              "condition": {
+                "attribute": "jsonpath:$.stringData",
+                "method": "EX",
+                "value": ""
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Secret Data best practice",
+        "description": "Checks secret data is not present as plain string in configuration file"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "advanced",
+    "creator": "mahesh.bandkar@accenture.com",
+    "createdOn": 1610604249892
+  },
+  {
+    "_id": {
+      "$oid": "6149d7f626bfa6fefa634993"
+    },
+    "account": "NKZFKZK7",
+    "maplRule": {
+      "ruleID": "62af81ab-d1ba-443e-9537-4522b3a6585a",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "value": "",
+                "attribute": "jsonpath:$.users[*]",
+                "method": "EX"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Users",
+        "description": "Get all users"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "bill.diamond+cb-internal-se-bill@carbonblack.com",
+    "createdOn": 1632229366203
+  },
+  {
+    "_id": {
+      "$oid": "60185c18d9833ce57cf6ecdd"
+    },
+    "account": "7W2FLGQD",
+    "maplRule": {
+      "ruleID": "d64c12a4-355c-4900-901d-7572b9852fce",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.metadata.labels.foo",
+                "method": "RE",
+                "value": "bar"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Foo2",
+        "description": "Foo2"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "sparker+demo@carbonblack.com",
+    "createdOn": 1612209176373
+  },
+  {
+    "_id": {
+      "$oid": "6092eee69fa3694e16252e97"
+    },
+    "account": "N33FYZ8N",
+    "maplRule": {
+      "ruleID": "3524aa99-1a1e-4af4-a018-3bfd909555a4",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "value": "2",
+                "attribute": "jsonpath:$.spec.replicas",
+                "method": "LE"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "replica sets too low",
+        "description": "test custom rule"
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "ReplicaSet"
+    ],
+    "maplType": "basic",
+    "creator": "jbarosin+THDEMO@carbonblack.com",
+    "createdOn": 1620242150762
+  },
+  {
+    "_id": {
+      "$oid": "6005bf02d10b5374c9a8f677"
+    },
+    "account": "RN4GFZ97",
+    "maplRule": {
+      "ruleID": "f9cb1dfe-cc16-4c86-8cc5-1fb02ce09deb",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "ALL": {
+            "parentJsonpathAttribute": "jsonpath:$.spec.containers[:]",
+            "condition": {
+              "AND": [
+                {
+                  "condition": {
+                    "method": "EX",
+                    "value": "",
+                    "attribute": "jsonpath:$RELATIVE.resources"
+                  }
+                },
+                {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.resources.limits.memory",
+                    "method": "EX",
+                    "value": ""
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "raz-rule2",
+        "description": "for testing"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "advanced",
+    "creator": "omessir+eap01@carbonblack.com",
+    "createdOn": 1610989314054
+  },
+  {
+    "_id": {
+      "$oid": "60183603a7e76d9406381632"
+    },
+    "account": "7W2FLGQD",
+    "maplRule": {
+      "ruleID": "a3491ec9-3b8e-4b0b-8db3-b3f8978f36f1",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.metadata.labels.foo",
+                "method": "RE",
+                "value": "bar"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Foo",
+        "description": "Foo"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "sparker+demo@carbonblack.com",
+    "createdOn": 1612199427081
+  },
+  {
+    "_id": {
+      "$oid": "6092db040fdd5175395e945c"
+    },
+    "account": "7M9FGWJ7",
+    "maplRule": {
+      "ruleID": "2cbdb48c-38b3-457a-81f0-ce27a6b7cce1",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "High Vulnerabilities",
+        "description": "Detect images with high vulnerabilities or more",
+        "initial-type": "critical-vulnerabilities"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "thomas@thehinsons.net",
+    "createdOn": 1620237060965
+  },
+  {
+    "_id": {
+      "$oid": "60940f41f625a78455ae0b5d"
+    },
+    "account": "NKZFKZK7",
+    "maplRule": {
+      "ruleID": "a30c4d7d-bc8e-4a4c-9d18-dde09cac309e",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "method": "GT",
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.fixes"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Moderate Vulnerabilities - FISMA",
+        "description": "Template demo",
+        "initial-type": "vulnerabilities-with-available-fixes"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "bill.diamond+cb-internal-se-bill@carbonblack.com",
+    "createdOn": 1620315969794
+  },
+  {
+    "_id": {
+      "$oid": "6099fe76e6bfb1f3fe7ec233"
+    },
+    "account": "NKZFRK84",
+    "maplRule": {
+      "ruleID": "40aa571d-1df7-49fa-8057-ff236c9e5909",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                },
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Medium",
+        "description": "Med",
+        "initial-type": "critical-vulnerabilities"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "imon20@naver.com",
+    "createdOn": 1620704886671
+  },
+  {
+    "_id": {
+      "$oid": "60a80f18355f92e38192edaa"
+    },
+    "account": "N2MFKRX7",
+    "maplRule": {
+      "ruleID": "cbfed250-81bf-46a8-accb-c9270da83631",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                },
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "medium-severity",
+        "description": "Prevents deployment of images with medium vulnerabilities in OS packages or libraries",
+        "initial-type": "critical-vulnerabilities"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "rclair@vmware.com",
+    "createdOn": 1621626648178
+  },
+  {
+    "_id": {
+      "$oid": "60c2e479340b77b2d9b8ba89"
+    },
+    "account": "NKZFKZK7",
+    "maplRule": {
+      "ruleID": "737ddd2d-7eeb-4035-b98c-7f9a73d7c924",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.image",
+                    "method": "EX",
+                    "value": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Demo of Custom rules",
+        "description": "Basic Rule"
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "Namespace"
+    ],
+    "maplType": "basic",
+    "creator": "bill.diamond+cb-internal-se-bill@carbonblack.com",
+    "createdOn": 1623385209846
+  },
+  {
+    "_id": {
+      "$oid": "61498348349a76f77e0aa654"
+    },
+    "account": "N2MFKRX7",
+    "maplRule": {
+      "ruleID": "0cb8d081-ddf7-42a1-96df-72b4dac8ebcd",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.spec",
+                "method": "EX",
+                "value": ""
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "g",
+        "description": "g1"
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "Deployment"
+    ],
+    "maplType": "basic",
+    "creator": "audit@vmtestdrive.com",
+    "createdOn": 1632207688425
+  },
+  {
+    "_id": {
+      "$oid": "6172e459e5d8552ba07b1b9f"
+    },
+    "account": "NKZFKZK7",
+    "maplRule": {
+      "ruleID": "3d7cbc7e-d6c9-4731-87bf-4e0cbb776d91",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                },
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]"
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "method": "GT",
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "friday",
+        "description": "friday",
+        "initial-type": "critical-vulnerabilities"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "bill.diamond+cb-internal-se-bill@carbonblack.com",
+    "createdOn": 1634919513467
+  },
+  {
+    "_id": {
+      "$oid": "615b47e45162b9ff24bc9e89"
+    },
+    "account": "N2MFKRX7",
+    "maplRule": {
+      "ruleID": "0805a42d-e9e0-417d-9b50-29b91072e445",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.status.phase",
+                "method": "EX",
+                "value": ""
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "sdfds",
+        "description": "SDFSDADsasdfsa"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "audit@vmtestdrive.com",
+    "createdOn": 1633372132178
+  },
+  {
+    "_id": {
+      "$oid": "606e459dbaa6a2826daff29d"
+    },
+    "account": "NE2F32W9",
+    "maplRule": {
+      "ruleID": "86f2577d-8533-4c78-9872-4886b6f2df06",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {},
+      "decision": "",
+      "metadata": {
+        "name": "Auditing",
+        "description": "Activate audit logging - Ensure that local logging has been enabled on all systems and networking devices.\n\nCIS - 3.2.1 Ensure that a minimal audit policy is created"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "advanced",
+    "creator": "slavigne+CBC@carbonblack.com",
+    "createdOn": 1617839517057
+  },
+  {
+    "_id": {
+      "$oid": "600013d8b43ce59d72a901b5"
+    },
+    "account": "RN4GFZ97",
+    "maplRule": {
+      "ruleID": "5c0f96e7-8530-4670-ad7e-3ad4097f52c7",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.aaa[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.test",
+                    "method": "GT",
+                    "value": "5"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "description": "testing custom rules",
+        "name": "raz test rule"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "omessir+eap01@carbonblack.com",
+    "createdOn": 1610617816397
+  },
+  {
+    "_id": {
+      "$oid": "60db132e4b659d071c113e1c"
+    },
+    "account": "NXLFZZVZ",
+    "maplRule": {
+      "ruleID": "022cc9da-7f5d-4d6b-970b-a56db3305472",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "ANY": {
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.apiVersion",
+                    "method": "EQ",
+                    "value": "apps/v1"
+                  }
+                },
+                "parentJsonpathAttribute": "jsonpath:$.metadata.managedFields[:]"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "ghfd",
+        "description": "sdfg"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "rimason+guard@carbonblack.com",
+    "createdOn": 1624970030409
+  },
+  {
+    "_id": {
+      "$oid": "6110de90e0c5ba688a967559"
+    },
+    "account": "N2MFKRX7",
+    "maplRule": {
+      "ruleID": "babe79b6-7ddf-4987-9ec6-080b4f6035f1",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "method": "GT",
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "description": "abc1",
+        "initial-type": "critical-vulnerabilities",
+        "name": "abc"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "vmtestdrive@vmware.com",
+    "createdOn": 1628495504041
+  },
+  {
+    "_id": {
+      "$oid": "61576eff5162b9ff24bc9e87"
+    },
+    "account": "N2MFKRX7",
+    "maplRule": {
+      "ruleID": "295c5596-1893-4cbc-b129-aca17378f111",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.apiVersion",
+                "method": "EQ",
+                "value": "v1"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "wrawr",
+        "description": "warfare"
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "CronJob"
+    ],
+    "maplType": "basic",
+    "creator": "audit@vmtestdrive.com",
+    "createdOn": 1633119999197
+  },
+  {
+    "_id": {
+      "$oid": "618426a62acb8d824fd42aff"
+    },
+    "account": "RN4GFZ97",
+    "maplRule": {
+      "ruleID": "31aea957-1f72-49a7-be0f-e76937eeb4fc",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "value": "",
+                "attribute": "jsonpath:$.spec.template.spec.containers[*].env[?(@.name=='http_proxy')].value",
+                "method": "EX"
+              }
+            },
+            {
+              "condition": {
+                "attribute": "jsonpath:$.spec.template.spec.containers[*].env[?(@.name=='http_proxy')].value",
+                "method": "NEQ",
+                "value": "http://squid.doubleverify.prod:3128"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "test raz",
+        "description": "asd"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "advanced",
+    "creator": "omessir+eap01@carbonblack.com",
+    "createdOn": 1636050598711
+  },
+  {
+    "_id": {
+      "$oid": "60985c81f625a78455ae0b61"
+    },
+    "account": "7GXFJV5N",
+    "maplRule": {
+      "ruleID": "c8f0ee16-07f6-465c-bc48-c0232852b821",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.kind",
+                "method": "EQ",
+                "value": "Cronjob"
+              }
+            },
+            {
+              "condition": {
+                "value": "prism-simple-extractor",
+                "attribute": "jsonpath:$.metadata.name",
+                "method": "EQ"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "description": "test-json",
+        "name": "test-json"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "Arthur.Hemon@doubleverify.com",
+    "createdOn": 1620597889343
+  },
+  {
+    "_id": {
+      "$oid": "60018e94b43ce59d72a901ba"
+    },
+    "account": "NXLFZZVZ",
+    "maplRule": {
+      "ruleID": "ff4ac3c0-6af5-4aee-b780-cf8a20311df3",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.kind",
+                "method": "EQ",
+                "value": "Secret"
+              }
+            },
+            {
+              "condition": {
+                "attribute": "jsonpath:$.stringData",
+                "method": "EX",
+                "value": ""
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "yaml_import_test",
+        "description": "123"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "advanced",
+    "creator": "rimason+guard@carbonblack.com",
+    "createdOn": 1610714772953
+  },
+  {
+    "_id": {
+      "$oid": "6098244dd20d64f18f50779e"
+    },
+    "account": "7L9FKREL",
+    "maplRule": {
+      "ruleID": "039aae6b-66c9-41ac-ba9b-a3424dd25727",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Medium",
+        "description": "Medium",
+        "initial-type": "critical-vulnerabilities"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "vkumar4+cb-internal-SE-Vkumar@carbonblack.com",
+    "createdOn": 1620583501852
+  },
+  {
+    "_id": {
+      "$oid": "614a39d5349a76f77e0aa655"
+    },
+    "account": "NKZFKZK7",
+    "maplRule": {
+      "ruleID": "8c81c78e-74ac-45a7-aa66-e3df3ade976d",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.items[].metadata.name",
+                "method": "EX",
+                "value": ""
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Get-Metadata-Name",
+        "description": "Pull the metadata name of the container"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "bill.diamond+cb-internal-se-bill@carbonblack.com",
+    "createdOn": 1632254421417
+  },
+  {
+    "_id": {
+      "$oid": "6183d97ee2c35b0ebb73fc0b"
+    },
+    "account": "RN4GFZ97",
+    "maplRule": {
+      "ruleID": "9b9b05b7-5f4e-4f95-ad11-d0f52b218b99",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "value": "Deployment",
+                "attribute": "jsonpath:$.kind",
+                "method": "EQ"
+              }
+            },
+            {
+              "OR": [
+                {
+                  "condition": {
+                    "attribute": "jsonpath:$.kind",
+                    "method": "EQ",
+                    "value": "Deployment"
+                  }
+                },
+                {
+                  "condition": {
+                    "attribute": "jsonpath:$.xyz",
+                    "method": "EQ",
+                    "value": "XYZ"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "mapl v2",
+        "description": "test"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "advanced",
+    "creator": "faibishi+devops@vmware.com",
+    "createdOn": 1636030846503
+  },
+  {
+    "_id": {
+      "$oid": "6062ef3ebaa6a2826daff298"
+    },
+    "account": "NE2FPPL8",
+    "maplRule": {
+      "ruleID": "d1185774-9d48-436d-b3bb-f5720c9e9dde",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "condition": {
+            "attribute": "jsonpath:$.metadata.namespace",
+            "method": "IN",
+            "value": "[default,kube-system,kube-public]"
+          }
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Use custom namespaces",
+        "description": "Use non-default and non-kubernetes administered namespaces for general workloads to achieve isolation and avoid confusion"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "advanced",
+    "creator": "mahesh.bandkar@accenture.com",
+    "createdOn": 1617096510927
+  },
+  {
+    "_id": {
+      "$oid": "5fff2ae0b43ce59d72a901b3"
+    },
+    "account": "NE2FPPL8",
+    "maplRule": {
+      "ruleID": "09b4812d-8d44-43f2-ac48-3bda448b4171",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.image",
+                    "method": "RE",
+                    "value": ".*hyperkube.*"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": ".*kube-apiserver.*"
+                  }
+                },
+                "parentJsonpathAttribute": "jsonpath:$.spec.containers[:]"
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "NRE",
+                    "value": ".*--kubelet-https.*"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "kube-apiserver arg --kubelet-https must be set",
+        "description": "--kubelet-https must be set"
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "Pod"
+    ],
+    "maplType": "basic",
+    "creator": "philip.champon@accenture.com",
+    "createdOn": 1610558176194
+  },
+  {
+    "_id": {
+      "$oid": "5fff2bbb431c0e4713f368a6"
+    },
+    "account": "NE2FPPL8",
+    "maplRule": {
+      "ruleID": "b5568328-1ea0-4e6b-85ba-46258471c14d",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.image",
+                    "method": "RE",
+                    "value": ".*hyperkube.*"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": ".*kube-apiserver.*"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "method": "RE",
+                    "value": ".*--profiling=false.*",
+                    "attribute": "jsonpath:$RELATIVE.command"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "kube-apiserver --profiling must be set false",
+        "description": "--profiling=false"
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "Pod"
+    ],
+    "maplType": "basic",
+    "creator": "philip.champon@accenture.com",
+    "createdOn": 1610558395935
+  },
+  {
+    "_id": {
+      "$oid": "61265c48b10261995cb7d242"
+    },
+    "account": "7GXFJV5N",
+    "maplRule": {
+      "ruleID": "7deff31a-b0dd-4c68-b4ed-e9ae589a9f36",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.$.metadata.annotations.['kubernetes.io/ingress.class']",
+                "method": "EQ",
+                "value": "nginx-external"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Match external ingress",
+        "description": "Match external ingress"
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "Ingress"
+    ],
+    "maplType": "basic",
+    "creator": "Arthur.Hemon@doubleverify.com",
+    "createdOn": 1629903944303
+  },
+  {
+    "_id": {
+      "$oid": "61421eb3c24b7ec6ceba72f2"
+    },
+    "account": "NKZFKZK7",
+    "maplRule": {
+      "ruleID": "81dad65a-1d6a-424b-af76-d79442d15f4a",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "value": "",
+                "attribute": "jsonpath:$.",
+                "method": "NEX"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "description": "test rule",
+        "name": "Stafford Test Rule"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "bill.diamond+cb-internal-se-bill@carbonblack.com",
+    "createdOn": 1631723187973
+  },
+  {
+    "_id": {
+      "$oid": "61538902fe04c622c2ecdc21"
+    },
+    "account": "NKZFKZK7",
+    "maplRule": {
+      "ruleID": "c1cae0aa-f900-4aeb-8c58-798cc5412749",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.image.registry",
+                    "method": "NIN",
+                    "value": "hub.docker.com"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.image.registry",
+                    "method": "NIN",
+                    "value": "hub.docker.com"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Approved Registries",
+        "description": "Only Docker Hub, GCR  and Harbor",
+        "initial-type": "registries"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "bill.diamond+cb-internal-se-bill@carbonblack.com",
+    "createdOn": 1632864514367
+  },
+  {
+    "_id": {
+      "$oid": "615b64a7fe04c622c2ecdc29"
+    },
+    "account": "NKZFKZK7",
+    "maplRule": {
+      "ruleID": "e723d481-72da-484c-85fa-3e7d5dfdb7cb",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.API_SERVER_PORT",
+                "method": "NEX",
+                "value": ""
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "test",
+        "description": "test"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "bill.diamond+cb-internal-se-bill@carbonblack.com",
+    "createdOn": 1633379495701
+  },
+  {
+    "_id": {
+      "$oid": "5fd2197428433128048e9534"
+    },
+    "account": "RN4GFZ97",
+    "maplRule": {
+      "ruleID": "1222c702-a04e-4739-84c8-b27a31221072",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.metadata.labels.ma",
+                "method": "EQ",
+                "value": "ben"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "description": "Has ma:ben label",
+        "name": "Has ma:ben"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "rubchinskyb+eap01@carbonblack.com",
+    "createdOn": 1607604596737
+  },
+  {
+    "_id": {
+      "$oid": "5fff322aa7786f145134afd3"
+    },
+    "account": "NE2FPPL8",
+    "maplRule": {
+      "ruleID": "d1327549-08e6-420e-9f34-d6269de65c91",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "method": "RE",
+                    "value": "hyperkube",
+                    "attribute": "jsonpath:$RELATIVE.image"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "value": "kube-controller-manager",
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.command",
+                    "method": "RE",
+                    "value": "--terminated-pod-gc-threshold"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "kube-controller-manager arg --terminated-pod-gc-threshold set",
+        "description": "--terminated-pod-gc-threshold "
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "Pod"
+    ],
+    "maplType": "basic",
+    "creator": "philip.champon@accenture.com",
+    "createdOn": 1610560042604
+  },
+  {
+    "_id": {
+      "$oid": "60534f862495b0cfd8cc7b33"
+    },
+    "account": "NE2FPPL8",
+    "maplRule": {
+      "ruleID": "50f0f64f-5a33-4c6d-9594-e7103e5a0413",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "AND": [
+                {
+                  "condition": {
+                    "attribute": "jsonpath:$.spec.containers",
+                    "method": "EX",
+                    "value": ""
+                  }
+                },
+                {
+                  "ANY": {
+                    "condition": {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.image",
+                        "method": "RE",
+                        "value": ":latest$"
+                      }
+                    },
+                    "parentJsonpathAttribute": "jsonpath:$.spec.containers[:]"
+                  }
+                }
+              ]
+            },
+            {
+              "AND": [
+                {
+                  "condition": {
+                    "attribute": "jsonpath:$.spec.template.spec.containers",
+                    "method": "EX",
+                    "value": ""
+                  }
+                },
+                {
+                  "ANY": {
+                    "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                    "condition": {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.image",
+                        "method": "RE",
+                        "value": ":latest$"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "description": "Avoid using the :latest tag when deploying containers in production as it is harder to track which version of the image is running and more difficult to roll back properly",
+        "name": "Image name tag"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "advanced",
+    "creator": "mahesh.bandkar@accenture.com",
+    "createdOn": 1616072582964
+  },
+  {
+    "_id": {
+      "$oid": "609061c2912b019ed059ba69"
+    },
+    "account": "7DMFJRE9",
+    "maplRule": {
+      "ruleID": "04c1596a-2d93-46e3-8ed0-9d42701225e7",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.spec.replicas",
+                "method": "LE",
+                "value": "2"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "testcustom",
+        "description": "testcustom - add more replicas"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "jbarosin+insidek8lab@carbonblack.com",
+    "createdOn": 1620074946225
+  },
+  {
+    "_id": {
+      "$oid": "60903b31304523b3ccebb9df"
+    },
+    "account": "7DMFJRE9",
+    "maplRule": {
+      "ruleID": "8e2902be-b5fe-465f-92ab-a660789c7db0",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "description": "alert on medium and higher vulns",
+        "initial-type": "critical-vulnerabilities",
+        "name": "Vulnerabilities >= Medium"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "jbarosin+insidek8lab@carbonblack.com",
+    "createdOn": 1620065073377
+  },
+  {
+    "_id": {
+      "$oid": "609c04c5d20d64f18f5077a2"
+    },
+    "account": "NKZFKZK7",
+    "maplRule": {
+      "ruleID": "9d7fbe66-d268-4441-8484-5af894a80f0e",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "description": "demo",
+        "initial-type": "vulnerabilities-with-available-fixes",
+        "name": "Critical Vulns"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "bill.diamond+cb-internal-se-bill@carbonblack.com",
+    "createdOn": 1620837573565
+  },
+  {
+    "_id": {
+      "$oid": "60992ee84bdef01ee7ed4bff"
+    },
+    "account": "N2MFKRX7",
+    "maplRule": {
+      "ruleID": "285a9a33-6e9f-4ddb-be66-af87e64c0e8a",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.template.spec.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.resources.requests.cpu",
+                    "method": "GE",
+                    "value": "10"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Minimum CPU request",
+        "description": "Be sure that all container has a minimum of 1 pod request"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "audit@vmtestdrive.com",
+    "createdOn": 1620651752578
+  },
+  {
+    "_id": {
+      "$oid": "609b6f92fe2d7c89b43bf346"
+    },
+    "account": "N2MFKRX7",
+    "maplRule": {
+      "ruleID": "fc95dac1-fb86-4252-9e86-e6e89460238b",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                },
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Image Blocker",
+        "description": "Block container image from being deployed",
+        "initial-type": "critical-vulnerabilities"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "audit@vmtestdrive.com",
+    "createdOn": 1620799378574
+  },
+  {
+    "_id": {
+      "$oid": "61530d3dcdd9bf7379be109e"
+    },
+    "account": "NE3SDDJN",
+    "maplRule": {
+      "ruleID": "241b71df-0f84-447c-b075-e147fabe00b2",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.image.registry",
+                    "method": "NIN",
+                    "value": "harbor.thc.local"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.image.registry",
+                    "method": "NIN",
+                    "value": "harbor.thc.local"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Registry limitation",
+        "description": "Limit registry to avoid Docker Hub and 2M images with critical vulnerabilities",
+        "initial-type": "registries"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "slist+ctf@vmware.com",
+    "createdOn": 1632832829257
+  },
+  {
+    "_id": {
+      "$oid": "6231fd1953573a447edde1bc"
+    },
+    "account": "7DMFJRE9",
+    "maplRule": {
+      "ruleID": "be2424d2-3c3a-4505-950e-88b2e23ad9a1",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.fixes",
+                        "method": "GT"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "method": "GT",
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.fixes"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "description": "Testing rule",
+        "initial-type": "vulnerabilities-with-available-fixes",
+        "name": "Isla_Test_Rule"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "islaa+insidek8lab@vmware.com",
+    "createdOn": 1647443225273
+  },
+  {
+    "_id": {
+      "$oid": "623b6cfd38df5eb53ba42171"
+    },
+    "account": "76DF538D",
+    "maplRule": {
+      "ruleID": "77037251-516e-47e8-a175-4181c929193b",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "test-rule",
+        "description": "",
+        "initial-type": "critical-vulnerabilities"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "mdharamadas@vmware.com",
+    "createdOn": 1648061693264
+  },
+  {
+    "_id": {
+      "$oid": "623cf2635c727989378ad2c8"
+    },
+    "account": "76DF538D",
+    "maplRule": {
+      "ruleID": "857c31a6-cfd9-4032-8e65-651e2e7c6722",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "method": "GT",
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "test-vmc-rule",
+        "description": "",
+        "initial-type": "critical-vulnerabilities"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "mdharamadas@vmware.com",
+    "createdOn": 1648161379610
+  },
+  {
+    "_id": {
+      "$oid": "623cf34038df5eb53ba4217a"
+    },
+    "account": "76DF538D",
+    "maplRule": {
+      "ruleID": "754b60b4-85a1-4fbd-9260-39ac48bd6078",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "method": "GT",
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "test-vmc-rule2",
+        "description": "",
+        "initial-type": "critical-vulnerabilities"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "",
+    "createdOn": 1648161600343
+  },
+  {
+    "_id": {
+      "$oid": "6241e1f15c727989378ad2e4"
+    },
+    "account": "7WZSYWQN",
+    "maplRule": {
+      "ruleID": "cf5973b9-7159-49e3-95cd-a1db51e5db3a",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "method": "GT",
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "tst-rule-high-or-critical",
+        "description": "",
+        "initial-type": "critical-vulnerabilities"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "mageorgiev+02aws@vmware.com",
+    "createdOn": 1648484849219
+  },
+  {
+    "_id": {
+      "$oid": "6257ddf67d9ede968e8a80e2"
+    },
+    "account": "N2MFKRX7",
+    "maplRule": {
+      "ruleID": "27e5edbe-0b83-4abf-8704-0cb525eafe95",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.fixes",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "test",
+        "description": "",
+        "initial-type": "vulnerabilities-with-available-fixes"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "vmtestdrive@vmware.com",
+    "createdOn": 1649925622521
+  },
+  {
+    "_id": {
+      "$oid": "62745d8650a5c796eccb6e5e"
+    },
+    "account": "76DF538D",
+    "maplRule": {
+      "ruleID": "da0efa4a-53ea-4cc9-8a2e-4732fb617f97",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "method": "GT",
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "initial-type": "critical-vulnerabilities",
+        "name": "test-rule-jeff",
+        "description": ""
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "guje+container@vmware.com",
+    "createdOn": 1651793286055
+  },
+  {
+    "_id": {
+      "$oid": "62baa4f7dcc2f3bb032eab50"
+    },
+    "account": "7W2FL9VQ",
+    "maplRule": {
+      "ruleID": "7120f1f0-1fea-4650-98a5-e9832cf2170a",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "condition": {
+                "attribute": "jsonpath:$.",
+                "method": "NRE",
+                "value": "test"
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "description": "test",
+        "name": "sungyooncho"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "basic",
+    "creator": "auditk8s@vmtestdrive.com",
+    "createdOn": 1656399095762
+  }
+]
