@@ -463,7 +463,7 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 	Convey("tests", t, func() {
 
 		c := ConditionsTree{}
-		dataJson:=`{ "conditions":
+		dataJson := `{ "conditions":
                       { "conditionsTree":
 						{"AND": 
 							[
@@ -476,7 +476,7 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		c2 := ConditionsTree{}
-		dataJson2:=`{ "conditions":
+		dataJson2 := `{ "conditions":
                       { "conditionsTree":
 						{"AND": 
 							[
@@ -574,7 +574,6 @@ func TestMaplEngineJsonConditionWithReturnValues(t *testing.T) {
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_return_value/rules_with_jsonpath_EQ_on_array_with_return_value.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_EQ1.json")
 		So(len(extraData[0]), ShouldEqual, 0) // in ANY node we use the ANY global return value and not the return value within the condition!
 		So(results[0], ShouldEqual, BLOCK)
-
 
 	})
 }
@@ -922,7 +921,7 @@ func TestMaplEngineJsonConditionsOnArraysAny(t *testing.T) {
 
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY_EX.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu_missing_from_one_A2.json")
 		So(results[0], ShouldEqual, DEFAULT)
-// test [:] vs [*]:
+		// test [:] vs [*]:
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY_EX2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_env.json")
 		So(results[0], ShouldEqual, BLOCK)
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY_EX2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_env_missing.json")
@@ -1890,7 +1889,7 @@ func TestMaplEngineParentJsonpathAttributeList(t *testing.T) {
 		So(results[0], ShouldEqual, DEFAULT)
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu5_mem2000_dep.json")
 		So(results[0], ShouldEqual, DEFAULT)
-// multi-level:
+		// multi-level:
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json")
 		So(results[0], ShouldEqual, DEFAULT)
 		results, _ = test_CheckMessagesWithRawData("../files/rules/with_parentjsonpath_list/rules_with_jsonpath_conditions_multilevel_arrays.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json")
@@ -1933,7 +1932,6 @@ func TestMaplEngineParentJsonpathAttributeList(t *testing.T) {
 	})
 
 }
-
 
 func TestRulesWithPredefinedStringsZooz(t *testing.T) {
 

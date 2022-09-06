@@ -1,0 +1,352 @@
+[
+  {
+    "_id": {
+      "$oid": "60cb13ec090717d9f75c3588"
+    },
+    "account": "7L6AEZM7",
+    "maplRule": {
+      "ruleID": "fc85cd20-079f-4a1e-bb1c-f1659d56af45",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "method": "GT",
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "description": "Prevent Critical",
+        "initial-type": "critical-vulnerabilities",
+        "name": "Prevent Critical"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "jmanzaneque@vmware.com",
+    "createdOn": 1623921644392
+  },
+  {
+    "_id": {
+      "$oid": "60cafc53090717d9f75c3587"
+    },
+    "account": "NXZAEG6N",
+    "maplRule": {
+      "ruleID": "2aa2b751-497e-4a10-b49c-28827e238c1c",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.image.registry",
+                    "method": "NIN",
+                    "value": "registry.local"
+                  }
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.image.registry",
+                    "method": "NIN",
+                    "value": "registry.local"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "Registry limitation",
+        "description": "Limit registries",
+        "initial-type": "registries"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "slist+internalsuperadmin@carbonblack.com",
+    "createdOn": 1623915603429
+  },
+  {
+    "_id": {
+      "$oid": "60e351ce215e500c11f9ecea"
+    },
+    "account": "N82A2GMN",
+    "maplRule": {
+      "ruleID": "1e311719-5f2e-4339-8a41-5ad02c547670",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "method": "GT",
+                        "value": "0",
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.medium.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "description": "medium",
+        "initial-type": "critical-vulnerabilities",
+        "name": "Medium Vulnerabitity"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "sroux+cb-internal-se-sroux@carbonblack.com",
+    "createdOn": 1625510350588
+  },
+  {
+    "_id": {
+      "$oid": "61f3bad3828b74a84cd1f196"
+    },
+    "account": "7L6AEZM7",
+    "maplRule": {
+      "ruleID": "bc958178-b7e1-4ee2-a789-f96f12b6effe",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "OR": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.containers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.initContainers[:]",
+                "condition": {
+                  "OR": [
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.critical.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "condition": {
+                        "attribute": "jsonpath:$RELATIVE.imageVulnerabilitiesSummary.vulnerabilitiesSummary.high.amount",
+                        "method": "GT",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "TEST1",
+        "description": "TEST",
+        "initial-type": "critical-vulnerabilities"
+      },
+      "hash": ""
+    },
+    "kinds": [],
+    "maplType": "image-scanning",
+    "creator": "martin_rutkowski+vmware@carbonblack.com",
+    "createdOn": 1643363027956
+  },
+  {
+    "_id": {
+      "$oid": "623b1986e81fc4151c02ad7f"
+    },
+    "account": "NXZAEG6N",
+    "maplRule": {
+      "ruleID": "a9b7bd1b-49ab-4b93-810b-650a490a644d",
+      "sender": {
+        "senderName": ""
+      },
+      "receiver": {
+        "receiverName": ""
+      },
+      "protocol": "",
+      "resource": {},
+      "operation": "",
+      "conditions": {
+        "conditionsTree": {
+          "AND": [
+            {
+              "ANY": {
+                "parentJsonpathAttribute": "jsonpath:$.spec.securityContext.sysctls[:]",
+                "condition": {
+                  "condition": {
+                    "attribute": "jsonpath:$RELATIVE.value",
+                    "method": "NRE",
+                    "value": ".*\\+.*|.*\\=.*"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "decision": "",
+      "metadata": {
+        "name": "CVE-2022-0811",
+        "description": ""
+      },
+      "hash": ""
+    },
+    "kinds": [
+      "Pod"
+    ],
+    "maplType": "basic",
+    "creator": "slist+internalsuperadmin@carbonblack.com",
+    "createdOn": 1648040326975
+  }
+]

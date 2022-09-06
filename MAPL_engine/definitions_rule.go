@@ -165,7 +165,7 @@ func ConditionFromConditionNode(c ConditionNode) Condition {
 
 }
 
-func ReadCondition(v map[string]interface{}) (ConditionNode) {
+func ReadCondition(v map[string]interface{}) ConditionNode {
 
 	c := ConditionNode{}
 	for k, val := range v {
@@ -198,9 +198,9 @@ func ReadCondition(v map[string]interface{}) (ConditionNode) {
 	return c
 }
 
-func getKeys(v map[string]interface{}) ([]string) {
+func getKeys(v map[string]interface{}) []string {
 	keys := []string{}
-	for key, _ := range (v) {
+	for key, _ := range v {
 		keys = append(keys, key)
 	}
 	return keys
@@ -307,11 +307,11 @@ func (c *Condition) MarshalJSON() ([]byte, error) {
 	if len(c.ReturnValueJsonpathOriginal) > 0 {
 		returnValueJsonpath = c.ReturnValueJsonpathOriginal
 	}
-	returnValueJsonpathJson, _ := json.Marshal(returnValueJsonpath)
 
 	str := fmt.Sprintf(`{"condition":{"attribute":"%v","method":"%v","value":"%v"}}`, attributeString, methodString, valueString)
 
-	if len(returnValueJsonpathJson) > 0 {
+	if returnValueJsonpath != nil {
+		returnValueJsonpathJson, _ := json.Marshal(returnValueJsonpath)
 		str = fmt.Sprintf(`{"condition":{"attribute":"%v","method":"%v","value":"%v","returnValueJsonpath":%v}}`, attributeString, methodString, valueString, string(returnValueJsonpathJson))
 	}
 	return []byte(str), nil

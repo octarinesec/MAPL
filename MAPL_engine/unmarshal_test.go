@@ -1,6 +1,7 @@
 package MAPL_engine
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/ghodss/yaml"
@@ -64,7 +65,7 @@ func TestJsonUnmarhshal(t *testing.T) {
 			panic(err)
 		}
 
-		for _, root := range (roots) {
+		for _, root := range roots {
 			err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 				if !info.IsDir() {
 					if !strings.Contains(path, "invalid_rule") {
@@ -79,7 +80,7 @@ func TestJsonUnmarhshal(t *testing.T) {
 		}
 
 		for _, file := range files {
-			fmt.Printf("going to test %v\n",file)
+			fmt.Printf("going to test %v\n", file)
 			testUnmarshalForOneFile(file)
 		}
 
@@ -141,14 +142,13 @@ func TestJsonUnmarhshalWithPredefinedStrings(t *testing.T) {
 	reporting.QuietMode()
 	Convey("tests", t, func() {
 
-
 		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_sender_translation.yaml", "../files/lists/predefined_string.yaml")
 		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_receiver_translation.yaml", "../files/lists/predefined_string.yaml")
 		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_sender_translation_list.yaml", "../files/lists/predefined_list.yaml")
 		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_receiver_translation_list.yaml", "../files/lists/predefined_list.yaml")
 
-		predefined_lists:=[]string{"../files/lists/predefined_list_workload.yaml","../files/lists/predefined_list_workload2.yaml","../files/lists/predefined_list_workload3.yaml"}
-		for _,f:=range(predefined_lists) {
+		predefined_lists := []string{"../files/lists/predefined_list_workload.yaml", "../files/lists/predefined_list_workload2.yaml", "../files/lists/predefined_list_workload3.yaml"}
+		for _, f := range predefined_lists {
 			testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_condition_translation_list.yaml", f)
 
 		}
@@ -160,12 +160,89 @@ func TestJsonUnmarhshalWithPredefinedStrings(t *testing.T) {
 		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_condition_translation_foo_regex_list.yaml", "../files/lists/predefined_list_allowed_labels.yaml")
 		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_condition_translation_foo_regex_list2.yaml", "../files/lists/predefined_list_allowed_labels.yaml")
 
-		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rule_zooz.yaml","../files/lists/predefined_password_list.yaml")
-
+		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rule_zooz.yaml", "../files/lists/predefined_password_list.yaml")
 
 	})
 }
 
+func TestMaplEngineJsonV16Debugging(t *testing.T) {
+	logging := false
+	if logging {
+		// setup a log outfile file
+		f, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777) //create your file with desired read/write permissions
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Sync()
+		defer f.Close()
+		log.SetOutput(f) //set output of logs to f
+	} else {
+		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
+	}
+
+	reporting.QuietMode()
+	Convey("tests", t, func() {
+
+		//jsonFilename := "../files/custom_rules_v16/custom_ruls_dev01.json"
+		//jsonFilename := "../files/custom_rules_v16/custom_ruls_test03.json"
+		//jsonFilename := "../files/custom_rules_v16/custom_ruls_prod_syd.json"
+		//jsonFilename := "../files/custom_rules_v16/custom_ruls_prod_06.json"
+		jsonFilename := "../files/custom_rules_v16/custom_ruls_us_east_01.json"
+		jsonFile, err := os.Open(jsonFilename)
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer jsonFile.Close()
+
+		// read our opened jsonFile as a byte array.
+		byteValue, _ := ioutil.ReadAll(jsonFile)
+
+		num_rules := strings.Count(string(byteValue), "_id")
+
+		byteValues := bytes.Split(byteValue, []byte("},\n  {"))
+
+		var rule RuleAndExtras
+		min_len_x := 100000000
+		len_counter := 0
+		err_counter := 0
+		nil_conditions_counter := 0
+		for i, _ := range byteValues {
+			x := byteValues[i]
+			if x[0] == '[' {
+				x = x[1:]
+			} else {
+				x = append([]byte("  {"), x...)
+			}
+			if x[len(x)-1] == ']' {
+				x = x[0 : len(x)-2]
+			} else {
+				x = append(x, []byte("}")...)
+			}
+			if len(x) < min_len_x {
+				min_len_x = len(x)
+			}
+			len_counter += len(x)
+			err = json.Unmarshal(x, &rule)
+			if err != nil {
+				err_counter += 1
+				fmt.Println(string(x))
+			}
+			if rule.MaplRule.Conditions.ConditionsTree == nil {
+				nil_conditions_counter += 1
+			}
+		}
+		fmt.Println(jsonFilename)
+		fmt.Printf("num rules1=%v\n", num_rules)
+		fmt.Printf("num rules2=%v\n", len(byteValues))
+		fmt.Printf("err_counter=%v\n", err_counter)
+		fmt.Printf("nil_conditions_counter=%v\n", nil_conditions_counter)
+		fmt.Printf("len_counter=%v\n", len_counter)
+		fmt.Printf("len bytes=%v\n", len(byteValue))
+		fmt.Printf("len-len=%v\n", len(byteValue)-len_counter)
+		fmt.Printf("min len x=%v\n", min_len_x)
+	})
+
+}
 
 func testUnmarshalForOneFile(filename string) {
 
@@ -222,7 +299,7 @@ func testUnmarshalForOneFile(filename string) {
 
 	hashes := []string{}
 
-	for i, _ := range (rulesYaml.Rules) {
+	for i, _ := range rulesYaml.Rules {
 		hash1 := RuleMD5Hash(rulesYaml.Rules[i])
 		hash2 := RuleMD5Hash(rulesJson.Rules[i])
 		hash3 := RuleMD5Hash(rulesJsonUnmarshal1.Rules[i])
@@ -274,7 +351,7 @@ func testUnmarshalForOneFile(filename string) {
 
 	So(len(rulesYaml.Rules), ShouldEqual, len(hashes))
 
-	for i, _ := range (rulesYaml.Rules) {
+	for i, _ := range rulesYaml.Rules {
 		hash1 := RuleMD5Hash(rulesYaml.Rules[i])
 		hash2 := RuleMD5Hash(rulesJson.Rules[i])
 		hash3 := RuleMD5Hash(rulesJsonUnmarshal1.Rules[i])
@@ -327,7 +404,7 @@ func testUnmarshalForOneFile(filename string) {
 
 	So(len(rulesJson_deepcopy4B.Rules), ShouldEqual, len(hashes))
 
-	for i, _ := range (rulesYaml.Rules) {
+	for i, _ := range rulesYaml.Rules {
 
 		hash3 := RuleMD5Hash(rulesJsonUnmarshal1B.Rules[i])
 		hash4 := RuleMD5Hash(rulesJsonUnmarshal2B.Rules[i])
@@ -365,7 +442,7 @@ func testUnmarshalForOneFile(filename string) {
 
 	So(len(rulesJson_deepcopy4B.Rules), ShouldEqual, len(hashes))
 
-	for i, _ := range (rulesYaml.Rules) {
+	for i, _ := range rulesYaml.Rules {
 
 		hash3 := RuleMD5Hash(rulesJsonUnmarshal1B.Rules[i])
 		hash4 := RuleMD5Hash(rulesJsonUnmarshal2B.Rules[i])
@@ -396,7 +473,6 @@ func testUnmarshalForOneFileWithPredefinedStrings(rulesFilename, stringsFilename
 	var rulesJson_deepcopy2 Rules
 	var rulesJson_deepcopy3 Rules
 	var rulesJson_deepcopy4 Rules
-
 
 	predefinedStringsAndLists, err := YamlReadStringListsFromFile(stringsFilename)
 
@@ -473,7 +549,7 @@ func testUnmarshalForOneFileWithPredefinedStrings(rulesFilename, stringsFilename
 
 	hashes := []string{}
 
-	for i, _ := range (rulesYaml.Rules) {
+	for i, _ := range rulesYaml.Rules {
 		hash1 := RuleMD5Hash(rulesYaml.Rules[i])
 		hash2 := RuleMD5Hash(rulesJson.Rules[i])
 		hash3 := RuleMD5Hash(rulesJsonUnmarshal1.Rules[i])
@@ -526,7 +602,7 @@ func testUnmarshalForOneFileWithPredefinedStrings(rulesFilename, stringsFilename
 
 	So(len(rulesJson_deepcopy4B.Rules), ShouldEqual, len(hashes))
 
-	for i, _ := range (rulesYaml.Rules) {
+	for i, _ := range rulesYaml.Rules {
 
 		hash3 := RuleMD5Hash(rulesJsonUnmarshal1B.Rules[i])
 		hash4 := RuleMD5Hash(rulesJsonUnmarshal2B.Rules[i])
@@ -564,7 +640,7 @@ func testUnmarshalForOneFileWithPredefinedStrings(rulesFilename, stringsFilename
 
 	So(len(rulesJson_deepcopy4B.Rules), ShouldEqual, len(hashes))
 
-	for i, _ := range (rulesYaml.Rules) {
+	for i, _ := range rulesYaml.Rules {
 
 		hash3 := RuleMD5Hash(rulesJsonUnmarshal1B.Rules[i])
 		hash4 := RuleMD5Hash(rulesJsonUnmarshal2B.Rules[i])
