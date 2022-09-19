@@ -50,8 +50,8 @@ func ConvertStringToRegex(str_in string) string {
 	str_out := "("
 	L := len(str_list)
 
-	for i_str, str := range (str_list) {
-		str = strings.Replace(str, " ", "", -1)    // remove spaces
+	for i_str, str := range str_list {
+		str = strings.TrimSpace(str)               // remove leading and trailing spaces
 		str = strings.Replace(str, ".", "[.]", -1) // handle dot for conversion to regex
 		str = strings.Replace(str, "$", "\\$", -1)
 		str = strings.Replace(str, "^", "\\^", -1)
@@ -72,7 +72,7 @@ func ConvertStringToExpandedSenderReceiver(str_in string, type_in string) ([]Exp
 	var output []ExpandedSenderReceiver
 
 	str_list := strings.Split(str_in, ",")
-	for _, str := range (str_list) {
+	for _, str := range str_list {
 		var e ExpandedSenderReceiver
 		e.Name = str
 		//e.IsIP,e.IsCIDR,e.IP,e.CIDR=isIpCIDR(str)
@@ -110,7 +110,7 @@ func ConvertStringToExpandedSenderReceiver(str_in string, type_in string) ([]Exp
 func ConvertOperationStringToRegex(str_in string) string {
 
 	str_out := ""
-	switch (str_in) {
+	switch str_in {
 	case "*":
 		str_out = ".*"
 	case "write", "WRITE":
