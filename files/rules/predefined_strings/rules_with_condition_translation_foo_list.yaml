@@ -15,7 +15,7 @@ rules:
     decision: allow
     conditions:
       attribute: jsonpath:$.metadata.labels.foo
-      method: EQ
+      method: IN
       value: "#allowed_labels"
   
 

@@ -85,7 +85,7 @@ func (rule *Rule) SetPredefinedStringsAndLists(stringsAndlists PredefinedStrings
 	return nil
 }
 
-func (rule *Rule) GetPreparedRule() (*Rule) { // used in unit tests
+func (rule *Rule) GetPreparedRule() *Rule { // used in unit tests
 
 	if !rule.ruleAlreadyPrepared {
 		r := Rule{}
@@ -104,7 +104,7 @@ func YamlReadRulesFromStringWithPredefinedStrings(yamlString string, stringsAndl
 		return Rules{}, err
 	}
 
-	for i_r, _ := range (rules.Rules) {
+	for i_r, _ := range rules.Rules {
 		err = rules.Rules[i_r].SetPredefinedStringsAndLists(stringsAndlists)
 		if err != nil {
 			return Rules{}, err
@@ -167,7 +167,7 @@ func ConvertFieldsToRegex(rule *Rule) error {
 	}
 	rule.OperationRegex = re.Copy()
 
-	re, err = regexp.Compile(ConvertStringToRegex(rule.Resource.ResourceName))
+	re, err = regexp.Compile(ConvertStringToRegex(rule.Resource.ResourceName, "WithWildcards")) // we allow automatic use of wildcards in ResourceName attribute
 	if err != nil {
 		return err
 	}
@@ -181,7 +181,7 @@ func ConvertFieldsToRegex(rule *Rule) error {
 
 func PrepareRules(rules *Rules) error {
 
-	for i, _ := range (rules.Rules) {
+	for i, _ := range rules.Rules {
 		err := PrepareOneRule(&rules.Rules[i])
 		if err != nil {
 			return err
@@ -203,7 +203,7 @@ func PrepareOneRule(rule *Rule) error {
 
 func PrepareRulesWithPredefinedStrings(rules *Rules, stringsAndLists PredefinedStringsAndLists) error {
 
-	for i, _ := range (rules.Rules) {
+	for i, _ := range rules.Rules {
 		err := PrepareOneRuleWithPredefinedStrings(&rules.Rules[i], stringsAndLists)
 		if err != nil {
 			return err
@@ -364,7 +364,7 @@ func ConvertConditionStringToIntFloatRegex(condition *Condition) error { // TO-D
 		return fmt.Errorf("invalid regex string in condition")
 	}
 
-	re, err = regexp.Compile(ConvertStringToRegex(condition.Value))
+	re, err = regexp.Compile(ConvertStringToRegex(condition.Value, condition.OriginalMethod))
 	if err == nil {
 		condition.ValueStringRegex = re.Copy() // this is used in EQ,NEQ
 	} else {
@@ -529,8 +529,6 @@ func RuleMD5HashConditions(rule Rule) (md5hash string) {
 func (r Rule) ConditionsEqual(rule Rule) bool {
 	return RuleMD5HashConditions(r) == RuleMD5HashConditions(rule)
 }
-
-
 
 func (rule *Rule) ToLower() {
 	rule.Sender.SenderType = strings.ToLower(rule.Sender.SenderType)

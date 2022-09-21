@@ -43,28 +43,32 @@ func RemoveDotQuotes(str string) string {
 }
 
 // convertStringToRegex function converts one string to regex. Remove spaces, handle special characters and wildcards.
-func ConvertStringToRegex(str_in string) string {
+func ConvertStringToRegex(str_in, method string) string {
 
-	str_list := strings.Split(str_in, ",")
+	str_out := "^" + str_in + "$"
 
-	str_out := "("
-	L := len(str_list)
+	if method == "IN" || method == "NIN" || method == "WithWildcards" { // We try to convert to a list only in case of IN or NIN
+		str_list := strings.Split(str_in, ",")
 
-	for i_str, str := range str_list {
-		str = strings.TrimSpace(str)               // remove leading and trailing spaces
-		str = strings.Replace(str, ".", "[.]", -1) // handle dot for conversion to regex
-		str = strings.Replace(str, "$", "\\$", -1)
-		str = strings.Replace(str, "^", "\\^", -1)
-		str = strings.Replace(str, "*", ".*", -1)
-		str = strings.Replace(str, "?", ".", -1)
-		str = strings.Replace(str, "/", "\\/", -1)
-		str = "^" + str + "$" // force full string
-		if i_str < L-1 {
-			str += "|"
+		str_out = "("
+		L := len(str_list)
+
+		for i_str, str := range str_list {
+			str = strings.TrimSpace(str)               // remove leading and trailing spaces
+			str = strings.Replace(str, ".", "[.]", -1) // handle dot for conversion to regex
+			str = strings.Replace(str, "$", "\\$", -1)
+			str = strings.Replace(str, "^", "\\^", -1)
+			str = strings.Replace(str, "*", ".*", -1)
+			str = strings.Replace(str, "?", ".", -1)
+			str = strings.Replace(str, "/", "\\/", -1)
+			str = "^" + str + "$" // force full string
+			if i_str < L-1 {
+				str += "|"
+			}
+			str_out += str
 		}
-		str_out += str
+		str_out += ")"
 	}
-	str_out += ")"
 	return str_out
 }
 
@@ -118,7 +122,7 @@ func ConvertOperationStringToRegex(str_in string) string {
 	case "read", "READ":
 		str_out = "(^GET$|^HEAD$|^OPTIONS$|^TRACE$|^read$|^READ$)"
 	default:
-		str_out = ConvertStringToRegex(str_in)
+		str_out = ConvertStringToRegex(str_in, "WithWildcards") // we allow automatic use of wildcards in Operation attribute
 	}
 	return str_out
 }
