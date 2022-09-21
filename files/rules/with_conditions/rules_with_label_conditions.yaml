@@ -60,11 +60,11 @@ rules:
     conditions:
       AND:
       - attribute: "senderLabel[key1]"
-        method: EQ
-        value: "A?C"
+        method: RE
+        value: "A.C"
       - attribute: "senderLabel[key2]"
-        method: EQ
-        value: "*F"
+        method: RE
+        value: ".*F"
       - attribute: "senderLabel[key3]"
         method: RE
         value: "X.Z"

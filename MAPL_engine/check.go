@@ -672,7 +672,8 @@ func testJsonPathConditionOnInterface(c *Condition, message *MessageAttributes) 
 
 		if !flagCompareToNumber {
 			if method == "EQ" || method == "NEQ" {
-				return compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex) // compare strings with wildcards
+				//return compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex) // compare strings with wildcards
+				return compareStringFunc(valueToCompareString, c.Method, c.Value) // compare strings
 			} else {
 				return false // can't compare non-number
 			}
@@ -984,9 +985,9 @@ func getArrayOfJsons(a AnyAllNode, message *MessageAttributes) ([][]byte, error)
 			arrayDataTemp, err = jsonslice.Get(*message.RequestJsonRaw, parentJsonpath)
 		}
 		if err == nil {
-			if len(arrayData)==0 {
+			if len(arrayData) == 0 {
 				arrayData = arrayDataTemp
-			}else {
+			} else {
 				if len(arrayDataTemp) != 0 {
 					arrayData = append(arrayData, ',')
 					arrayData = append(arrayData, arrayDataTemp...)
