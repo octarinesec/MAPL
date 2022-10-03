@@ -557,7 +557,7 @@ func TestMaplEngineJsonConditionWithReturnValues(t *testing.T) {
 		// test on arrays
 		str := "test jsonpath condition"
 		fmt.Println(str)
-		
+
 		results, extraData, _ := test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_return_value/rules_with_condition_keyword_and_return_value.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data_condition_with_return_values.json")
 		So(len(*extraData[0]), ShouldEqual, 2)
 		So((*extraData[0])["name"][0], ShouldEqual, "containerName")
@@ -596,7 +596,7 @@ func TestMaplEngineJsonConditionWithReturnValues(t *testing.T) {
 		So((*extraData[0])["name2"][1], ShouldEqual, "cart7b")
 		So(results[0], ShouldEqual, BLOCK)
 
-		results, extraData, _ := test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_return_value/rules_with_jsonpath_EQ_on_array_with_return_value_in_sub_node2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_EQ1.json")
+		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_return_value/rules_with_jsonpath_EQ_on_array_with_return_value_in_sub_node2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_EQ1.json")
 		So(len((*extraData[0])), ShouldEqual, 2)
 		So(len((*extraData[0])["name1"]), ShouldEqual, 2)
 		So(len((*extraData[0])["name2"]), ShouldEqual, 2)
