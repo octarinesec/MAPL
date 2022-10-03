@@ -31,7 +31,7 @@ var DecisionNames = [...]string{
 	NONE:    "none",
 }
 
-func Check(message *MessageAttributes, rules *Rules) (decision int, descisionString string, relevantRuleIndex int, results []int, appliedRulesIndices []int, ruleDescription string, checkExtraData [][]map[string]interface{}) {
+func Check(message *MessageAttributes, rules *Rules) (decision int, descisionString string, relevantRuleIndex int, results []int, appliedRulesIndices []int, ruleDescription string, checkExtraData []*map[string][]interface{}) {
 	//
 	// for each message we check its attributes against all of the rules and return a decision
 	//
@@ -40,14 +40,18 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 
 	results = make([]int, N)
 	ruleDescriptions := make([]string, N)
-	checkExtraData = make([][]map[string]interface{}, N)
+	//	checkExtraData = make([][]map[string]interface{}, N)
+	checkExtraData = make([]*map[string][]interface{}, N)
 
 	sem := make(chan int, N) // semaphore pattern
 	if false {               // check in parallel
 
 		for i, rule := range rules.Rules { // check all the rules in parallel
 			go func(in_i int, in_rule Rule) {
-				results[in_i], checkExtraData[in_i] = CheckOneRule(message, &in_rule)
+				returnedValues := make(map[string][]interface{})
+				returnedValuesPointer := &returnedValues
+				results[in_i], returnedValuesPointer = CheckOneRule(message, &in_rule)
+				checkExtraData[in_i] = returnedValuesPointer
 				if desc, ok := in_rule.Metadata["description"]; ok {
 					ruleDescriptions[in_i] = desc
 				} else {
@@ -66,7 +70,9 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 	} else { // used only for debugging
 
 		for in_i, in_rule := range rules.Rules {
-			results[in_i], checkExtraData[in_i] = CheckOneRule(message, &in_rule)
+			result, returnedValuesPointer := CheckOneRule(message, &in_rule)
+			results[in_i] = result
+			checkExtraData[in_i] = returnedValuesPointer
 			if desc, ok := in_rule.Metadata["description"]; ok {
 				ruleDescriptions[in_i] = desc
 			} else {
@@ -98,7 +104,7 @@ func Check(message *MessageAttributes, rules *Rules) (decision int, descisionStr
 }
 
 // CheckOneRules gives the result of testing the message attributes with of one rule
-func CheckOneRule(message *MessageAttributes, ruleOriginal *Rule) (int, []map[string]interface{}) {
+func CheckOneRule(message *MessageAttributes, ruleOriginal *Rule) (int, *map[string][]interface{}) {
 
 	if !ruleOriginal.ruleAlreadyPrepared {
 		ruleOriginal.SetPredefinedStringsAndLists(GlobalPredefinedStringsAndLists) // use the global if not set already
@@ -109,17 +115,17 @@ func CheckOneRule(message *MessageAttributes, ruleOriginal *Rule) (int, []map[st
 
 	match := TestSender(rule, message)
 	if !match {
-		return DEFAULT, []map[string]interface{}{}
+		return DEFAULT, nil
 	}
 
 	match = TestReceiver(rule, message)
 	if !match {
-		return DEFAULT, []map[string]interface{}{}
+		return DEFAULT, nil
 	}
 
 	match = rule.OperationRegex.Match([]byte(message.RequestMethod)) // supports wildcards
 	if !match {
-		return DEFAULT, []map[string]interface{}{}
+		return DEFAULT, nil
 	}
 
 	// ----------------------
@@ -127,22 +133,22 @@ func CheckOneRule(message *MessageAttributes, ruleOriginal *Rule) (int, []map[st
 	if rule.Protocol == "tcp" {
 		match = rule.Resource.ResourceNameRegex.Match([]byte(message.DestinationPort))
 		if !match {
-			return DEFAULT, []map[string]interface{}{}
+			return DEFAULT, nil
 		}
 	} else {
 		if rule.Protocol != "*" {
 			if !strings.EqualFold(message.ContextProtocol, rule.Protocol) { // regardless of case // need to support wildcards!
-				return DEFAULT, []map[string]interface{}{}
+				return DEFAULT, nil
 			}
 
 			if rule.Resource.ResourceType != "*" {
 				if message.ContextType != rule.Resource.ResourceType { // need to support wildcards?
-					return DEFAULT, []map[string]interface{}{}
+					return DEFAULT, nil
 				}
 			}
 			match = rule.Resource.ResourceNameRegex.Match([]byte(message.RequestPath)) // supports wildcards
 			if !match {
-				return DEFAULT, []map[string]interface{}{}
+				return DEFAULT, nil
 			}
 		}
 	}
@@ -150,28 +156,37 @@ func CheckOneRule(message *MessageAttributes, ruleOriginal *Rule) (int, []map[st
 	// ----------------------
 	// test conditions:
 	conditionsResult := true // if there are no conditions then we skip the test and return the rule.Decision
-	extraData := []map[string]interface{}{}
+	returnedValues := make(map[string][]interface{})
 	if rule.Conditions.ConditionsTree != nil {
-		conditionsResult, extraData = TestConditions(ruleOriginal, message) // using original rule here. using prepared rule inside.
+		conditionsResult = TestConditions(ruleOriginal, message, &returnedValues) // using original rule here. using prepared rule inside.
 	}
 	if conditionsResult == false {
-		return DEFAULT, []map[string]interface{}{}
+		return DEFAULT, nil
 	}
 
 	// ----------------------
 	// if we got here then the rule applies and we use the rule's decision
 	switch rule.Decision {
 	case "allow", "ALLOW", "Allow":
-		return ALLOW, extraData
+		if len(returnedValues) == 0 {
+			return ALLOW, nil
+		}
+		return ALLOW, &returnedValues
 	case "alert", "ALERT", "Alert":
-		return ALERT, extraData
+		if len(returnedValues) == 0 {
+			return ALERT, nil
+		}
+		return ALERT, &returnedValues
 	case "block", "BLOCK", "Block":
-		return BLOCK, extraData
+		if len(returnedValues) == 0 {
+			return BLOCK, nil
+		}
+		return BLOCK, &returnedValues
 	}
-	return DEFAULT, []map[string]interface{}{}
+	return DEFAULT, nil
 }
 
-func (rule *Rule) Check(message *MessageAttributes) (int, []map[string]interface{}) {
+func (rule *Rule) Check(message *MessageAttributes) (int, *map[string][]interface{}) {
 	return CheckOneRule(message, rule)
 }
 
@@ -245,25 +260,32 @@ func TestReceiver(rule *Rule, message *MessageAttributes) bool {
 }
 
 // testConditions tests the conditions of the rule with the message attributes
-func TestConditions(rule *Rule, message *MessageAttributes) (bool, []map[string]interface{}) { // to-do return error
+func TestConditions(rule *Rule, message *MessageAttributes, returnValues *map[string][]interface{}) bool { // to-do return error
+
+	if returnValues == nil {
+		returnValuesTemp := make(map[string][]interface{}, 0)
+		returnValues = &returnValuesTemp
+	}
 
 	if !rule.ruleAlreadyPrepared {
 		rule.SetPredefinedStringsAndLists(GlobalPredefinedStringsAndLists)
 	}
 
 	if rule.preparedRule.Conditions.ConditionsTree != nil {
-		return rule.preparedRule.Conditions.ConditionsTree.Eval(message)
+		return rule.preparedRule.Conditions.ConditionsTree.Eval(message, returnValues)
 	}
-	return false, []map[string]interface{}{}
+	return false
 
 }
 
-func (rule *Rule) TestConditions(message *MessageAttributes) (bool, []map[string]interface{}) {
-	return TestConditions(rule, message)
+func (rule *Rule) TestConditions(message *MessageAttributes) (bool, *map[string][]interface{}) {
+	returnValuesTemp := make(map[string][]interface{}, 0)
+	returnValues := &returnValuesTemp
+	return TestConditions(rule, message, returnValues), returnValues
 }
 
 // testOneCondition tests one condition of the rule with the message attributes
-func testOneCondition(c *Condition, message *MessageAttributes) (bool, []map[string]interface{}) {
+func testOneCondition(c *Condition, message *MessageAttributes, returnValues *map[string][]interface{}) bool {
 
 	var valueToCompareInt int64
 	var valueToCompareFloat float64
@@ -315,16 +337,16 @@ func testOneCondition(c *Condition, message *MessageAttributes) (bool, []map[str
 		}
 
 	case ("$sender"):
-		return testSenderAttributeCondition(c, message), []map[string]interface{}{}
+		return testSenderAttributeCondition(c, message)
 
 	case ("$receiver"):
-		return testReceiverAttributeCondition(c, message), []map[string]interface{}{}
+		return testReceiverAttributeCondition(c, message)
 
 	case ("senderLabel"):
-		return testSenderLabelCondition(c, message), []map[string]interface{}{}
+		return testSenderLabelCondition(c, message)
 
 	case ("receiverLabel"):
-		return testReceiverLabelCondition(c, message), []map[string]interface{}{}
+		return testReceiverLabelCondition(c, message)
 
 	case ("jsonpath"):
 		var flag bool
@@ -334,76 +356,89 @@ func testOneCondition(c *Condition, message *MessageAttributes) (bool, []map[str
 			flag = testJsonPathCondition(c, message)
 		}
 		if flag && c.ReturnValueJsonpath != nil {
-			extraDataTemp := getExtraData(c, message)
-			return flag, []map[string]interface{}{extraDataTemp}
+			getExtraData(c, message, returnValues)
+			return flag
 		}
-		return flag, []map[string]interface{}{}
+		return flag
 
 	default:
 		log.Printf("condition keyword not supported: %+v\n", c) // was log.Fatalf
-		return false, []map[string]interface{}{}
+		return false
 	}
-	return result, []map[string]interface{}{}
+	return result
 }
-func getExtraData(c *Condition, message *MessageAttributes) map[string]interface{} {
+func getExtraData(c *Condition, message *MessageAttributes, returnValue *map[string][]interface{}) {
 	if message.RequestRawInterface != nil {
-		return getExtraDataFromInterface(c.PreparedReturnValueJsonpathQuery, c.PreparedReturnValueJsonpathQueryRelativeFlag, c.ReturnValueJsonpath, message)
+		getExtraDataFromInterface(c.PreparedReturnValueJsonpathQuery, c.PreparedReturnValueJsonpathQueryRelativeFlag, c.ReturnValueJsonpath, message, returnValue)
+	} else {
+		getExtraDataFromByteArray(c.ReturnValueJsonpath, c.PreparedReturnValueJsonpathQueryRelativeFlag, message, returnValue)
 	}
-	return getExtraDataFromByteArray(c.ReturnValueJsonpath, c.PreparedReturnValueJsonpathQueryRelativeFlag, message)
 }
 
-func getExtraDataFromInterface(preparedReturnValueJsonpathQueryMap map[string]jsonpath.FilterFunc, preparedReturnValueJsonpathQueryRelativeFlag map[string]bool, returnValueJsonpathMap map[string]string, message *MessageAttributes) map[string]interface{} {
-	extraDataTemp := make(map[string]interface{})
+func getExtraDataFromInterface(preparedReturnValueJsonpathQueryMap map[string]jsonpath.FilterFunc, preparedReturnValueJsonpathQueryRelativeFlag map[string]bool, returnValueJsonpathMap map[string]string, message *MessageAttributes, returnValue *map[string][]interface{}) {
 
 	for queryName, preparedQuery := range preparedReturnValueJsonpathQueryMap {
 		if returnValueJsonpathMap[queryName] == "$*" {
 			if preparedReturnValueJsonpathQueryRelativeFlag[queryName] {
-				extraDataTemp[queryName] = *message.RequestRawInterfaceRelative
+				appendReturnValue(queryName, returnValue, *message.RequestRawInterfaceRelative)
+				//extraDataTemp[queryName] = *message.RequestRawInterfaceRelative
 			} else {
-				extraDataTemp[queryName] = *message.RequestRawInterface
+				appendReturnValue(queryName, returnValue, *message.RequestRawInterface)
+				//extraDataTemp[queryName] = *message.RequestRawInterface
 			}
 		} else {
 			if preparedQuery != nil {
 				var err error
-				var extraDataTempTemp interface{}
+				var returnValueEntry interface{}
 				if preparedReturnValueJsonpathQueryRelativeFlag[queryName] {
-					extraDataTempTemp, err = queryInterface(preparedQuery, *message.RequestRawInterfaceRelative)
+					returnValueEntry, err = queryInterface(preparedQuery, *message.RequestRawInterfaceRelative)
 				} else {
-					extraDataTempTemp, err = queryInterface(preparedQuery, *message.RequestRawInterface)
+					returnValueEntry, err = queryInterface(preparedQuery, *message.RequestRawInterface)
 				}
 				if err == nil {
-					extraDataTemp[queryName] = extraDataTempTemp
+					//extraDataTemp[queryName] = extraDataTempTemp
+					appendReturnValue(queryName, returnValue, returnValueEntry)
 				}
 
 			} else {
-				var x interface{}
-				extraDataTemp[queryName] = x
+				//	var x interface{}
+				//	extraDataTemp[queryName] = x
 			}
 		}
 	}
-	return extraDataTemp
+	return //extraDataTemp
 }
 
-func getExtraDataFromByteArray(returnValueJsonpathMap map[string]string, returnValueJsonpathQueryRelativeFlag map[string]bool, message *MessageAttributes) map[string]interface{} {
-	extraDataTemp := make(map[string]interface{})
+func appendReturnValue(queryName string, returnValue *map[string][]interface{}, value interface{}) {
+	if array, ok := (*returnValue)[queryName]; !ok {
+		(*returnValue)[queryName] = []interface{}{value}
+	} else {
+		array = append(array, value)
+		(*returnValue)[queryName] = array
+	}
+}
+
+func getExtraDataFromByteArray(returnValueJsonpathMap map[string]string, returnValueJsonpathQueryRelativeFlag map[string]bool, message *MessageAttributes, returnValue *map[string][]interface{}) {
+	//extraDataTemp := make(map[string]interface{})
 
 	for queryName, queryString := range returnValueJsonpathMap {
-		var extraDataBytes []byte
+		var returnValueEntryBytes []byte
 
 		if returnValueJsonpathQueryRelativeFlag[queryName] {
-			extraDataBytes, _ = jsonslice.Get(*message.RequestJsonRawRelative, queryString)
+			returnValueEntryBytes, _ = jsonslice.Get(*message.RequestJsonRawRelative, queryString)
 		} else {
-			extraDataBytes, _ = jsonslice.Get(*message.RequestJsonRaw, queryString)
+			returnValueEntryBytes, _ = jsonslice.Get(*message.RequestJsonRaw, queryString)
 		}
 
-		var tempInterface interface{}
-		err := json.Unmarshal(extraDataBytes, &tempInterface)
+		var returnValueEntry interface{}
+		err := json.Unmarshal(returnValueEntryBytes, &returnValueEntry)
 		if err == nil {
-			extraDataTemp[queryName] = tempInterface
+			appendReturnValue(queryName, returnValue, returnValueEntry)
+			//extraDataTemp[queryName] = tempInterface
 		}
 	}
 
-	return extraDataTemp
+	//return extraDataTemp
 }
 
 func testSenderAttributeCondition(c *Condition, message *MessageAttributes) bool {
