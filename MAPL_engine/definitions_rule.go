@@ -85,6 +85,8 @@ type Condition struct {
 	PreparedReturnValueJsonpathQuery             map[string]jsonpath.FilterFunc `yaml:"-" json:"-,omitempty"`
 	PreparedReturnValueJsonpathQueryRelativeFlag map[string]bool                `yaml:"-" json:"-,omitempty"`
 
+	ValueContainsVariable bool `yaml:"-" json:"-,omitempty"`
+
 	OriginalAttribute string `yaml:"-" json:"-,omitempty" bson:"originalAttribute,omitempty" structs:"originalAttribute,omitempty"` // used in hash
 	OriginalMethod    string `yaml:"-" json:"-,omitempty" bson:"originalMethod,omitempty" structs:"originalMethod,omitempty"`       // used in hash
 	OriginalValue     string `yaml:"-" json:"-,omitempty" bson:"originalValue,omitempty" structs:"originalValue,omitempty"`         // used in hash

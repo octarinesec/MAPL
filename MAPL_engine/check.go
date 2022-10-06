@@ -272,7 +272,7 @@ func TestConditions(rule *Rule, message *MessageAttributes, returnValues *map[st
 	}
 
 	if rule.preparedRule.Conditions.ConditionsTree != nil {
-		return rule.preparedRule.Conditions.ConditionsTree.Eval(message, returnValues)
+		return rule.preparedRule.Conditions.ConditionsTree.Eval(message, returnValues, nil)
 	}
 	return false
 

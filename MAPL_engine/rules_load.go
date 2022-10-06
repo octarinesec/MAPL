@@ -217,7 +217,8 @@ func PrepareOneRuleWithPredefinedStrings(rule *Rule, stringsAndLists PredefinedS
 	// also do some validation on fields other than the conditions
 
 	if rule.Conditions.ConditionsTree != nil {
-		_, err := rule.Conditions.ConditionsTree.PrepareAndValidate(stringsAndLists)
+		listOfVariables := []string{}
+		_, err := rule.Conditions.ConditionsTree.PrepareAndValidate(&listOfVariables, stringsAndLists)
 		if err != nil {
 			return err
 		}
@@ -264,15 +265,17 @@ func ReplaceStringsAndListsInOneRule(rule *Rule, stringsAndLists PredefinedStrin
 	return nil
 }
 
-func ReplaceStringsAndListsInCondition(c *Condition, stringsAndlists PredefinedStringsAndLists) error {
+func ReplaceStringsAndListsInCondition(c *Condition, stringsAndlists PredefinedStringsAndLists) (bool, error) {
 	newList, ok, isReplaceable := isReplaceableList(c.Value, stringsAndlists)
+	replaced := false
 	if ok {
+		replaced = true
 		newValue := ""
 		if c.Method == "RE" || c.Method == "NRE" {
 			newValue = convertListToRegexString(newList)
 			_, err := regexp.Compile(newValue)
 			if err != nil {
-				return err
+				return false, err
 			}
 		} else {
 			newValue = convertListToString(newList)
@@ -281,14 +284,15 @@ func ReplaceStringsAndListsInCondition(c *Condition, stringsAndlists PredefinedS
 	} else {
 		newValue, ok := isReplaceableString(c.Value, stringsAndlists)
 		if ok {
+			replaced = true
 			c.Value = newValue
 		} else {
 			if isReplaceable {
-				return fmt.Errorf("condition value is not predefined [%v]", c.Value)
+				//return false, fmt.Errorf("condition value is not predefined [%v]", c.Value)
 			}
 		}
 	}
-	return nil
+	return replaced, nil
 }
 
 func convertListToString(list []string) string {
@@ -552,7 +556,8 @@ func ValidateRule(rule *Rule) error {
 	}
 
 	if rule2.Conditions.ConditionsTree != nil {
-		_, err = rule2.Conditions.ConditionsTree.PrepareAndValidate(PredefinedStringsAndLists{})
+		listOfVariables := []string{}
+		_, err = rule2.Conditions.ConditionsTree.PrepareAndValidate(&listOfVariables, PredefinedStringsAndLists{})
 		if err != nil {
 			return err
 		}

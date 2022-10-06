@@ -152,6 +152,7 @@ func TestJsonUnmarhshalWithPredefinedStrings(t *testing.T) {
 			testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_condition_translation_list.yaml", f)
 
 		}
+
 		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_condition_translation_foo.yaml", "../files/lists/predefined_list_allowed_labels.yaml")
 		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_condition_translation_foo2.yaml", "../files/lists/predefined_list_allowed_labels.yaml")
 		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_condition_translation_foo_list.yaml", "../files/lists/predefined_list_allowed_labels.yaml")

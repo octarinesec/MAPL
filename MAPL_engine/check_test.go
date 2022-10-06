@@ -1805,6 +1805,40 @@ func TestRulesWithPredefinedStrings(t *testing.T) {
 	})
 }
 
+func TestRulesWithVariables(t *testing.T) {
+
+	logging := false
+	if logging {
+		// setup a log outfile file
+		f, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777) //create your file with desired read/write permissions
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Sync()
+		defer f.Close()
+		log.SetOutput(f) //set output of logs to f
+	} else {
+		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
+	}
+
+	reporting.QuietMode()
+	Convey("tests", t, func() {
+
+		results, err := test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_AND_with_error.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1.json")
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldEqual, "could not replace variable in value [#variableMissing]")
+
+		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_AND.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1.json")
+		So(err, ShouldBeNil)
+		So(results[0], ShouldEqual, ALLOW)
+
+		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_OR.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1.json")
+		So(err, ShouldBeNil)
+		So(results[0], ShouldEqual, ALLOW)
+
+	})
+}
+
 func TestMaplEngineJsonConditionsKeyValue(t *testing.T) {
 
 	logging := false

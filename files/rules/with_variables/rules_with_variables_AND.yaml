@@ -1,0 +1,25 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "workload"
+    protocol: "*"
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: "*"
+    decision: allow
+    conditions:
+      AND:
+        - attribute: jsonpath:$.kind
+          method: EX
+          returnValueJsonpath:
+            returnedKind: jsonpath:$.kind
+        - attribute: jsonpath:$.kind
+          method: IN
+          value: "#returnedKind"
+

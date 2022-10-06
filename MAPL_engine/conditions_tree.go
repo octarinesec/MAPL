@@ -98,9 +98,9 @@ func (c ConditionsTree) MarshalBSON() ([]byte, error) {
 // Node Interface
 //--------------------------------------
 type Node interface {
-	Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool
+	Eval(message *MessageAttributes, returnValues, returnValuesForVariables *map[string][]interface{}) bool
 	Append(node Node)
-	PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) (bool, error)
+	PrepareAndValidate(listOfVariables *[]string, stringsAndlists PredefinedStringsAndLists) (bool, error)
 	String() string // to-do: order terms so that hash will be the same
 	ToMongoQuery(base string, parentString string, inArrayCounter int) (bson.M, []bson.M, error)
 }
@@ -136,16 +136,19 @@ type And struct {
 	ReturnValueInNode bool   `yaml:"-" json:"-" bson:"-" structs:"-"`
 }
 
-func (a *And) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
+func (a *And) Eval(message *MessageAttributes, returnValues, _ *map[string][]interface{}) bool {
 
-	returnValuesTemp := make(map[string][]interface{})
+	returnValuesTemp := make(map[string][]interface{}) // we use temporary return values since we do not want to update them unless the AND result is true
+	returnValuesForVariablesTemp := make(map[string][]interface{})
+	mergeReturnValues(&returnValuesForVariablesTemp, returnValues)
 	for _, node := range a.Nodes {
 		returnValuesTemp2 := make(map[string][]interface{})
-		flag := node.Eval(message, &returnValuesTemp2)
+		flag := node.Eval(message, &returnValuesTemp2, &returnValuesForVariablesTemp)
 		if flag == false {
 			return false // no need to check the rest
 		}
 		mergeReturnValues(&returnValuesTemp, &returnValuesTemp2)
+		mergeReturnValues(&returnValuesForVariablesTemp, &returnValuesTemp2)
 	}
 	mergeReturnValues(returnValues, &returnValuesTemp)
 	return true
@@ -154,10 +157,10 @@ func (a *And) Append(node Node) {
 	a.Nodes = append(a.Nodes, node)
 }
 
-func (a *And) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) (bool, error) {
+func (a *And) PrepareAndValidate(listOfVariables *[]string, stringsAndlists PredefinedStringsAndLists) (bool, error) {
 	returnValuesInNode := false
 	for _, node := range a.Nodes {
-		returnValuesInNodeTemp, err := node.PrepareAndValidate(stringsAndlists)
+		returnValuesInNodeTemp, err := node.PrepareAndValidate(listOfVariables, stringsAndlists)
 		if returnValuesInNodeTemp {
 			returnValuesInNode = true
 		}
@@ -204,11 +207,11 @@ type Or struct {
 	ReturnValueInNode bool   `yaml:"-" json:"-" bson:"-" structs:"-"`
 }
 
-func (o *Or) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
+func (o *Or) Eval(message *MessageAttributes, returnValues, _ *map[string][]interface{}) bool {
 	flagOut := false
 	for _, node := range o.Nodes {
 		returnValuesTemp := make(map[string][]interface{})
-		flag := node.Eval(message, &returnValuesTemp)
+		flag := node.Eval(message, &returnValuesTemp, returnValues)
 		if flag && !o.ReturnValueInNode {
 			return true // no need to check the rest if we do not need to extract return values
 		}
@@ -222,10 +225,10 @@ func (o *Or) Eval(message *MessageAttributes, returnValues *map[string][]interfa
 func (o *Or) Append(node Node) {
 	o.Nodes = append(o.Nodes, node)
 }
-func (o *Or) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) (bool, error) {
+func (o *Or) PrepareAndValidate(listOfVariables *[]string, stringsAndlists PredefinedStringsAndLists) (bool, error) {
 	returnValuesInNode := false
 	for _, node := range o.Nodes {
-		returnValuesInNodeTemp, err := node.PrepareAndValidate(stringsAndlists)
+		returnValuesInNodeTemp, err := node.PrepareAndValidate(listOfVariables, stringsAndlists)
 		if returnValuesInNodeTemp {
 			returnValuesInNode = true
 		}
@@ -248,17 +251,17 @@ type Not struct {
 	ReturnValueInNode bool `yaml:"-" json:"-" bson:"-" structs:"-"`
 }
 
-func (n *Not) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
-	flag := n.Node.Eval(message, returnValues)
+func (n *Not) Eval(message *MessageAttributes, returnValues, _ *map[string][]interface{}) bool {
+	flag := n.Node.Eval(message, returnValues, returnValues)
 	(*returnValues) = nil // returned values from inner nodes are no-longer relevant!
 	return !flag
 }
 func (n *Not) Append(node Node) {
 	n.Node = node
 }
-func (n *Not) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) (bool, error) {
+func (n *Not) PrepareAndValidate(listOfVariables *[]string, stringsAndlists PredefinedStringsAndLists) (bool, error) {
 
-	returnValuesInNode, err := n.Node.PrepareAndValidate(stringsAndlists)
+	returnValuesInNode, err := n.Node.PrepareAndValidate(listOfVariables, stringsAndlists)
 	n.ReturnValueInNode = returnValuesInNode
 	return returnValuesInNode, err
 
@@ -311,7 +314,7 @@ func (a *Any) MarshalJSON() ([]byte, error) {
 	return []byte(str), nil
 }
 
-func (a *Any) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool { // to-do: return errors
+func (a *Any) Eval(message *MessageAttributes, returnValues, _ *map[string][]interface{}) bool { // to-do: return errors
 	if message.RequestRawInterface != nil && a.PreparedJsonpathQuery != nil {
 		return evalAnyRawInterface(a, message, returnValues)
 	} else {
@@ -335,7 +338,7 @@ func evalAnyRawInterface(a *Any, message *MessageAttributes, returnValues *map[s
 	originalRequestRawInterfaceRelative := message.RequestRawInterfaceRelative
 	for _, val := range rawArrayData {
 		message.RequestRawInterfaceRelative = &val
-		flag := a.Node.Eval(message, returnValues)
+		flag := a.Node.Eval(message, returnValues, returnValues)
 		if flag {
 			result = true
 			if a.ReturnValueJsonpath != nil {
@@ -370,7 +373,7 @@ func evalAnyRawBytes(a *Any, message *MessageAttributes, returnValues *map[strin
 	originalRequestJsonRawRelative := message.RequestJsonRawRelative
 	for _, val := range rawArrayData {
 		message.RequestJsonRawRelative = &val
-		flag := a.Node.Eval(message, returnValues)
+		flag := a.Node.Eval(message, returnValues, returnValues)
 		if flag {
 			result = true
 			if a.ReturnValueJsonpath != nil { // this is for the ANY node returnValue
@@ -390,11 +393,15 @@ func evalAnyRawBytes(a *Any, message *MessageAttributes, returnValues *map[strin
 func (a *Any) Append(node Node) {
 	a.Node = node
 }
-func (a *Any) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) (bool, error) {
+func (a *Any) PrepareAndValidate(listOfVariables *[]string, stringsAndlists PredefinedStringsAndLists) (bool, error) {
 
-	returnValuesInNode, err := a.Node.PrepareAndValidate(stringsAndlists)
+	returnValuesInNode, err := a.Node.PrepareAndValidate(listOfVariables, stringsAndlists)
 	if err != nil {
 		return false, err
+	}
+
+	for k, _ := range a.ReturnValueJsonpath { // this is the list of variables currently available at this node:
+		*listOfVariables = append(*listOfVariables, "#"+k)
 	}
 
 	a.ParentJsonpathAttributeArray = strings.Split(a.GetParentJsonpathAttribute(), ",")
@@ -528,7 +535,7 @@ func (a *All) MarshalJSON() ([]byte, error) {
 	return []byte(str), nil
 }
 
-func (a *All) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
+func (a *All) Eval(message *MessageAttributes, returnValues, _ *map[string][]interface{}) bool {
 	if message.RequestRawInterface != nil && a.PreparedJsonpathQuery != nil {
 		return evalAllRawInterface(a, message, returnValues)
 	} else {
@@ -546,7 +553,7 @@ func evalAllRawInterface(a *All, message *MessageAttributes, returnValues *map[s
 
 	for _, val := range rawArrayData {
 		message.RequestRawInterfaceRelative = &val
-		flag := a.Node.Eval(message, returnValues)
+		flag := a.Node.Eval(message, returnValues, returnValues)
 		if !flag {
 
 			message.RequestRawInterfaceRelative = originalRequestRawInterfaceRelative
@@ -569,7 +576,7 @@ func evalAllRawBytes(a *All, message *MessageAttributes, returnValues *map[strin
 
 	for _, val := range rawArrayData {
 		message.RequestJsonRawRelative = &val
-		flag := a.Node.Eval(message, returnValues)
+		flag := a.Node.Eval(message, returnValues, returnValues)
 		if !flag {
 			message.RequestJsonRawRelative = originalRequestJsonRawRelative
 			return false
@@ -582,11 +589,15 @@ func evalAllRawBytes(a *All, message *MessageAttributes, returnValues *map[strin
 func (a *All) Append(node Node) {
 	a.Node = node
 }
-func (a *All) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) (bool, error) {
+func (a *All) PrepareAndValidate(listOfVariables *[]string, stringsAndlists PredefinedStringsAndLists) (bool, error) {
 
-	returnValuesInNode, err := a.Node.PrepareAndValidate(stringsAndlists)
+	returnValuesInNode, err := a.Node.PrepareAndValidate(listOfVariables, stringsAndlists)
 	if err != nil {
 		return false, err
+	}
+
+	for k, _ := range a.ReturnValueJsonpath { // this is the list of variables currently available at this node:
+		*listOfVariables = append(*listOfVariables, "#"+k)
 	}
 
 	a.ParentJsonpathAttributeArray = strings.Split(a.GetParentJsonpathAttribute(), ",")
@@ -667,12 +678,12 @@ func (a *All) GetPreparedJsonpathQuery() []jsonpath.FilterFunc {
 //--------------------------------------
 type True struct{}
 
-func (t True) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
+func (t True) Eval(message *MessageAttributes, _, _ *map[string][]interface{}) bool {
 	return true
 }
 func (t True) Append(node Node) {
 }
-func (t True) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) (bool, error) {
+func (t True) PrepareAndValidate(listOfVariables *[]string, stringsAndlists PredefinedStringsAndLists) (bool, error) {
 	return false, nil
 }
 func (t True) String() string {
@@ -687,12 +698,12 @@ func (t True) ToMongoQuery(base, str string, inArrayCounter int) (bson.M, []bson
 //--------------------------------------
 type False struct{}
 
-func (f False) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
+func (f False) Eval(message *MessageAttributes, _, _ *map[string][]interface{}) bool {
 	return false
 }
 func (f False) Append(node Node) {
 }
-func (f False) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) (bool, error) {
+func (f False) PrepareAndValidate(listOfVariables *[]string, stringsAndlists PredefinedStringsAndLists) (bool, error) {
 	return false, nil
 }
 func (f False) String() string {
@@ -705,40 +716,90 @@ func (f False) ToMongoQuery(base, str string, inArrayCounter int) (bson.M, []bso
 //--------------------------------------
 // Basic Condition Node
 //--------------------------------------
-func (c *Condition) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
-	return testOneCondition(c, message, returnValues)
+func (c *Condition) Eval(message *MessageAttributes, returnValues, returnValuesForVariables *map[string][]interface{}) bool {
+
+	if c.ValueContainsVariable && returnValuesForVariables != nil {
+		replaceVariableWithReturnValues(c, returnValuesForVariables)
+	}
+
+	if c.ValueContainsVariable { // since the variable was not filled with data in runtime
+		return false
+	}
+
+	return testOneCondition(c, message, returnValues) // we do not automatically update the returnValuesForVariables. only in the parent node
 }
+
+func replaceVariableWithReturnValues(c *Condition, returnValues *map[string][]interface{}) {
+	listMap := make(map[string][]string, len(*returnValues))
+	for k, v := range *returnValues {
+		listMap[k] = []string{}
+		for _, vv := range v {
+			valueBytes, err := json.Marshal(vv)
+			if err != nil {
+				continue
+			}
+			valueString := removeQuotesAndBrackets(string(valueBytes))
+			listMap[k] = append(listMap[k], valueString)
+		}
+	}
+	stringsAndlists := PredefinedStringsAndLists{PredefinedListsWithoutRefs: listMap}
+	listOfVariables := []string{}
+	c.PrepareAndValidate(&listOfVariables, stringsAndlists)
+}
+
 func (c *Condition) Append(node Node) {
 }
-func (c *Condition) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) (bool, error) {
-	err := ReplaceStringsAndListsInCondition(c, stringsAndlists)
-	if err != nil {
-		return false, err
-	}
-	valid, err := ValidateOneCondition(c)
-	if err != nil {
-		return false, err
-	}
-	if !valid {
-		return false, fmt.Errorf("error in validating condition [%+v]", c)
+
+func (c *Condition) PrepareAndValidate(listOfVariables *[]string, stringsAndlists PredefinedStringsAndLists) (bool, error) {
+
+	if strings.HasPrefix(c.Value, "#") {
+		c.ValueContainsVariable = true
 	}
 
-	err = ConvertConditionStringToIntFloatRegex(c)
+	replacedFlag, err := ReplaceStringsAndListsInCondition(c, stringsAndlists)
 	if err != nil {
 		return false, err
 	}
+	valueFromVariableFlag := false
+	if c.ValueContainsVariable && !replacedFlag {
+		if slice.ContainsString(*listOfVariables, c.Value) {
+			valueFromVariableFlag = true
+		} else {
+			return false, fmt.Errorf("could not replace variable in value [%+v]", c.Value)
+		}
+	} else {
+		c.ValueContainsVariable = false // so we do it only once
+	}
+	if !valueFromVariableFlag {
 
-	if c.AttributeIsJsonpath {
-		preparedJsonpath, err := prepareJsonpathQuery(c.AttributeJsonpathQuery)
+		valid, err := ValidateOneCondition(c)
 		if err != nil {
 			return false, err
 		}
-		c.PreparedJsonpathQuery = preparedJsonpath
+		if !valid {
+			return false, fmt.Errorf("error in validating condition [%+v]", c)
+		}
+
+		err = ConvertConditionStringToIntFloatRegex(c)
+		if err != nil {
+			return false, err
+		}
+
+		if c.AttributeIsJsonpath {
+			preparedJsonpath, err := prepareJsonpathQuery(c.AttributeJsonpathQuery)
+			if err != nil {
+				return false, err
+			}
+			c.PreparedJsonpathQuery = preparedJsonpath
+		}
 	}
 
 	returnValuesInNode := false
 	if len(c.ReturnValueJsonpath) > 0 {
 		returnValuesInNode = true
+		for k, _ := range c.ReturnValueJsonpath { // this is the list of variables currently available at this node:
+			*listOfVariables = append(*listOfVariables, "#"+k)
+		}
 	}
 
 	return returnValuesInNode, nil

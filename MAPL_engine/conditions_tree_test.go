@@ -49,18 +49,18 @@ func TestConditionsTree(t *testing.T) {
 		returnValues := make(map[string][]interface{})
 
 		t1 := And{[]Node{True{}, True{}}, false}
-		t1Eval := t1.Eval(&message, &returnValues) // returns true
+		t1Eval := t1.Eval(&message, &returnValues, &returnValues) // returns true
 		So(t1Eval, ShouldEqual, true)
 
 		t2 := Or{[]Node{False{}, True{}}, false}
-		t2Eval := t2.Eval(&message, &returnValues) // returns true
+		t2Eval := t2.Eval(&message, &returnValues, &returnValues) // returns true
 		So(t2Eval, ShouldEqual, true)
 
 		node1 := And{[]Node{True{}, True{}, True{}}, false}
 		node2 := Or{[]Node{False{}, True{}, &node1}, false}
 		node3 := And{[]Node{condition}, false}
 		node := And{[]Node{&node1, &node2, True{}, &node3}, false}
-		nodeEval := node.Eval(&message, &returnValues) // returns true
+		nodeEval := node.Eval(&message, &returnValues, &returnValues) // returns true
 		So(nodeEval, ShouldEqual, true)
 
 	})
