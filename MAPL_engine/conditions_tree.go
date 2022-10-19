@@ -98,7 +98,7 @@ func (c ConditionsTree) MarshalBSON() ([]byte, error) {
 // Node Interface
 //--------------------------------------
 type Node interface {
-	Eval(message *MessageAttributes, returnValues, returnValuesForVariables *map[string][]interface{}) bool
+	Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool
 	Append(node Node)
 	PrepareAndValidate(listOfVariables *[]string, stringsAndlists PredefinedStringsAndLists) (bool, error)
 	String() string // to-do: order terms so that hash will be the same
@@ -136,21 +136,32 @@ type And struct {
 	ReturnValueInNode bool   `yaml:"-" json:"-" bson:"-" structs:"-"`
 }
 
-func (a *And) Eval(message *MessageAttributes, returnValues, _ *map[string][]interface{}) bool {
+func (a *And) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
 
-	returnValuesTemp := make(map[string][]interface{}) // we use temporary return values since we do not want to update them unless the AND result is true
-	returnValuesForVariablesTemp := make(map[string][]interface{})
-	mergeReturnValues(&returnValuesForVariablesTemp, returnValues)
+	returnValuesAfter := make(map[string][]interface{}) // we use temporary return values since we do not want to update them unless the AND result is true
+	returnValuesBefore := make(map[string][]interface{})
+	mergeReturnValues(&returnValuesAfter, returnValues)
+	mergeReturnValues(&returnValuesBefore, returnValues)
 	for _, node := range a.Nodes {
-		returnValuesTemp2 := make(map[string][]interface{})
-		flag := node.Eval(message, &returnValuesTemp2, &returnValuesForVariablesTemp)
+
+		flag := node.Eval(message, &returnValuesAfter)
 		if flag == false {
+			// clean previous map and enter new values. to-do: find a better way.
+			for k := range *returnValues {
+				delete(*returnValues, k)
+			}
+			mergeReturnValues(returnValues, &returnValuesBefore)
 			return false // no need to check the rest
 		}
-		mergeReturnValues(&returnValuesTemp, &returnValuesTemp2)
-		mergeReturnValues(&returnValuesForVariablesTemp, &returnValuesTemp2)
+
 	}
-	mergeReturnValues(returnValues, &returnValuesTemp)
+
+	// clean previous map and enter new values. to-do: find a better way
+	for k := range *returnValues {
+		delete(*returnValues, k)
+	}
+	mergeReturnValues(returnValues, &returnValuesAfter)
+
 	return true
 }
 func (a *And) Append(node Node) {
@@ -207,11 +218,11 @@ type Or struct {
 	ReturnValueInNode bool   `yaml:"-" json:"-" bson:"-" structs:"-"`
 }
 
-func (o *Or) Eval(message *MessageAttributes, returnValues, _ *map[string][]interface{}) bool {
+func (o *Or) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
 	flagOut := false
 	for _, node := range o.Nodes {
 		returnValuesTemp := make(map[string][]interface{})
-		flag := node.Eval(message, &returnValuesTemp, returnValues)
+		flag := node.Eval(message, &returnValuesTemp)
 		if flag && !o.ReturnValueInNode {
 			return true // no need to check the rest if we do not need to extract return values
 		}
@@ -251,8 +262,8 @@ type Not struct {
 	ReturnValueInNode bool `yaml:"-" json:"-" bson:"-" structs:"-"`
 }
 
-func (n *Not) Eval(message *MessageAttributes, returnValues, _ *map[string][]interface{}) bool {
-	flag := n.Node.Eval(message, returnValues, returnValues)
+func (n *Not) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
+	flag := n.Node.Eval(message, returnValues)
 	(*returnValues) = nil // returned values from inner nodes are no-longer relevant!
 	return !flag
 }
@@ -314,7 +325,7 @@ func (a *Any) MarshalJSON() ([]byte, error) {
 	return []byte(str), nil
 }
 
-func (a *Any) Eval(message *MessageAttributes, returnValues, _ *map[string][]interface{}) bool { // to-do: return errors
+func (a *Any) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool { // to-do: return errors
 	if message.RequestRawInterface != nil && a.PreparedJsonpathQuery != nil {
 		return evalAnyRawInterface(a, message, returnValues)
 	} else {
@@ -338,7 +349,7 @@ func evalAnyRawInterface(a *Any, message *MessageAttributes, returnValues *map[s
 	originalRequestRawInterfaceRelative := message.RequestRawInterfaceRelative
 	for _, val := range rawArrayData {
 		message.RequestRawInterfaceRelative = &val
-		flag := a.Node.Eval(message, returnValues, returnValues)
+		flag := a.Node.Eval(message, returnValues)
 		if flag {
 			result = true
 			if a.ReturnValueJsonpath != nil {
@@ -373,7 +384,7 @@ func evalAnyRawBytes(a *Any, message *MessageAttributes, returnValues *map[strin
 	originalRequestJsonRawRelative := message.RequestJsonRawRelative
 	for _, val := range rawArrayData {
 		message.RequestJsonRawRelative = &val
-		flag := a.Node.Eval(message, returnValues, returnValues)
+		flag := a.Node.Eval(message, returnValues)
 		if flag {
 			result = true
 			if a.ReturnValueJsonpath != nil { // this is for the ANY node returnValue
@@ -535,7 +546,7 @@ func (a *All) MarshalJSON() ([]byte, error) {
 	return []byte(str), nil
 }
 
-func (a *All) Eval(message *MessageAttributes, returnValues, _ *map[string][]interface{}) bool {
+func (a *All) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
 	if message.RequestRawInterface != nil && a.PreparedJsonpathQuery != nil {
 		return evalAllRawInterface(a, message, returnValues)
 	} else {
@@ -553,7 +564,7 @@ func evalAllRawInterface(a *All, message *MessageAttributes, returnValues *map[s
 
 	for _, val := range rawArrayData {
 		message.RequestRawInterfaceRelative = &val
-		flag := a.Node.Eval(message, returnValues, returnValues)
+		flag := a.Node.Eval(message, returnValues)
 		if !flag {
 
 			message.RequestRawInterfaceRelative = originalRequestRawInterfaceRelative
@@ -576,7 +587,7 @@ func evalAllRawBytes(a *All, message *MessageAttributes, returnValues *map[strin
 
 	for _, val := range rawArrayData {
 		message.RequestJsonRawRelative = &val
-		flag := a.Node.Eval(message, returnValues, returnValues)
+		flag := a.Node.Eval(message, returnValues)
 		if !flag {
 			message.RequestJsonRawRelative = originalRequestJsonRawRelative
 			return false
@@ -678,7 +689,7 @@ func (a *All) GetPreparedJsonpathQuery() []jsonpath.FilterFunc {
 //--------------------------------------
 type True struct{}
 
-func (t True) Eval(message *MessageAttributes, _, _ *map[string][]interface{}) bool {
+func (t True) Eval(message *MessageAttributes, _ *map[string][]interface{}) bool {
 	return true
 }
 func (t True) Append(node Node) {
@@ -698,7 +709,7 @@ func (t True) ToMongoQuery(base, str string, inArrayCounter int) (bson.M, []bson
 //--------------------------------------
 type False struct{}
 
-func (f False) Eval(message *MessageAttributes, _, _ *map[string][]interface{}) bool {
+func (f False) Eval(message *MessageAttributes, _ *map[string][]interface{}) bool {
 	return false
 }
 func (f False) Append(node Node) {
@@ -716,10 +727,10 @@ func (f False) ToMongoQuery(base, str string, inArrayCounter int) (bson.M, []bso
 //--------------------------------------
 // Basic Condition Node
 //--------------------------------------
-func (c *Condition) Eval(message *MessageAttributes, returnValues, returnValuesForVariables *map[string][]interface{}) bool {
+func (c *Condition) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
 
-	if c.ValueContainsVariable && returnValuesForVariables != nil {
-		replaceVariableWithReturnValues(c, returnValuesForVariables)
+	if c.ValueContainsVariable && returnValues != nil {
+		replaceVariableWithReturnValues(c, returnValues)
 	}
 
 	if c.ValueContainsVariable { // since the variable was not filled with data in runtime
