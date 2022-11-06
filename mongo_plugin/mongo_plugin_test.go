@@ -100,14 +100,14 @@ func startMongodb(port int) error {
 	}
 
 	time.Sleep(5 * time.Second)
-	cmd = exec.Command("docker", "exec", "-i", "mongodb_for_tests", "mongo", "--eval", "rs.initiate()")
+	cmd = exec.Command("docker", "exec", "-i", "mongodb_for_tests", "mongosh", "--eval", "rs.initiate()")
 	stdoutStderr, err = cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Command finished with error: %v", err)
 		log.Printf("%s\n", stdoutStderr)
 	}
 
-	cmd = exec.Command("docker", "exec", "-i", "mongodb_for_tests", "mongo", "--eval", "rs.status()")
+	cmd = exec.Command("docker", "exec", "-i", "mongodb_for_tests", "mongosh", "--eval", "rs.status()")
 	stdoutStderr, err = cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Command finished with error: %v", err)
@@ -171,7 +171,7 @@ func TestMongoPluginDebugging(t *testing.T) {
 	Convey("tests", t, func() {
 
 		// empty
-		dataJson:=[]byte(`{"conditions": {}}`)
+		dataJson := []byte(`{"conditions": {}}`)
 		var rule MAPL_engine.Rule
 		err := json.Unmarshal(dataJson, &rule)
 		So(err, ShouldBeNil)
@@ -682,7 +682,7 @@ func test_plugin(rulesFilename, jsonRawFilename, prefix string) ([]bool, error) 
 	insertRawDataToMongo(id, collectionName, data)
 
 	outputResults := make([]bool, len(rules.Rules))
-	for i_rule, rule := range (rules.Rules) {
+	for i_rule, rule := range rules.Rules {
 
 		// ------------------------------
 		// from rule (this is the main way)
@@ -778,7 +778,7 @@ type testDoc struct {
 	Raw interface{}
 }
 
-func insertRawDataToMongo(id, collectionName string, data []byte) (error) {
+func insertRawDataToMongo(id, collectionName string, data []byte) error {
 
 	var raw interface{}
 	err := json.Unmarshal(data, &raw)
@@ -801,7 +801,7 @@ type ruleDoc struct {
 	Rule MAPL_engine.Rule
 }
 
-func testReadWriteRules(rules MAPL_engine.Rules) (error) {
+func testReadWriteRules(rules MAPL_engine.Rules) error {
 
 	for _, rule := range rules.Rules {
 
@@ -837,7 +837,7 @@ func testReadWriteRules(rules MAPL_engine.Rules) (error) {
 
 }
 
-func deleteDocument(id string, collectionName string) (error) {
+func deleteDocument(id string, collectionName string) error {
 
 	_, err := mongoDbConnection.Collection(collectionName).DeleteOne(nil, bson.M{"id": id})
 	return err

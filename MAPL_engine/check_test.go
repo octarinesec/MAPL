@@ -1828,26 +1828,35 @@ func TestRulesWithVariables(t *testing.T) {
 
 	reporting.QuietMode()
 	Convey("tests", t, func() {
+		/*
+			results, err := test_CheckMessagesWithRawData("../files/rules/invalid_rules/with_variables/rules_with_variables_AND_with_error.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1.json")
+			So(err, ShouldNotBeNil)
+			So(err.Error(), ShouldEqual, "could not replace variable in value [#variableMissing]")
 
-		results, err := test_CheckMessagesWithRawData("../files/rules/invalid_rules/with_variables/rules_with_variables_AND_with_error.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1.json")
-		So(err, ShouldNotBeNil)
-		So(err.Error(), ShouldEqual, "could not replace variable in value [#variableMissing]")
+			results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_AND.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1.json")
+			So(err, ShouldBeNil)
+			So(results[0], ShouldEqual, ALLOW)
 
-		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_AND.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1.json")
+			results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_OR.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1.json")
+			So(err, ShouldBeNil)
+			So(results[0], ShouldEqual, ALLOW)
+
+			results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_AND_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts.json")
+			So(err, ShouldBeNil)
+			So(results[0], ShouldEqual, ALLOW)
+
+			results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_AND_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_different_process_id.json")
+			So(err, ShouldBeNil)
+			So(results[0], ShouldEqual, DEFAULT)
+		*/
+		// BUT:
+		results, err := test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_AND_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_different_process_id2.json")
 		So(err, ShouldBeNil)
 		So(results[0], ShouldEqual, ALLOW)
 
-		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_OR.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1.json")
+		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_without_variables_AND_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_with_processes.json")
 		So(err, ShouldBeNil)
 		So(results[0], ShouldEqual, ALLOW)
-
-		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_AND_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts.json")
-		So(err, ShouldBeNil)
-		So(results[0], ShouldEqual, ALLOW)
-
-		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_AND_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_different_process_id.json")
-		So(err, ShouldBeNil)
-		So(results[0], ShouldEqual, DEFAULT)
 
 	})
 }
