@@ -3,6 +3,7 @@ package mongo_plugin
 import (
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 
 	"github.com/octarinesec/MAPL/MAPL_engine"
 
@@ -100,14 +101,14 @@ func startMongodb(port int) error {
 	}
 
 	time.Sleep(5 * time.Second)
-	cmd = exec.Command("docker", "exec", "-i", "mongodb_for_tests", "mongo", "--eval", "rs.initiate()")
+	cmd = exec.Command("docker", "exec", "-i", "mongodb_for_tests", "mongosh", "--eval", "rs.initiate()")
 	stdoutStderr, err = cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Command finished with error: %v", err)
 		log.Printf("%s\n", stdoutStderr)
 	}
 
-	cmd = exec.Command("docker", "exec", "-i", "mongodb_for_tests", "mongo", "--eval", "rs.status()")
+	cmd = exec.Command("docker", "exec", "-i", "mongodb_for_tests", "mongosh", "--eval", "rs.status()")
 	stdoutStderr, err = cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Command finished with error: %v", err)
@@ -171,7 +172,7 @@ func TestMongoPluginDebugging(t *testing.T) {
 	Convey("tests", t, func() {
 
 		// empty
-		dataJson:=[]byte(`{"conditions": {}}`)
+		dataJson := []byte(`{"conditions": {}}`)
 		var rule MAPL_engine.Rule
 		err := json.Unmarshal(dataJson, &rule)
 		So(err, ShouldBeNil)
@@ -639,7 +640,7 @@ func TestMongoPluginKeyValue(t *testing.T) {
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_json4.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json", "raw")
 		So(results[0], ShouldEqual, true)
 
-		results, err := test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_json5.yaml", "../files/raw_json_data/key_value/json_raw_data_labels_relative.json", "raw")
+		results, err := test_plugin("../files/rules/mongo_plugin/key_value/invalid_rules_with_jsonpath_conditions_value_json5.yaml", "../files/raw_json_data/key_value/json_raw_data_labels_relative.json", "raw")
 		strErr := fmt.Sprintf("%v", err)
 		//fmt.Println(strErr)
 		So(strErr, ShouldEqual, "VALUE within array is not supported")
@@ -649,23 +650,116 @@ func TestMongoPluginKeyValue(t *testing.T) {
 		//fmt.Println(strErr)
 		So(strErr, ShouldEqual, "jsonpath condition $KEY must not have a subfield [jsonpath:$KEY.def2]")
 
-		results, err = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_relative.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
+		results, err = test_plugin("../files/rules/mongo_plugin/key_value/invalid_rules_with_jsonpath_conditions_value_relative.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
 		//fmt.Println(results)
 		strErr = fmt.Sprintf("%v", err)
 		//fmt.Println(strErr)
 		So(strErr, ShouldEqual, "VALUE within array is not supported")
 
-		results, err = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_relative_ALL.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
+		results, err = test_plugin("../files/rules/mongo_plugin/key_value/invalid_rules_with_jsonpath_conditions_value_relative_ALL.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
 		strErr = fmt.Sprintf("%v", err)
 		//fmt.Println(strErr)
 		So(strErr, ShouldEqual, "VALUE within array is not supported")
 
-		results, err = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_key_relative.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
+		results, err = test_plugin("../files/rules/mongo_plugin/key_value/invalid_rules_with_jsonpath_conditions_key_relative.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
 		strErr = fmt.Sprintf("%v", err)
 		//fmt.Println(strErr)
 		So(strErr, ShouldEqual, "KEY within array is not supported")
 
 	})
+}
+
+func TestMongoPluginValidationAllRules(t *testing.T) {
+
+	logging := false
+	if logging {
+		// setup a log outfile file
+		f, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777) //create your file with desired read/write permissions
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Sync()
+		defer f.Close()
+		log.SetOutput(f) //set output of logs to f
+	} else {
+		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
+	}
+
+	reporting.QuietMode()
+	Convey("tests", t, func() {
+
+		var files []string
+		var roots []string
+
+		main_roots := []string{"../files/rules/mongo_plugin/",
+			"../files/rules/with_jsonpath_conditions/", "../files/rules/with_jsonpath_conditions_ALL_ANY/",
+			"../files/rules/with_jsonpath_conditions_ALL_ANY_Multilevel/", "../files/rules/with_jsonpath_conditions_ALL_ANY2/",
+			"../files/rules/with_jsonpath_conditions_ALL_ANY_NOT/", "../files/rules/with_jsonpath_conditions_NOT/",
+			"../files/rules/with_return_value/", "../files/rules/with_parentjsonpath_list/",
+		}
+
+		for _, main_root := range main_roots {
+
+			err := filepath.Walk(main_root, func(path string, info os.FileInfo, err error) error {
+				if info.IsDir() {
+					if !(path == main_root) {
+						if !strings.Contains(path, "predefined_strings") {
+							roots = append(roots, path)
+						}
+					}
+				}
+				return nil
+			})
+			if err != nil {
+				panic(err)
+			}
+
+			for _, root := range roots {
+				err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+					if !info.IsDir() {
+						if !strings.Contains(path, "invalid_rule") {
+							files = append(files, path)
+						}
+					}
+					return nil
+				})
+				if err != nil {
+					panic(err)
+				}
+			}
+		}
+
+		for _, file := range files {
+			fmt.Printf("going to test %v\n", file)
+			testValidationOneFile(file)
+		}
+		fmt.Printf("\n---------------\ntested %v files", len(files))
+	})
+}
+
+func testValidationOneFile(filename string) {
+
+	var rulesYaml MAPL_engine.Rules
+
+	dataYaml, err := ioutil.ReadFile(filename)
+	err = yaml.Unmarshal(dataYaml, &rulesYaml)
+	So(err, ShouldEqual, nil)
+
+	for _, rule := range rulesYaml.Rules {
+		query, errPlugin := rule.ToMongoQuery("raw")
+		if errPlugin != nil {
+			fmt.Println(rule)
+		}
+		So(errPlugin, ShouldEqual, nil)
+
+		if rule.Conditions.ConditionsTree == nil {
+			jsonStr := fmt.Sprint(query.Query)
+			So(jsonStr, ShouldEqual, "map[]")
+		} else {
+			fmt.Println(query)
+		}
+	}
+
 }
 
 func test_plugin(rulesFilename, jsonRawFilename, prefix string) ([]bool, error) {
@@ -682,7 +776,7 @@ func test_plugin(rulesFilename, jsonRawFilename, prefix string) ([]bool, error) 
 	insertRawDataToMongo(id, collectionName, data)
 
 	outputResults := make([]bool, len(rules.Rules))
-	for i_rule, rule := range (rules.Rules) {
+	for i_rule, rule := range rules.Rules {
 
 		// ------------------------------
 		// from rule (this is the main way)
@@ -778,7 +872,7 @@ type testDoc struct {
 	Raw interface{}
 }
 
-func insertRawDataToMongo(id, collectionName string, data []byte) (error) {
+func insertRawDataToMongo(id, collectionName string, data []byte) error {
 
 	var raw interface{}
 	err := json.Unmarshal(data, &raw)
@@ -801,7 +895,7 @@ type ruleDoc struct {
 	Rule MAPL_engine.Rule
 }
 
-func testReadWriteRules(rules MAPL_engine.Rules) (error) {
+func testReadWriteRules(rules MAPL_engine.Rules) error {
 
 	for _, rule := range rules.Rules {
 
@@ -837,7 +931,7 @@ func testReadWriteRules(rules MAPL_engine.Rules) (error) {
 
 }
 
-func deleteDocument(id string, collectionName string) (error) {
+func deleteDocument(id string, collectionName string) error {
 
 	_, err := mongoDbConnection.Collection(collectionName).DeleteOne(nil, bson.M{"id": id})
 	return err
