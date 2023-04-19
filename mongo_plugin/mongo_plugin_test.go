@@ -11,7 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	. "github.com/smartystreets/goconvey/convey"
 	"github.com/smartystreets/goconvey/convey/reporting"
 	"io/ioutil"
 	"log"
@@ -24,6 +23,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	convey "github.com/smartystreets/goconvey/convey"
 )
 
 var mongodPath = "/usr/bin/mongod"
@@ -106,6 +107,8 @@ func startMongodb(port int) error {
 	if err != nil {
 		log.Printf("Command finished with error: %v", err)
 		log.Printf("%s\n", stdoutStderr)
+	} else {
+		log.Printf("rs.initiate() ok")
 	}
 
 	cmd = exec.Command("docker", "exec", "-i", "mongodb_for_tests", "mongosh", "--eval", "rs.status()")
@@ -113,6 +116,8 @@ func startMongodb(port int) error {
 	if err != nil {
 		log.Printf("Command finished with error: %v", err)
 		log.Printf("%s\n", stdoutStderr)
+	} else {
+		log.Printf("rs.status() ok")
 	}
 
 	return err
@@ -141,13 +146,13 @@ func stopContainer(container string) {
 }
 
 func TestStartLocalMongo(t *testing.T) {
-	Convey("TestStartLocalMongo", t, func() {
+	convey.Convey("TestStartLocalMongo", t, func() {
 
 		id := randomString(16)
 		data := []byte(`{"a":"b","c":{"d":"e"}}`)
 		err := insertRawDataToMongo(id, collectionName, data)
 
-		So(err, ShouldEqual, nil)
+		convey.So(err, convey.ShouldEqual, nil)
 
 	})
 }
@@ -169,23 +174,23 @@ func TestMongoPluginDebugging(t *testing.T) {
 	}
 
 	reporting.QuietMode()
-	Convey("tests", t, func() {
+	convey.Convey("tests", t, func() {
 
 		// empty
 		dataJson := []byte(`{"conditions": {}}`)
 		var rule MAPL_engine.Rule
 		err := json.Unmarshal(dataJson, &rule)
-		So(err, ShouldBeNil)
+		convey.So(err, convey.ShouldBeNil)
 		resultQuery, err := rule.ToMongoQuery("raw")
-		So(err, ShouldBeNil)
+		convey.So(err, convey.ShouldBeNil)
 		fmt.Println(resultQuery)
 		// numbers:
 		results, _ := test_plugin("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_1.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_2.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_3.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 	})
 }
@@ -207,146 +212,146 @@ func TestMongoPluginBasic(t *testing.T) {
 	}
 
 	reporting.QuietMode()
-	Convey("tests", t, func() {
+	convey.Convey("tests", t, func() {
 
 		// numbers:
 		results, _ := test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_EQ.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_sts.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_EQ.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_dep.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_EQ2.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_replicas_2.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_EQ2.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_replicas_5.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_GT_4.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_replicas_2.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_GT_4.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_replicas_5.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_GE_2.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_replicas_2.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_GE_2.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_replicas_5.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_LT_4.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_replicas_2.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_LT_4.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_replicas_5.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_LE_2.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_replicas_2.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_LE_2.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_replicas_5.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 		// string equality:
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo2.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo3.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo4.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar2.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo2.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar2.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo3.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar2.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo4.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar2.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar3.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo2.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar3.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo3.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar3.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo4.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar3.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar4.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo2.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar4.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo3.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar4.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo4.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar4.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 		// existence:
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo_EX.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo_NEX.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo_EX.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar2.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo_NEX.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar2.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo_EX.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar3.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo_NEX.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar3.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo_EX.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar3.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo_NEX.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar3.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_replicas_EX.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_replicas_2.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_replicas_NEX.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_replicas_2.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_replicas_EX.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_no_replicas.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_replicas_NEX.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_no_replicas.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		// regex:
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo_ar2_RE.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo_ar2_NRE.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo_ar2_RE.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar2.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo_ar2_NRE.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar2.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo_ar2_RE.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar3.json", "raw")
-		So(results[0], ShouldEqual, false) // if the field doesn't exist we return false
+		convey.So(results[0], convey.ShouldEqual, false) // if the field doesn't exist we return false
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo_ar2_NRE.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar3.json", "raw")
-		So(results[0], ShouldEqual, false) // if the field doesn't exist we return false
+		convey.So(results[0], convey.ShouldEqual, false) // if the field doesn't exist we return false
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo_ar2_RE.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar4.json", "raw")
-		So(results[0], ShouldEqual, false) // if the field doesn't exist we return false
+		convey.So(results[0], convey.ShouldEqual, false) // if the field doesn't exist we return false
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_label_foo_ar2_NRE.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_foo_bar4.json", "raw")
-		So(results[0], ShouldEqual, false) // if the field doesn't exist we return false
+		convey.So(results[0], convey.ShouldEqual, false) // if the field doesn't exist we return false
 
 		// IN/NIN:
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_IN.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_sts.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_IN.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_dep.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_IN.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_no_kind.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_NIN.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_sts.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_NIN.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_dep.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_NIN.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_no_kind.json", "raw")
-		So(results[0], ShouldEqual, false) // if the field doesn't exist we return false
+		convey.So(results[0], convey.ShouldEqual, false) // if the field doesn't exist we return false
 
 	})
 }
@@ -368,23 +373,23 @@ func TestMongoPluginPrefix(t *testing.T) {
 	}
 
 	reporting.QuietMode()
-	Convey("tests", t, func() {
+	convey.Convey("tests", t, func() {
 
 		// numbers:
 		results, _ := test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_EQ.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_sts.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_EQ.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_dep.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_EQ.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_sts.json", "raw2")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_EQ.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_dep.json", "raw2")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_EQ_raw_prefix.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_sts.json", "")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/rules_with_jsonpath_conditions_EQ_raw_prefix.yaml", "../files/raw_json_data/mongo_plugin/json_raw_data_dep.json", "")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 	})
 }
@@ -406,52 +411,52 @@ func TestMongoPluginAndOrNot(t *testing.T) {
 	}
 
 	reporting.QuietMode()
-	Convey("tests", t, func() {
+	convey.Convey("tests", t, func() {
 
 		// AND:
 		results, _ := test_plugin("../files/rules/mongo_plugin/and_or_not/rules_with_jsonpath_conditions_AND.yaml", "../files/raw_json_data/mongo_plugin/and_or_not/json_raw_data_foo_bar_replicas_2.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/and_or_not/rules_with_jsonpath_conditions_AND.yaml", "../files/raw_json_data/mongo_plugin/and_or_not/json_raw_data_foo_bar_replicas_5.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/and_or_not/rules_with_jsonpath_conditions_AND.yaml", "../files/raw_json_data/mongo_plugin/and_or_not/json_raw_data_foo_bar2_replicas_2.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/and_or_not/rules_with_jsonpath_conditions_AND.yaml", "../files/raw_json_data/mongo_plugin/and_or_not/json_raw_data_foo_bar2_replicas_5.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		// OR:
 		results, _ = test_plugin("../files/rules/mongo_plugin/and_or_not/rules_with_jsonpath_conditions_OR.yaml", "../files/raw_json_data/mongo_plugin/and_or_not/json_raw_data_foo_bar_replicas_2.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/and_or_not/rules_with_jsonpath_conditions_OR.yaml", "../files/raw_json_data/mongo_plugin/and_or_not/json_raw_data_foo_bar_replicas_5.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/and_or_not/rules_with_jsonpath_conditions_OR.yaml", "../files/raw_json_data/mongo_plugin/and_or_not/json_raw_data_foo_bar2_replicas_2.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/and_or_not/rules_with_jsonpath_conditions_OR.yaml", "../files/raw_json_data/mongo_plugin/and_or_not/json_raw_data_foo_bar2_replicas_5.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		// NOT:
 		results, _ = test_plugin("../files/rules/mongo_plugin/and_or_not/rules_with_jsonpath_conditions_NOT.yaml", "../files/raw_json_data/mongo_plugin/and_or_not/json_raw_data_foo_bar_replicas_2.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/and_or_not/rules_with_jsonpath_conditions_NOT.yaml", "../files/raw_json_data/mongo_plugin/and_or_not/json_raw_data_foo_bar2_replicas_2.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		//Multilevel
 		// NOT-AND
 		results, _ = test_plugin("../files/rules/mongo_plugin/and_or_not/rules_with_jsonpath_conditions_NOT_AND.yaml", "../files/raw_json_data/mongo_plugin/and_or_not/json_raw_data_foo_bar_replicas_2.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/and_or_not/rules_with_jsonpath_conditions_NOT_AND.yaml", "../files/raw_json_data/mongo_plugin/and_or_not/json_raw_data_foo_bar_replicas_5.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/and_or_not/rules_with_jsonpath_conditions_NOT_AND.yaml", "../files/raw_json_data/mongo_plugin/and_or_not/json_raw_data_foo_bar2_replicas_2.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/and_or_not/rules_with_jsonpath_conditions_NOT_AND.yaml", "../files/raw_json_data/mongo_plugin/and_or_not/json_raw_data_foo_bar2_replicas_5.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		//AND-NOT
 		results, _ = test_plugin("../files/rules/mongo_plugin/and_or_not/rules_with_jsonpath_conditions_AND_NOT.yaml", "../files/raw_json_data/mongo_plugin/and_or_not/json_raw_data_foo_bar_replicas_2.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/and_or_not/rules_with_jsonpath_conditions_AND_NOT.yaml", "../files/raw_json_data/mongo_plugin/and_or_not/json_raw_data_foo_bar_replicas_5.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/and_or_not/rules_with_jsonpath_conditions_AND_NOT.yaml", "../files/raw_json_data/mongo_plugin/and_or_not/json_raw_data_foo_bar2_replicas_2.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/and_or_not/rules_with_jsonpath_conditions_AND_NOT.yaml", "../files/raw_json_data/mongo_plugin/and_or_not/json_raw_data_foo_bar2_replicas_5.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 		//AND-OR
 
@@ -475,113 +480,113 @@ func TestMongoPluginAnyAll(t *testing.T) {
 	}
 
 	reporting.QuietMode()
-	Convey("tests", t, func() {
+	convey.Convey("tests", t, func() {
 
 		// invalid ANY:
 		results, err := test_plugin("../files/rules/mongo_plugin/any_all/invalid_rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
 		errString := fmt.Sprintf("%v", err)
-		So(errString, ShouldEqual, "deepscan is not supported")
+		convey.So(errString, convey.ShouldEqual, "deepscan is not supported")
 		// invalid ALL:
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/invalid_rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
 		errString = fmt.Sprintf("%v", err)
-		So(errString, ShouldEqual, "deepscan is not supported")
+		convey.So(errString, convey.ShouldEqual, "deepscan is not supported")
 		// ANY: with [:]
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_B.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		// ANY: with [*]
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY2.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY2.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_B.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		// ANY: with nothing
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY3.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY3.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_B.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 		// ALL: with [:]
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_B.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_C.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		// ALL: with [*]
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL2.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL2.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_B.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL2.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_C.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		// ALL: with nothing
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL3.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL3.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_B.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ALL3.yaml", "../files/raw_json_data/mongo_plugin/any_all/json_raw_data_2containers_C.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		// Multi-level: with [:]
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays2.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays2.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B2.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_C.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 		// Multi-level: with [*]
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays_wildcard.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays_wildcard.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays2_wildcard.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays2_wildcard.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3_wildcard.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3_wildcard.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3_wildcard.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B2.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3_wildcard.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_C.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 		// Multi-level: with nothing
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays_nothing.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays_nothing.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays2_nothing.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays2_nothing.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3_nothing.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3_nothing.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3_nothing.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_B2.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, err = test_plugin("../files/rules/mongo_plugin/any_all/rules_with_jsonpath_conditions_multilevel_arrays3_nothing.yaml", "../files/raw_json_data/multilevel_any_all/json_raw_data_2containers_2volumeMounts_C.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 	})
 }
@@ -603,68 +608,68 @@ func TestMongoPluginKeyValue(t *testing.T) {
 	}
 
 	reporting.QuietMode()
-	Convey("tests", t, func() {
+	convey.Convey("tests", t, func() {
 
 		results, _ := test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_key1.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_key2.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_key3.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value1.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value2.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value3.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_AND.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_AND2.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_key_value_AND.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_key_value_AND2.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_key_value_AND3.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_json.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_json2.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_json3.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json", "raw")
-		So(results[0], ShouldEqual, false)
+		convey.So(results[0], convey.ShouldEqual, false)
 		results, _ = test_plugin("../files/rules/mongo_plugin/key_value/rules_with_jsonpath_conditions_value_json4.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json", "raw")
-		So(results[0], ShouldEqual, true)
+		convey.So(results[0], convey.ShouldEqual, true)
 
 		results, err := test_plugin("../files/rules/mongo_plugin/key_value/invalid_rules_with_jsonpath_conditions_value_json5.yaml", "../files/raw_json_data/key_value/json_raw_data_labels_relative.json", "raw")
 		strErr := fmt.Sprintf("%v", err)
 		//fmt.Println(strErr)
-		So(strErr, ShouldEqual, "VALUE within array is not supported")
+		convey.So(strErr, convey.ShouldEqual, "VALUE within array is not supported")
 
 		results, err = test_plugin("../files/rules/mongo_plugin/key_value/invalid_rules_with_jsonpath_conditions_key_json.yaml", "../files/raw_json_data/key_value/json_raw_data_labels2.json", "raw")
 		strErr = fmt.Sprintf("%v", err)
 		//fmt.Println(strErr)
-		So(strErr, ShouldEqual, "jsonpath condition $KEY must not have a subfield [jsonpath:$KEY.def2]")
+		convey.So(strErr, convey.ShouldEqual, "jsonpath condition $KEY must not have a subfield [jsonpath:$KEY.def2]")
 
 		results, err = test_plugin("../files/rules/mongo_plugin/key_value/invalid_rules_with_jsonpath_conditions_value_relative.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
 		//fmt.Println(results)
 		strErr = fmt.Sprintf("%v", err)
 		//fmt.Println(strErr)
-		So(strErr, ShouldEqual, "VALUE within array is not supported")
+		convey.So(strErr, convey.ShouldEqual, "VALUE within array is not supported")
 
 		results, err = test_plugin("../files/rules/mongo_plugin/key_value/invalid_rules_with_jsonpath_conditions_value_relative_ALL.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
 		strErr = fmt.Sprintf("%v", err)
 		//fmt.Println(strErr)
-		So(strErr, ShouldEqual, "VALUE within array is not supported")
+		convey.So(strErr, convey.ShouldEqual, "VALUE within array is not supported")
 
 		results, err = test_plugin("../files/rules/mongo_plugin/key_value/invalid_rules_with_jsonpath_conditions_key_relative.yaml", "../files/raw_json_data/key_value/json_raw_data_labels.json", "raw")
 		strErr = fmt.Sprintf("%v", err)
 		//fmt.Println(strErr)
-		So(strErr, ShouldEqual, "KEY within array is not supported")
+		convey.So(strErr, convey.ShouldEqual, "KEY within array is not supported")
 
 	})
 }
@@ -686,7 +691,7 @@ func TestMongoPluginValidationAllRules(t *testing.T) {
 	}
 
 	reporting.QuietMode()
-	Convey("tests", t, func() {
+	convey.Convey("tests", t, func() {
 
 		var files []string
 		var roots []string
@@ -743,18 +748,18 @@ func testValidationOneFile(filename string) {
 
 	dataYaml, err := ioutil.ReadFile(filename)
 	err = yaml.Unmarshal(dataYaml, &rulesYaml)
-	So(err, ShouldEqual, nil)
+	convey.So(err, convey.ShouldEqual, nil)
 
 	for _, rule := range rulesYaml.Rules {
 		query, errPlugin := rule.ToMongoQuery("raw")
 		if errPlugin != nil {
 			fmt.Println(rule)
 		}
-		So(errPlugin, ShouldEqual, nil)
+		convey.So(errPlugin, convey.ShouldEqual, nil)
 
 		if rule.Conditions.ConditionsTree == nil {
 			jsonStr := fmt.Sprint(query.Query)
-			So(jsonStr, ShouldEqual, "map[]")
+			convey.So(jsonStr, convey.ShouldEqual, "map[]")
 		} else {
 			fmt.Println(query)
 		}
@@ -826,10 +831,10 @@ func test_plugin(rulesFilename, jsonRawFilename, prefix string) ([]bool, error) 
 				deleteDocument(id, collectionName)
 				return []bool{}, err
 			}
-			So(resultQueryFromRule, ShouldEqual, resultSimpleQueryFromConditions)
+			convey.So(resultQueryFromRule, convey.ShouldEqual, resultSimpleQueryFromConditions)
 			outputResults[i_rule] = resultSimpleQueryFromConditions
 		} else {
-			So(resultQueryFromRule, ShouldEqual, resultAggregateQueryFromConditions)
+			convey.So(resultQueryFromRule, convey.ShouldEqual, resultAggregateQueryFromConditions)
 			outputResults[i_rule] = resultAggregateQueryFromConditions
 		}
 
@@ -918,7 +923,7 @@ func testReadWriteRules(rules MAPL_engine.Rules) error {
 
 		h1 := MAPL_engine.RuleMD5Hash(rule)
 		h2 := MAPL_engine.RuleMD5Hash(rule2.Rule)
-		So(h1, ShouldEqual, h2)
+		convey.So(h1, convey.ShouldEqual, h2)
 
 		_, err = mongoDbConnection.Collection("ruleCollection").DeleteMany(nil, bson.M{"id": id})
 
