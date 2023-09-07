@@ -568,7 +568,7 @@ func testJsonPathCondition(c *Condition, message *MessageAttributes) bool {
 
 		if err != nil {
 			if method == "EQ" || method == "NEQ" {
-				result = compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex) // compare strings with wildcards
+				result = compareStringFunc(valueToCompareString, c.Method, c.Value) // compare strings (strightforward comparison. use of wildcards is only via RE)
 			} else {
 				log.Println("can't parse jsonpath value [float]")
 				return false
@@ -673,7 +673,7 @@ func testJsonPathConditionOnInterface(c *Condition, message *MessageAttributes) 
 		if !flagCompareToNumber {
 			if method == "EQ" || method == "NEQ" {
 				//return compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex) // compare strings with wildcards
-				return compareStringFunc(valueToCompareString, c.Method, c.Value) // compare strings
+				return compareStringFunc(valueToCompareString, c.Method, c.Value) // compare strings (strightforward comparison. use of wildcards is only via RE)
 			} else {
 				return false // can't compare non-number
 			}

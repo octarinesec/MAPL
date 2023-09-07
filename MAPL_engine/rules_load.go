@@ -365,16 +365,25 @@ func ConvertConditionStringToIntFloatRegex(condition *Condition) error { // TO-D
 	}
 
 	re, err = regexp.Compile(ConvertStringToRegex(condition.Value, condition.OriginalMethod))
+	flagError := false
 	if err == nil {
-		condition.ValueStringRegex = re.Copy() // this is used in EQ,NEQ
+		condition.ValueStringRegex = re.Copy() // this is used in EQ,NEQ in non-jsonpath fields (for example, we allow wildcards in strings there)
 	} else {
-		return fmt.Errorf("condition.Value could not be converted to regex")
+		condition.ValueStringRegex = nil
+		flagError = true
 	}
 
 	// now, handle attributes of types senderLabel,receiverLabel, $sender, $receiver, jsonpath
 	handleSenderReceiverLabelsAttribute(condition)
 	handleSenderReceiverAttributes(condition)
 	handleJsonpathAttribute(condition)
+
+	if condition.AttributeIsJsonpath || condition.AttributeIsJsonpathRelative {
+		return nil
+	}
+	if flagError {
+		return fmt.Errorf("condition.Value could not be converted to regex")
+	}
 
 	return nil
 }
