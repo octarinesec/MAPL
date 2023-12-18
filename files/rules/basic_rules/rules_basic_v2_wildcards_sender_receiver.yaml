@@ -2,10 +2,10 @@ rules:
 
   - rule_id: 0
     sender:
-      senderName: "A.my_namespace"
+      senderName: "*.my_namespace"
       senderType: "workload"
     receiver:
-      receiverName: "B.my_namespace"
+      receiverName: "B.*"
       receiverType: "*"
     protocol: http
     resource:

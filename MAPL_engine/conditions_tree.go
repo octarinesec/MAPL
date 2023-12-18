@@ -12,9 +12,9 @@ import (
 	"strings"
 )
 
-//-----------------------
+// -----------------------
 // ConditionsTree
-//-----------------------
+// -----------------------
 type ConditionsTree struct {
 	ConditionsTree Node `yaml:"conditionsTree,omitempty" json:"conditionsTree,omitempty" bson:"conditionsTree,omitempty" structs:"conditionsTree,omitempty"`
 }
@@ -94,13 +94,13 @@ func (c ConditionsTree) MarshalBSON() ([]byte, error) {
 	return bson.Marshal(doc)
 }
 
-//--------------------------------------
+// --------------------------------------
 // Node Interface
-//--------------------------------------
+// --------------------------------------
 type Node interface {
-	Eval(message *MessageAttributes) (bool, []map[string]interface{})
+	Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool
 	Append(node Node)
-	PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error
+	PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) (bool, error)
 	String() string // to-do: order terms so that hash will be the same
 	ToMongoQuery(base string, parentString string, inArrayCounter int) (bson.M, []bson.M, error)
 }
@@ -115,38 +115,72 @@ type AnyAllNode interface {
 	GetPreparedJsonpathQuery() []jsonpath.FilterFunc
 }
 
-//--------------------------------------
-// And Node
-//--------------------------------------
-type And struct {
-	Nodes []Node `yaml:"AND,omitempty" json:"AND,omitempty" bson:"AND,omitempty" structs:"AND,omitempty"`
-}
-
-func (a *And) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
-	extraData := []map[string]interface{}{}
-	for _, node := range a.Nodes {
-		flag, extraDataTemp := node.Eval(message)
-		if len(extraDataTemp) > 0 {
-			extraData = extraDataTemp
-		}
-		if flag == false {
-			return false, extraData // no need to check the rest
+// --------------------------------------
+func mergeReturnValues(returnValues *map[string][]interface{}, returnValues2 *map[string][]interface{}) {
+	for key, array2 := range *returnValues2 {
+		if array, ok := (*returnValues)[key]; !ok {
+			(*returnValues)[key] = array2
+		} else {
+			array = append(array, array2...)
+			(*returnValues)[key] = array
 		}
 	}
-	return true, extraData
+
+}
+
+// --------------------------------------
+// And Node
+// --------------------------------------
+type And struct {
+	Nodes             []Node `yaml:"AND,omitempty" json:"AND,omitempty" bson:"AND,omitempty" structs:"AND,omitempty"`
+	ReturnValueInNode bool   `yaml:"-" json:"-" bson:"-" structs:"-"`
+}
+
+func (a *And) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
+
+	returnValuesAfter := make(map[string][]interface{}) // we use temporary return values since we do not want to update them unless the AND result is true
+	returnValuesBefore := make(map[string][]interface{})
+	mergeReturnValues(&returnValuesAfter, returnValues)
+	mergeReturnValues(&returnValuesBefore, returnValues)
+	for _, node := range a.Nodes {
+
+		flag := node.Eval(message, &returnValuesAfter)
+		if flag == false {
+			// clean previous map and enter new values. to-do: find a better way.
+			for k := range *returnValues {
+				delete(*returnValues, k)
+			}
+			mergeReturnValues(returnValues, &returnValuesBefore)
+			return false // no need to check the rest
+		}
+
+	}
+
+	// clean previous map and enter new values. to-do: find a better way
+	for k := range *returnValues {
+		delete(*returnValues, k)
+	}
+	mergeReturnValues(returnValues, &returnValuesAfter)
+
+	return true
 }
 func (a *And) Append(node Node) {
 	a.Nodes = append(a.Nodes, node)
 }
 
-func (a *And) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
+func (a *And) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) (bool, error) {
+	returnValuesInNode := false
 	for _, node := range a.Nodes {
-		err := node.PrepareAndValidate(stringsAndlists)
+		returnValuesInNodeTemp, err := node.PrepareAndValidate(stringsAndlists)
+		if returnValuesInNodeTemp {
+			returnValuesInNode = true
+		}
 		if err != nil {
-			return err
+			return returnValuesInNode, err
 		}
 	}
-	return nil
+	a.ReturnValueInNode = returnValuesInNode
+	return returnValuesInNode, nil
 }
 
 func (a *And) String() string {
@@ -176,64 +210,71 @@ func AndOrString(a_nodes []Node, andOrStr string) string {
 	return str
 }
 
-//--------------------------------------
+// --------------------------------------
 // Or Node
-//--------------------------------------
+// --------------------------------------
 type Or struct {
-	Nodes []Node `yaml:"OR,omitempty" json:"OR,omitempty" bson:"OR,omitempty" structs:"OR,omitempty"`
+	Nodes             []Node `yaml:"OR,omitempty" json:"OR,omitempty" bson:"OR,omitempty" structs:"OR,omitempty"`
+	ReturnValueInNode bool   `yaml:"-" json:"-" bson:"-" structs:"-"`
 }
 
-func (o *Or) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
+func (o *Or) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
 	flagOut := false
-	extraDataOut := []map[string]interface{}{}
 	for _, node := range o.Nodes {
-		flag, extraData := node.Eval(message)
-		// if flag {
-		//	return true, extraData // no need to check the rest
-		//}
+		returnValuesTemp := make(map[string][]interface{})
+		flag := node.Eval(message, &returnValuesTemp)
+		if flag && !o.ReturnValueInNode {
+			return true // no need to check the rest if we do not need to extract return values
+		}
 		flagOut = flagOut || flag
 		if flag {
-			for _, e := range extraData {
-				extraDataOut = append(extraDataOut, e)
-			}
+			mergeReturnValues(returnValues, &returnValuesTemp)
 		}
 	}
-	return flagOut, extraDataOut
+	return flagOut
 }
 func (o *Or) Append(node Node) {
 	o.Nodes = append(o.Nodes, node)
 }
-func (o *Or) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
+func (o *Or) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) (bool, error) {
+	returnValuesInNode := false
 	for _, node := range o.Nodes {
-		err := node.PrepareAndValidate(stringsAndlists)
+		returnValuesInNodeTemp, err := node.PrepareAndValidate(stringsAndlists)
+		if returnValuesInNodeTemp {
+			returnValuesInNode = true
+		}
 		if err != nil {
-			return err
+			return false, err
 		}
 	}
-	return nil
+	o.ReturnValueInNode = returnValuesInNode
+	return returnValuesInNode, nil
 }
 func (o *Or) String() string {
 	return AndOrString(o.Nodes, " || ")
 }
 
-//--------------------------------------
+// --------------------------------------
 // Not Node
-//--------------------------------------
+// --------------------------------------
 type Not struct {
-	Node Node `yaml:"NOT,omitempty" json:"NOT,omitempty" bson:"NOT,omitempty" structs:"NOT,omitempty"`
+	Node              Node `yaml:"NOT,omitempty" json:"NOT,omitempty" bson:"NOT,omitempty" structs:"NOT,omitempty"`
+	ReturnValueInNode bool `yaml:"-" json:"-" bson:"-" structs:"-"`
 }
 
-func (n *Not) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
-	flag, _ := n.Node.Eval(message)
-	return !flag, []map[string]interface{}{}
+func (n *Not) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
+	flag := n.Node.Eval(message, returnValues)
+	(*returnValues) = nil // returned values from inner nodes are no-longer relevant!
+	return !flag
 }
 func (n *Not) Append(node Node) {
 	n.Node = node
 }
-func (n *Not) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
+func (n *Not) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) (bool, error) {
 
-	err := n.Node.PrepareAndValidate(stringsAndlists)
-	return err
+	returnValuesInNode, err := n.Node.PrepareAndValidate(stringsAndlists)
+	n.ReturnValueInNode = returnValuesInNode
+	return returnValuesInNode, err
 
 }
 func (n *Not) String() string {
@@ -241,9 +282,9 @@ func (n *Not) String() string {
 	return str
 }
 
-//--------------------------------------
+// --------------------------------------
 // Any Node
-//--------------------------------------
+// --------------------------------------
 type Any struct {
 	ParentJsonpathAttribute                      string
 	ParentJsonpathAttributeArray                 []string
@@ -254,6 +295,7 @@ type Any struct {
 	ReturnValueJsonpathOriginal                  map[string]string
 	Node                                         Node                  `yaml:"condition,omitempty" json:"condition,omitempty" bson:"condition,omitempty" structs:"condition,omitempty"`
 	PreparedJsonpathQuery                        []jsonpath.FilterFunc `yaml:"-,omitempty" json:"-,omitempty"`
+	ReturnValueInNode                            bool                  `yaml:"-" json:"-" bson:"-" structs:"-"`
 }
 
 func (a *Any) MarshalJSON() ([]byte, error) {
@@ -283,90 +325,90 @@ func (a *Any) MarshalJSON() ([]byte, error) {
 	return []byte(str), nil
 }
 
-func (a *Any) Eval(message *MessageAttributes) (bool, []map[string]interface{}) { // to-do: return errors
+func (a *Any) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool { // to-do: return errors
 	if message.RequestRawInterface != nil && a.PreparedJsonpathQuery != nil {
-		return evalAnyRawInterface(a, message)
+		return evalAnyRawInterface(a, message, returnValues)
 	} else {
-		return evalAnyRawBytes(a, message)
+		return evalAnyRawBytes(a, message, returnValues)
 	}
 }
 
-func evalAnyRawInterface(a *Any, message *MessageAttributes) (bool, []map[string]interface{}) {
+func evalAnyRawInterface(a *Any, message *MessageAttributes, returnValues *map[string][]interface{}) bool {
 
 	rawArrayData, err := getArrayOfInterfaces(a, message)
 	if err != nil {
-		return false, []map[string]interface{}{}
+		return false
 	}
 
-	extraData := []map[string]interface{}{}
+	//extraData := []map[string]interface{}{}
 	result := false
 	checkAllValuesInTheArray := false
-	if len(a.ReturnValueJsonpath) > 0 {
+	if a.ReturnValueInNode { // if we seek return values in sub-nodes then we cannot skip
 		checkAllValuesInTheArray = true
 	}
 	originalRequestRawInterfaceRelative := message.RequestRawInterfaceRelative
 	for _, val := range rawArrayData {
 		message.RequestRawInterfaceRelative = &val
-		flag, _ := a.Node.Eval(message)
+		flag := a.Node.Eval(message, returnValues)
 		if flag {
 			result = true
 			if a.ReturnValueJsonpath != nil {
 
-				extraDataTemp := getExtraDataFromInterface(a.ReturnValuePreparedJsonpathQuery, a.ReturnValuePreparedJsonpathQueryRelativeFlag, a.ReturnValueJsonpath, message)
-				extraData = append(extraData, extraDataTemp)
+				getExtraDataFromInterface(a.ReturnValuePreparedJsonpathQuery, a.ReturnValuePreparedJsonpathQueryRelativeFlag, a.ReturnValueJsonpath, message, returnValues)
+				//extraData = append(extraData, extraDataTemp)
 
 			}
 			if !checkAllValuesInTheArray {
 				message.RequestRawInterfaceRelative = originalRequestRawInterfaceRelative
-				return result, extraData
+				return result
 			}
 		}
 	}
 
 	message.RequestRawInterfaceRelative = originalRequestRawInterfaceRelative
-	return result, extraData
+	return result
 }
-func evalAnyRawBytes(a *Any, message *MessageAttributes) (bool, []map[string]interface{}) {
+func evalAnyRawBytes(a *Any, message *MessageAttributes, returnValues *map[string][]interface{}) bool {
 
 	rawArrayData, err := getArrayOfJsons(a, message)
 	if err != nil {
-		return false, []map[string]interface{}{}
+		return false
 	}
 
-	extraData := []map[string]interface{}{}
+	//extraData := []map[string]interface{}{}
 	result := false
 	checkAllValuesInTheArray := false
-	if len(a.ReturnValueJsonpath) > 0 {
+	if a.ReturnValueInNode { // if we seek return values in sub-nodes then we cannot skip
 		checkAllValuesInTheArray = true
 	}
 	originalRequestJsonRawRelative := message.RequestJsonRawRelative
 	for _, val := range rawArrayData {
 		message.RequestJsonRawRelative = &val
-		flag, _ := a.Node.Eval(message)
+		flag := a.Node.Eval(message, returnValues)
 		if flag {
 			result = true
-			if a.ReturnValueJsonpath != nil {
-				extraDataTemp := getExtraDataFromByteArray(a.ReturnValueJsonpath, a.ReturnValuePreparedJsonpathQueryRelativeFlag, message)
-				extraData = append(extraData, extraDataTemp)
+			if a.ReturnValueJsonpath != nil { // this is for the ANY node returnValue
+				getExtraDataFromByteArray(a.ReturnValueJsonpath, a.ReturnValuePreparedJsonpathQueryRelativeFlag, message, returnValues)
+				//extraData = append(extraData, extraDataTemp)
 			}
 			if !checkAllValuesInTheArray {
 				message.RequestJsonRawRelative = originalRequestJsonRawRelative
-				return result, extraData
+				return result
 			}
 		}
 	}
 
 	message.RequestJsonRawRelative = originalRequestJsonRawRelative
-	return result, extraData
+	return result
 }
 func (a *Any) Append(node Node) {
 	a.Node = node
 }
-func (a *Any) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
+func (a *Any) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) (bool, error) {
 
-	err := a.Node.PrepareAndValidate(stringsAndlists)
+	returnValuesInNode, err := a.Node.PrepareAndValidate(stringsAndlists)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	a.ParentJsonpathAttributeArray = strings.Split(a.GetParentJsonpathAttribute(), ",")
@@ -374,11 +416,16 @@ func (a *Any) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) erro
 	for _, j := range a.GetParentJsonpathAttributeArray() {
 		preparedJsonpath, err := prepareJsonpathQuery(j)
 		if err != nil {
-			return err
+			return false, err
 		}
 		a.PreparedJsonpathQuery = append(a.PreparedJsonpathQuery, preparedJsonpath)
 	}
-	return nil
+
+	if len(a.ReturnValueJsonpath) > 0 {
+		returnValuesInNode = true
+	}
+	a.ReturnValueInNode = returnValuesInNode
+	return returnValuesInNode, nil
 }
 
 func prepareJsonpathQuery(query string) (jsonpath.FilterFunc, error) {
@@ -452,9 +499,9 @@ func (a *Any) GetPreparedJsonpathQuery() []jsonpath.FilterFunc {
 	return a.PreparedJsonpathQuery
 }
 
-//--------------------------------------
+// --------------------------------------
 // All Node
-//--------------------------------------
+// --------------------------------------
 type All struct {
 	ParentJsonpathAttribute                      string
 	ParentJsonpathAttributeArray                 []string
@@ -465,6 +512,7 @@ type All struct {
 	ReturnValuePreparedJsonpathQueryRelativeFlag map[string]bool
 	Node                                         Node                  `yaml:"condition,omitempty" json:"condition,omitempty" bson:"condition,omitempty" structs:"condition,omitempty"`
 	PreparedJsonpathQuery                        []jsonpath.FilterFunc `yaml:"-,omitempty" json:"-,omitempty"`
+	ReturnValueInNode                            bool                  `yaml:"-" json:"-" bson:"-" structs:"-"`
 }
 
 func (a *All) MarshalJSON() ([]byte, error) {
@@ -494,64 +542,65 @@ func (a *All) MarshalJSON() ([]byte, error) {
 	return []byte(str), nil
 }
 
-func (a *All) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
+func (a *All) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
 	if message.RequestRawInterface != nil && a.PreparedJsonpathQuery != nil {
-		return evalAllRawInterface(a, message)
+		return evalAllRawInterface(a, message, returnValues)
 	} else {
-		return evalAllRawBytes(a, message)
+		return evalAllRawBytes(a, message, returnValues)
 	}
 }
-func evalAllRawInterface(a *All, message *MessageAttributes) (bool, []map[string]interface{}) {
+func evalAllRawInterface(a *All, message *MessageAttributes, returnValues *map[string][]interface{}) bool {
 
 	rawArrayData, err := getArrayOfInterfaces(a, message)
 	if err != nil {
-		return false, []map[string]interface{}{}
+		return false
 	}
 
 	originalRequestRawInterfaceRelative := message.RequestRawInterfaceRelative
 
 	for _, val := range rawArrayData {
 		message.RequestRawInterfaceRelative = &val
-		flag, _ := a.Node.Eval(message)
+		flag := a.Node.Eval(message, returnValues)
 		if !flag {
 
 			message.RequestRawInterfaceRelative = originalRequestRawInterfaceRelative
-			return false, []map[string]interface{}{}
+			return false
 
 		}
 	}
 	message.RequestRawInterfaceRelative = originalRequestRawInterfaceRelative
-	return true, []map[string]interface{}{}
+	return true
 
 }
 
-func evalAllRawBytes(a *All, message *MessageAttributes) (bool, []map[string]interface{}) {
+func evalAllRawBytes(a *All, message *MessageAttributes, returnValues *map[string][]interface{}) bool {
 	rawArrayData, err := getArrayOfJsons(a, message)
 	if err != nil {
-		return false, []map[string]interface{}{}
+		return false
 	}
 
 	originalRequestJsonRawRelative := message.RequestJsonRawRelative
 
 	for _, val := range rawArrayData {
 		message.RequestJsonRawRelative = &val
-		flag, _ := a.Node.Eval(message)
+		flag := a.Node.Eval(message, returnValues)
 		if !flag {
 			message.RequestJsonRawRelative = originalRequestJsonRawRelative
-			return false, []map[string]interface{}{}
+			return false
 		}
 	}
 	message.RequestJsonRawRelative = originalRequestJsonRawRelative
-	return true, []map[string]interface{}{}
+	return true
 }
 
 func (a *All) Append(node Node) {
 	a.Node = node
 }
-func (a *All) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
-	err := a.Node.PrepareAndValidate(stringsAndlists)
+func (a *All) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) (bool, error) {
+
+	returnValuesInNode, err := a.Node.PrepareAndValidate(stringsAndlists)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	a.ParentJsonpathAttributeArray = strings.Split(a.GetParentJsonpathAttribute(), ",")
@@ -559,12 +608,17 @@ func (a *All) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) erro
 	for _, j := range a.GetParentJsonpathAttributeArray() {
 		preparedJsonpath, err := prepareJsonpathQuery(j)
 		if err != nil {
-			return err
+			return false, err
 		}
 		a.PreparedJsonpathQuery = append(a.PreparedJsonpathQuery, preparedJsonpath)
 	}
 
-	return nil
+	if len(a.ReturnValueJsonpath) > 0 {
+		returnValuesInNode = true
+	}
+	a.ReturnValueInNode = returnValuesInNode
+
+	return returnValuesInNode, nil
 }
 
 func (a *All) String() string {
@@ -622,18 +676,18 @@ func (a *All) GetPreparedJsonpathQuery() []jsonpath.FilterFunc {
 	return a.PreparedJsonpathQuery
 }
 
-//--------------------------------------
+// --------------------------------------
 // True Node (used in unit tests)
-//--------------------------------------
+// --------------------------------------
 type True struct{}
 
-func (t True) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
-	return true, []map[string]interface{}{}
+func (t True) Eval(message *MessageAttributes, _ *map[string][]interface{}) bool {
+	return true
 }
 func (t True) Append(node Node) {
 }
-func (t True) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
-	return nil
+func (t True) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) (bool, error) {
+	return false, nil
 }
 func (t True) String() string {
 	return "true"
@@ -642,18 +696,18 @@ func (t True) ToMongoQuery(base, str string, inArrayCounter int) (bson.M, []bson
 	return bson.M{}, []bson.M{}, fmt.Errorf("not supported")
 }
 
-//--------------------------------------
+// --------------------------------------
 // False Node (used in unit tests)
-//--------------------------------------
+// --------------------------------------
 type False struct{}
 
-func (f False) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
-	return false, []map[string]interface{}{}
+func (f False) Eval(message *MessageAttributes, _ *map[string][]interface{}) bool {
+	return false
 }
 func (f False) Append(node Node) {
 }
-func (f False) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
-	return nil
+func (f False) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) (bool, error) {
+	return false, nil
 }
 func (f False) String() string {
 	return "false"
@@ -662,50 +716,58 @@ func (f False) ToMongoQuery(base, str string, inArrayCounter int) (bson.M, []bso
 	return bson.M{}, []bson.M{}, fmt.Errorf("not supported")
 }
 
-//--------------------------------------
+// --------------------------------------
 // Basic Condition Node
-//--------------------------------------
-func (c *Condition) Eval(message *MessageAttributes) (bool, []map[string]interface{}) {
-	return testOneCondition(c, message)
+// --------------------------------------
+func (c *Condition) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
+	return testOneCondition(c, message, returnValues)
 }
 func (c *Condition) Append(node Node) {
 }
-func (c *Condition) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) error {
+func (c *Condition) PrepareAndValidate(stringsAndlists PredefinedStringsAndLists) (bool, error) {
 	err := ReplaceStringsAndListsInCondition(c, stringsAndlists)
 	if err != nil {
-		return err
-	}
-	valid, err := ValidateOneCondition(c)
-	if err != nil {
-		return err
-	}
-	if !valid {
-		return fmt.Errorf("error in validating condition [%+v]", c)
+		return false, err
 	}
 
-	err = ConvertConditionStringToIntFloatRegex(c)
-	if err != nil {
-		return err
-	}
-
-	if c.AttributeIsJsonpath {
-		preparedJsonpath, err := prepareJsonpathQuery(c.AttributeJsonpathQuery)
+	if true {
+		valid, err := ValidateOneCondition(c)
 		if err != nil {
-			return err
+			return false, err
 		}
-		c.PreparedJsonpathQuery = preparedJsonpath
+		if !valid {
+			return false, fmt.Errorf("error in validating condition [%+v]", c)
+		}
+
+		err = ConvertConditionStringToIntFloatRegex(c)
+		if err != nil {
+			return false, err
+		}
+
+		if c.AttributeIsJsonpath {
+			preparedJsonpath, err := prepareJsonpathQuery(c.AttributeJsonpathQuery)
+			if err != nil {
+				return false, err
+			}
+			c.PreparedJsonpathQuery = preparedJsonpath
+		}
 	}
 
-	return nil
+	returnValuesInNode := false
+	if len(c.ReturnValueJsonpath) > 0 {
+		returnValuesInNode = true
+	}
+
+	return returnValuesInNode, nil
 
 }
 
-//--------------------------------------
+// --------------------------------------
 // parsing utilities
-//--------------------------------------
+// --------------------------------------
 func ParseConditionsTree(c interface{}) (Node, error) {
 
-	conditionsTree, err := InterpretNode(c, "")
+	conditionsTree, err := InterpretNode(c, "", false)
 	if err != nil {
 		return nil, err
 	}
@@ -713,15 +775,15 @@ func ParseConditionsTree(c interface{}) (Node, error) {
 	return conditionsTree, nil
 }
 
-func InterpretNode(node interface{}, parentString string) (Node, error) {
+func InterpretNode(node interface{}, parentString string, isWithinAnyAll bool) (Node, error) {
 
 	switch v := node.(type) {
 
 	case map[string]interface{}:
-		return handleMapStringInterface(v, parentString)
+		return handleMapStringInterface(v, parentString, isWithinAnyAll)
 
 	case map[interface{}]interface{}:
-		return handleMapInterfaceInterface(v, parentString)
+		return handleMapInterfaceInterface(v, parentString, isWithinAnyAll)
 
 	case []interface{}: // array of nodes
 		if parentString == "" {
@@ -729,9 +791,9 @@ func InterpretNode(node interface{}, parentString string) (Node, error) {
 				return nil, fmt.Errorf("node type not supported. possible error: array of conditions without AND,OR (etc) parent")
 				//return nil, fmt.Errorf("can't parse conditions %+v", v)
 			}
-			return InterpretNode(v[0], "") // recursion
+			return InterpretNode(v[0], "", isWithinAnyAll) // recursion
 		} else {
-			return handleInterfaceArray(node, parentString)
+			return handleInterfaceArray(node, parentString, isWithinAnyAll)
 		}
 
 	default:
@@ -740,18 +802,18 @@ func InterpretNode(node interface{}, parentString string) (Node, error) {
 	return nil, errors.New("can't parse conditions")
 }
 
-func handleMapInterfaceInterface(v map[interface{}]interface{}, parentString string) (Node, error) {
+func handleMapInterfaceInterface(v map[interface{}]interface{}, parentString string, isWithinAnyAll bool) (Node, error) {
 
 	v2 := mapInterfaceToMapString(v)
-	return handleMapStringInterface(v2, parentString)
+	return handleMapStringInterface(v2, parentString, isWithinAnyAll)
 
 }
 
-func handleMapStringInterface(v2 map[string]interface{}, parentString string) (Node, error) {
+func handleMapStringInterface(v2 map[string]interface{}, parentString string, isWithinAnyAll bool) (Node, error) {
 
 	// test if this is a condition:
 	if isConditionNode(v2) {
-		nodeOut, err := getNodeCondition(v2, parentString)
+		nodeOut, err := getNodeCondition(v2, parentString, isWithinAnyAll)
 		if err != nil {
 			return nil, err
 		} else {
@@ -766,14 +828,14 @@ func handleMapStringInterface(v2 map[string]interface{}, parentString string) (N
 		anyAllNode, err := getAnyAllNode(v2, parentString)
 		return anyAllNode, err
 	case "NOT":
-		notNode, err := getNotNode(v2, parentString)
+		notNode, err := getNotNode(v2, parentString, isWithinAnyAll)
 		return notNode, err
 	case "OR", "AND", "", "condition", "conditions", "conditionsTree":
 		val, nodeType, err := getNodeValType(v2, parentString)
 		if err != nil {
 			return nil, err
 		}
-		node, err := InterpretNode(val, nodeType) // recursion!
+		node, err := InterpretNode(val, nodeType, isWithinAnyAll) // recursion!
 		if err != nil {
 			return nil, err
 		}
@@ -784,10 +846,12 @@ func handleMapStringInterface(v2 map[string]interface{}, parentString string) (N
 	return nil, fmt.Errorf("can't interpret map[interface{}]interface{}")
 }
 
-func getNodeCondition(v map[string]interface{}, parentString string) (Node, error) {
+func getNodeCondition(v map[string]interface{}, parentString string, isWithinAnyAll bool) (Node, error) {
 
-	cond := ReadCondition(v)
-
+	cond, err := ReadCondition(v, isWithinAnyAll)
+	if err != nil {
+		return nil, err
+	}
 	c, err := prepareOneConditionNode(cond) // add regexes etc... and validate the condition
 	if err != nil {
 		return nil, err
@@ -858,10 +922,11 @@ func getAnyAllNode(v2 map[string]interface{}, parentString string) (Node, error)
 				} else {
 					return nil, fmt.Errorf("invalid returnValueJsonpath [%v] [should start with jsonpath:$RELATIVE]", returnValueJsonpath[k])
 				}
-				anyAllNode.SetReturnValueJsonpath(returnValueJsonpathMap)
 			}
+			anyAllNode.SetReturnValueJsonpath(returnValueJsonpathMap)
+
 		default:
-			node, err := InterpretNode(val, key) // recursion!
+			node, err := InterpretNode(val, key, true) // recursion!
 			if err != nil {
 				return nil, err
 			}
@@ -883,7 +948,7 @@ func isValidNotNode(v map[string]interface{}) error {
 	return nil
 }
 
-func getNotNode(v2 map[string]interface{}, parentString string) (Node, error) {
+func getNotNode(v2 map[string]interface{}, parentString string, isWithinAnyAll bool) (Node, error) {
 	err := isValidNotNode(v2)
 	if err != nil {
 		return nil, err
@@ -893,7 +958,7 @@ func getNotNode(v2 map[string]interface{}, parentString string) (Node, error) {
 		return nil, err
 	}
 	notNode := &Not{}
-	nodeInner, err := InterpretNode(val, nodeType) // recursion!
+	nodeInner, err := InterpretNode(val, nodeType, isWithinAnyAll) // recursion!
 	if err != nil {
 		return nil, err
 	}
@@ -946,7 +1011,7 @@ func prepareOneConditionNode(cond ConditionNode) (Node, error) {
 	return &c, nil
 }
 
-func handleInterfaceArray(node interface{}, parentString string) (Node, error) {
+func handleInterfaceArray(node interface{}, parentString string, isWithinAnyAll bool) (Node, error) {
 	v2 := node.([]interface{})
 	nodes, err := getNodeByParentString(parentString)
 
@@ -954,7 +1019,7 @@ func handleInterfaceArray(node interface{}, parentString string) (Node, error) {
 		return nil, err
 	}
 	for _, subNode := range v2 {
-		subNode2, err := InterpretNode(subNode, "") // recursion!
+		subNode2, err := InterpretNode(subNode, "", isWithinAnyAll) // recursion!
 		if err != nil {
 			return nil, fmt.Errorf("can't parse subNode [%+v]: %v", subNode, err)
 		}
