@@ -20,7 +20,7 @@ func main() {
 	service_labels["serviceY"]=map[string]string{}
 
 	rulesFilename := "examples/rules_for_testing_rule_translation.yaml"
-	var rules= MAPL_engine.YamlReadRulesFromFile(rulesFilename)
+	rules,_:= MAPL_engine.YamlReadRulesFromFile(rulesFilename)
 
 	/*messagesFilename := "examples/messages_for_rule_translation.yaml"
 	var messages = MAPL_engine.YamlReadMessagesFromFile(messagesFilename)

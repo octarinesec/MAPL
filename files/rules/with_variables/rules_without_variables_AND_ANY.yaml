@@ -1,0 +1,33 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "workload"
+    protocol: "*"
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: "*"
+    decision: allow
+    conditions:
+      ANY:
+        parentJsonpathAttribute: "jsonpath:$.alerts_by_process_id[:]"
+        condition:
+          AND:
+          - ANY:
+              parentJsonpathAttribute: "jsonpath:$RELATIVE.alerts[:]"
+              condition:
+                attribute: jsonpath:$RELATIVE.alert_type
+                method: EQ
+                value: "new process"
+          - ANY:
+              parentJsonpathAttribute: "jsonpath:$RELATIVE.alerts[:]"
+              condition:
+                attribute: jsonpath:$RELATIVE.alert_type
+                method: EQ
+                value: "high cpu"
+

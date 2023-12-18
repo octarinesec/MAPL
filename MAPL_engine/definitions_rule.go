@@ -85,6 +85,8 @@ type Condition struct {
 	PreparedReturnValueJsonpathQuery             map[string]jsonpath.FilterFunc `yaml:"-" json:"-,omitempty"`
 	PreparedReturnValueJsonpathQueryRelativeFlag map[string]bool                `yaml:"-" json:"-,omitempty"`
 
+	ValueContainsVariable bool `yaml:"-" json:"-,omitempty"`
+
 	OriginalAttribute string `yaml:"-" json:"-,omitempty" bson:"originalAttribute,omitempty" structs:"originalAttribute,omitempty"` // used in hash
 	OriginalMethod    string `yaml:"-" json:"-,omitempty" bson:"originalMethod,omitempty" structs:"originalMethod,omitempty"`       // used in hash
 	OriginalValue     string `yaml:"-" json:"-,omitempty" bson:"originalValue,omitempty" structs:"originalValue,omitempty"`         // used in hash
@@ -148,11 +150,11 @@ func ConditionFromConditionNode(c ConditionNode) Condition {
 		if strings.HasPrefix(c.ReturnValueJsonpath[k], "jsonpath:$RELATIVE") {
 			relativeFlag = true
 		}
-		c_out.ReturnValueJsonpath[k] = strings.Replace(v, "jsonpath:$RELATIVE", "$", 1)
-		c_out.ReturnValueJsonpath[k] = strings.Replace(v, "jsonpath:$", "$", 1)
+		v = strings.Replace(v, "jsonpath:$RELATIVE", "$", 1)
+		v = strings.Replace(v, "jsonpath:$", "$", 1)
+		c_out.ReturnValueJsonpath[k] = v
 
-		tempAtt := c_out.ReturnValueJsonpath[k]
-		p, err := jsonpath.Prepare(tempAtt)
+		p, err := jsonpath.Prepare(v)
 		if err != nil {
 			c_out.PreparedReturnValueJsonpathQuery[k] = nil
 		} else {
@@ -165,7 +167,7 @@ func ConditionFromConditionNode(c ConditionNode) Condition {
 
 }
 
-func ReadCondition(v map[string]interface{}) ConditionNode {
+func ReadCondition(v map[string]interface{}, isWithinAnyAll bool) (ConditionNode, error) {
 
 	c := ConditionNode{}
 	for k, val := range v {
@@ -185,17 +187,27 @@ func ReadCondition(v map[string]interface{}) ConditionNode {
 			case map[string]interface{}:
 				val2 := val.(map[string]interface{})
 				for kk, vv := range val2 {
-					c.ReturnValueJsonpath[kk] = vv.(string)
+					vString := vv.(string)
+					if !isWithinAnyAll || strings.HasPrefix(vString, "jsonpath:$RELATIVE") {
+						c.ReturnValueJsonpath[kk] = vString
+					} else {
+						return ConditionNode{}, fmt.Errorf("invalid returnValueJsonpath [%v] [should start with jsonpath:$RELATIVE]", vString)
+					}
 				}
 			case map[interface{}]interface{}:
 				val2 := val.(map[interface{}]interface{})
 				for kk, vv := range val2 {
-					c.ReturnValueJsonpath[kk.(string)] = vv.(string)
+					vString := vv.(string)
+					if !isWithinAnyAll || strings.HasPrefix(vString, "jsonpath:$RELATIVE") {
+						c.ReturnValueJsonpath[kk.(string)] = vString
+					} else {
+						return ConditionNode{}, fmt.Errorf("invalid returnValueJsonpath [%v] [should start with jsonpath:$RELATIVE]", vString)
+					}
 				}
 			}
 		}
 	}
-	return c
+	return c, nil
 }
 
 func getKeys(v map[string]interface{}) []string {

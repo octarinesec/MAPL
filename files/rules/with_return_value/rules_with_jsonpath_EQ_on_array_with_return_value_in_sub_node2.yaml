@@ -1,0 +1,36 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "workload"
+    protocol: "*"
+    resource:
+      resourceType: "*"
+      resourceName: "*"
+    operation: "*"
+    conditions:
+      OR:
+        - attribute: jsonpath:$.kind
+          method: EQ
+          value: "Deployment"
+        - ANY:
+            parentJsonpathAttribute: jsonpath:$.spec.containers[:]
+            condition:
+              AND:
+                - attribute: jsonpath:$RELATIVE.terminationMessagePolicy
+                  method: EQ
+                  value: "File"
+                  returnValueJsonpath:
+                    name1: "jsonpath:$RELATIVE.name"
+                - attribute: jsonpath:$RELATIVE.imagePullPolicy
+                  method: EQ
+                  value: "Always"
+                  returnValueJsonpath:
+                    name2: "jsonpath:$RELATIVE.name"
+
+
+    decision: block

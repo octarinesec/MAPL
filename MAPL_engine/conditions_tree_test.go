@@ -40,26 +40,27 @@ func TestConditionsTree(t *testing.T) {
 		// so we take one from V2.
 		rules, err := YamlReadRulesFromFile("../files/rules/basic_rules/rules_basic_v1v2.yaml")
 		So(err, ShouldEqual, nil)
-		condition:=rules.Rules[0].Conditions.ConditionsTree
-
+		condition := rules.Rules[0].Conditions.ConditionsTree
 
 		messages, err := YamlReadMessagesFromFile("../files/messages/main_fields/messages_basic_sender_name.yaml")
 		So(err, ShouldEqual, nil)
 		message := messages.Messages[0]
 
-		t1 := And{[]Node{True{}, True{}}}
-		t1Eval, _ := t1.Eval(&message) // returns true
+		returnValues := make(map[string][]interface{})
+
+		t1 := And{[]Node{True{}, True{}}, false}
+		t1Eval := t1.Eval(&message, &returnValues) // returns true
 		So(t1Eval, ShouldEqual, true)
 
-		t2 := Or{[]Node{False{}, True{}}}
-		t2Eval, _ := t2.Eval(&message) // returns true
+		t2 := Or{[]Node{False{}, True{}}, false}
+		t2Eval := t2.Eval(&message, &returnValues) // returns true
 		So(t2Eval, ShouldEqual, true)
 
-		node1 := And{[]Node{True{}, True{}, True{}}}
-		node2 := Or{[]Node{False{}, True{}, &node1}}
-		node3 := And{[]Node{condition}}
-		node := And{[]Node{&node1, &node2, True{}, &node3}}
-		nodeEval, _ := node.Eval(&message) // returns true
+		node1 := And{[]Node{True{}, True{}, True{}}, false}
+		node2 := Or{[]Node{False{}, True{}, &node1}, false}
+		node3 := And{[]Node{condition}, false}
+		node := And{[]Node{&node1, &node2, True{}, &node3}, false}
+		nodeEval := node.Eval(&message, &returnValues) // returns true
 		So(nodeEval, ShouldEqual, true)
 
 	})
@@ -98,8 +99,6 @@ func TestConditionsTree2(t *testing.T) {
 		So(err, ShouldEqual, nil)
 		condString = "(((<jsonpath:$.abc-EQ-ABC> && <jsonpath:$.def-EQ-DEF>) || <jsonpath:$.kind-EQ-Deployment>) && (<jsonpath:$.xyz-EQ-XYZ> && <jsonpath:$.zzz-EQ-ZZZ>))"
 		So(rules.Rules[0].Conditions.ConditionsTree.String(), ShouldEqual, condString)
-
-
 
 		rules, err = YamlReadRulesFromFile("../files/rules/basic_rules/invalid_rules_basic_v2c.yaml")
 		errStr := fmt.Sprintf("%v", err)
@@ -171,11 +170,11 @@ func TestConditionsTree3(t *testing.T) {
 	Convey("tests", t, func() {
 
 		rules, err := YamlReadRulesFromFile("../files/rules/with_return_value/rules_with_condition_keyword_and_return_value.yaml")
-		So(rules.Rules[0].Conditions.ConditionsTree,ShouldNotEqual,nil)
+		So(rules.Rules[0].Conditions.ConditionsTree, ShouldNotEqual, nil)
 		So(err, ShouldEqual, nil)
 
 		rules, err = YamlReadRulesFromFile("../files/rules/condition_keyword/rules_with_condition_keyword.yaml")
-		So(rules.Rules[0].Conditions.ConditionsTree,ShouldNotEqual,nil)
+		So(rules.Rules[0].Conditions.ConditionsTree, ShouldNotEqual, nil)
 		So(err, ShouldEqual, nil)
 		rules, err = YamlReadRulesFromFile("../files/rules/condition_keyword/rules_with_condition_keyword2.yaml")
 		So(err, ShouldEqual, nil)
@@ -186,28 +185,25 @@ func TestConditionsTree3(t *testing.T) {
 
 		//------------------
 
-		hash5:=compareJsonAndYamlHash("../files/rules/condition_keyword/rules_with_condition_keyword5.yaml")
-		hash5b:=compareJsonAndYamlHash("../files/rules/condition_keyword/rules_with_condition_keyword5b.yaml")
-		hash5c:=compareJsonAndYamlHash("../files/rules/condition_keyword/rules_with_condition_keyword5c.yaml")
-		hash5d:=compareJsonAndYamlHash("../files/rules/condition_keyword/rules_with_condition_keyword5d.yaml")
+		hash5 := compareJsonAndYamlHash("../files/rules/condition_keyword/rules_with_condition_keyword5.yaml")
+		hash5b := compareJsonAndYamlHash("../files/rules/condition_keyword/rules_with_condition_keyword5b.yaml")
+		hash5c := compareJsonAndYamlHash("../files/rules/condition_keyword/rules_with_condition_keyword5c.yaml")
+		hash5d := compareJsonAndYamlHash("../files/rules/condition_keyword/rules_with_condition_keyword5d.yaml")
 
-		So(hash5,ShouldEqual,hash5b)
-		So(hash5,ShouldEqual,hash5c)
-		So(hash5,ShouldEqual,hash5d)
+		So(hash5, ShouldEqual, hash5b)
+		So(hash5, ShouldEqual, hash5c)
+		So(hash5, ShouldEqual, hash5d)
 
-//-------
+		//-------
 
+		hash6 := compareJsonAndYamlHash("../files/rules/condition_keyword/rules_with_condition_keyword6.yaml")
+		hash6b := compareJsonAndYamlHash("../files/rules/condition_keyword/rules_with_condition_keyword6b.yaml")
+		hash6c := compareJsonAndYamlHash("../files/rules/condition_keyword/rules_with_condition_keyword6c.yaml")
+		hash6d := compareJsonAndYamlHash("../files/rules/condition_keyword/rules_with_condition_keyword6d.yaml")
 
-		hash6:=compareJsonAndYamlHash("../files/rules/condition_keyword/rules_with_condition_keyword6.yaml")
-		hash6b:=compareJsonAndYamlHash("../files/rules/condition_keyword/rules_with_condition_keyword6b.yaml")
-		hash6c:=compareJsonAndYamlHash("../files/rules/condition_keyword/rules_with_condition_keyword6c.yaml")
-		hash6d:=compareJsonAndYamlHash("../files/rules/condition_keyword/rules_with_condition_keyword6d.yaml")
-
-
-		So(hash6,ShouldEqual,hash6b)
-		So(hash6,ShouldEqual,hash6c)
-		So(hash6,ShouldEqual,hash6d)
-
+		So(hash6, ShouldEqual, hash6b)
+		So(hash6, ShouldEqual, hash6c)
+		So(hash6, ShouldEqual, hash6d)
 
 		rules, err = YamlReadRulesFromFile("../files/rules/condition_keyword/invalid_rules_with_condition_keyword.yaml")
 		So(err, ShouldNotEqual, nil)
@@ -215,7 +211,7 @@ func TestConditionsTree3(t *testing.T) {
 	})
 }
 
-func compareJsonAndYamlHash(filename string)(string) {
+func compareJsonAndYamlHash(filename string) string {
 	rules, err := YamlReadRulesFromFile(filename)
 	So(err, ShouldEqual, nil)
 	hash1 := RuleMD5Hash(rules.Rules[0])

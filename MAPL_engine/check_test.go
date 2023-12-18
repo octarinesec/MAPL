@@ -160,10 +160,90 @@ func TestMaplEngine(t *testing.T) {
 	Convey("tests", t, func() {
 
 		results, _ := test_CheckMessages("../files/rules/basic_rules/rules_basic_v2.yaml", "../files/messages/main_fields/messages_basic_sender_name.yaml")
-		So(results[0], ShouldEqual, DEFAULT)
+		So(results[0], ShouldEqual, ALLOW)
 		So(results[1], ShouldEqual, DEFAULT)
 		So(results[2], ShouldEqual, DEFAULT)
 		So(results[3], ShouldEqual, DEFAULT)
+		fmt.Println("----------------------")
+
+	})
+}
+
+func TestMaplEngineWildcardsInSenderReceiver(t *testing.T) {
+
+	logging := false
+	if logging {
+		// setup a log outfile file
+		f, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777) //create your file with desired read/write permissions
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Sync()
+		defer f.Close()
+		log.SetOutput(f) //set output of logs to f
+	} else {
+		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
+	}
+
+	reporting.QuietMode()
+	Convey("tests", t, func() {
+
+		results, _ := test_CheckMessages("../files/rules/basic_rules/rules_basic_v2_wildcards_sender_receiver.yaml", "../files/messages/main_fields/messages_basic_sender_receiver_names.yaml")
+		So(results[0], ShouldEqual, ALLOW)
+		So(results[1], ShouldEqual, ALLOW)
+		So(results[2], ShouldEqual, DEFAULT)
+		So(results[3], ShouldEqual, ALLOW)
+		fmt.Println("----------------------")
+
+	})
+}
+
+func TestMaplEngineNoAutomaticWildcardsInConditions(t *testing.T) {
+
+	// string in jsonpath condition is regarded as a string and not converted to regex.
+	// RE should be used with a correct regex (i.e. use ".*" and not "*")
+	// in other fields (sender, receiver, etc...) it is converted to regex.
+
+	logging := false
+	if logging {
+		// setup a log outfile file
+		f, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777) //create your file with desired read/write permissions
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Sync()
+		defer f.Close()
+		log.SetOutput(f) //set output of logs to f
+	} else {
+		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
+	}
+
+	reporting.QuietMode()
+	Convey("tests", t, func() {
+
+		results, _ := test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions/rules_with_jsonpath_conditions_RE_with_wildcard_wrong_regex.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1_with_wildcard_in_field3.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions/rules_with_jsonpath_conditions_RE_with_wildcard_correct_regex.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1_with_wildcard_in_field3.json")
+		So(results[0], ShouldEqual, ALLOW)
+
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions/rules_with_jsonpath_conditions_EQ_with_wildcard.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1_with_wildcard_in_field0.json")
+		So(results[0], ShouldEqual, ALLOW)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions/rules_with_jsonpath_conditions_EQ_with_wildcard.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1_with_wildcard_in_field1.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions/rules_with_jsonpath_conditions_EQ_with_wildcard.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1_with_wildcard_in_field2.json")
+		So(results[0], ShouldEqual, DEFAULT)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions/rules_with_jsonpath_conditions_EQ_with_wildcard.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1_with_wildcard_in_field3.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions/rules_with_jsonpath_conditions_RE_with_wildcard.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1_with_wildcard_in_field0.json")
+		So(results[0], ShouldEqual, ALLOW)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions/rules_with_jsonpath_conditions_RE_with_wildcard.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1_with_wildcard_in_field1.json")
+		So(results[0], ShouldEqual, ALLOW)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions/rules_with_jsonpath_conditions_RE_with_wildcard.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1_with_wildcard_in_field2.json")
+		So(results[0], ShouldEqual, ALLOW)
+		results, _ = test_CheckMessagesWithRawData("../files/rules/with_jsonpath_conditions/rules_with_jsonpath_conditions_RE_with_wildcard.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1_with_wildcard_in_field3.json")
+		So(results[0], ShouldEqual, DEFAULT)
+
 		fmt.Println("----------------------")
 
 	})
@@ -488,6 +568,9 @@ func TestMaplEngineJsonConditionsDebugging(t *testing.T) {
 		err = json.Unmarshal([]byte(dataJson2), &c2)
 		So(err, ShouldBeNil)
 
+		results_debug, _ := test_ConditionsWithJsonRaw("../files/rules/debugging/rule_suspicious_behaviour1.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_suspicious_behaviour1.json")
+		So(results_debug[0][0], ShouldBeTrue)
+
 		results, _ := test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_1.json")
 		So(results[0], ShouldEqual, DEFAULT)
 		results, _ = test_CheckMessagesWithRawData("../files/rules/debugging/rules_with_jsonpath_debug_with_array_index.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/debugging/json_raw_data_debug_with_array_index_2.json")
@@ -559,20 +642,51 @@ func TestMaplEngineJsonConditionWithReturnValues(t *testing.T) {
 		fmt.Println(str)
 
 		results, extraData, _ := test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_return_value/rules_with_condition_keyword_and_return_value.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data_condition_with_return_values.json")
-		So(len(extraData[0]), ShouldEqual, 1)
-		So(len(extraData[0][0]), ShouldEqual, 2)
-		So(extraData[0][0]["name"], ShouldEqual, "containerName")
-		So(extraData[0][0]["command"], ShouldEqual, "containerCommand")
+		So(len(*extraData[0]), ShouldEqual, 2)
+		So((*extraData[0])["name"][0], ShouldEqual, "containerName")
+		So((*extraData[0])["command"][0], ShouldEqual, "containerCommand")
 		So(results[0], ShouldEqual, ALLOW)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_return_value/rules_with_condition_keyword_and_return_value2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data_condition_with_return_values.json")
-		So(len(extraData[0]), ShouldEqual, 1)
-		So(len(extraData[0][0]), ShouldEqual, 1) // when we have more than one returnValues we keep only the last one!
-		So(extraData[0][0]["otherStuff"], ShouldEqual, "otherStuff")
+		So(len((*extraData[0])), ShouldEqual, 3) // when we have more than one returnValues in seperate conditions we merge them
+		So((*extraData[0])["name"][0], ShouldEqual, "containerName")
+		So((*extraData[0])["command"][0], ShouldEqual, "containerCommand")
+		So((*extraData[0])["otherStuff"][0], ShouldEqual, "otherStuff")
 		So(results[0], ShouldEqual, ALLOW)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_return_value/rules_with_jsonpath_EQ_on_array_with_return_value.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_EQ1.json")
-		So(len(extraData[0]), ShouldEqual, 0) // in ANY node we use the ANY global return value and not the return value within the condition!
+		So(len((*extraData[0])), ShouldEqual, 2) // in ANY node we use the ANY global return value and also the return value within the condition!
+		So(len((*extraData[0])["name1"]), ShouldEqual, 1)
+		So(len((*extraData[0])["name2"]), ShouldEqual, 1)
+		So((*extraData[0])["name1"][0], ShouldEqual, "proxy")
+		So((*extraData[0])["name2"][0], ShouldEqual, "proxy")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_return_value/rules_with_jsonpath_EQ_on_array_with_return_value2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_EQ1.json")
+		So(len((*extraData[0])), ShouldEqual, 1)         // in ANY node we use the ANY global return value and also the return value within the condition!
+		So(len((*extraData[0])["name"]), ShouldEqual, 2) // but if we give the same name then they will be appended
+		So((*extraData[0])["name"][0], ShouldEqual, "proxy")
+		So((*extraData[0])["name"][1], ShouldEqual, "proxy")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_return_value/rules_with_jsonpath_EQ_on_array_with_return_value_in_sub_node.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_EQ1.json")
+		So(len((*extraData[0])), ShouldEqual, 2)
+		So(len((*extraData[0])["name1"]), ShouldEqual, 2)
+		So(len((*extraData[0])["name2"]), ShouldEqual, 2)
+		So((*extraData[0])["name1"][0], ShouldEqual, "cart7")
+		So((*extraData[0])["name1"][1], ShouldEqual, "cart7b")
+		So((*extraData[0])["name2"][0], ShouldEqual, "cart7")
+		So((*extraData[0])["name2"][1], ShouldEqual, "cart7b")
+		So(results[0], ShouldEqual, BLOCK)
+
+		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_return_value/rules_with_jsonpath_EQ_on_array_with_return_value_in_sub_node2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all2/json_raw_data_EQ1.json")
+		So(len((*extraData[0])), ShouldEqual, 2)
+		So(len((*extraData[0])["name1"]), ShouldEqual, 2)
+		So(len((*extraData[0])["name2"]), ShouldEqual, 2)
+		So((*extraData[0])["name1"][0], ShouldEqual, "cart7")
+		So((*extraData[0])["name1"][1], ShouldEqual, "cart7b")
+		So((*extraData[0])["name2"][0], ShouldEqual, "cart7")
+		So((*extraData[0])["name2"][1], ShouldEqual, "cart7b")
 		So(results[0], ShouldEqual, BLOCK)
 
 	})
@@ -662,29 +776,31 @@ func TestMaplEngineJsonConditionsWildcards(t *testing.T) {
 		}
 
 		results, extraData, _ := test_CheckMessagesWithRawDataWithReturnValue("../files/rules/deepscan/rules_with_jsonpath_deepscan.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/deepscan/json_raw_data_2containers.json")
-		So(extraData[0][0]["name"].(string), ShouldEqual, "c2")
+		So((*extraData[0])["name"][0].(string), ShouldEqual, "c2")
 		So(results[0], ShouldEqual, BLOCK)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/deepscan/rules_with_jsonpath_deepscan.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/deepscan/json_raw_data_2containers.json")
-		So(extraData[0][0]["name"].(string), ShouldEqual, "c2")
+		So((*extraData[0])["name"][0].(string), ShouldEqual, "c2")
 		So(results[0], ShouldEqual, BLOCK)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/deepscan/rules_with_jsonpath_deepscan.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/deepscan/json_raw_data_2containers_dep.json")
-		So(len(extraData[0]), ShouldEqual, 0)
+		z := extraData[0]
+		fmt.Println(z)
+		So(extraData[0], ShouldBeNil)
 		So(results[0], ShouldEqual, DEFAULT)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/deepscan/rules_with_jsonpath_deepscan2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/deepscan/json_raw_data_2containers_dep.json")
-		So(extraData[0][0]["name"].(string), ShouldEqual, "c2")
+		So((*extraData[0])["name"][0].(string), ShouldEqual, "c2")
 		So(results[0], ShouldEqual, BLOCK)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/deepscan/rules_with_jsonpath_deepscan2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/deepscan/json_raw_data_2containers_dep2.json")
-		So(extraData[0][0]["name"].(string), ShouldEqual, "c2A")
-		So(extraData[0][1]["name"].(string), ShouldEqual, "c2B")
+		So((*extraData[0])["name"][0].(string), ShouldEqual, "c2A")
+		So((*extraData[0])["name"][1].(string), ShouldEqual, "c2B")
 		So(results[0], ShouldEqual, BLOCK)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/deepscan/rules_with_jsonpath_deepscan2b.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/deepscan/json_raw_data_2containers_dep2.json")
-		So(extraData[0][0]["name"].(string), ShouldEqual, "c2A")
-		So(extraData[0][1]["name"].(string), ShouldEqual, "c2B")
+		So((*extraData[0])["name"][0].(string), ShouldEqual, "c2A")
+		So((*extraData[0])["name"][1].(string), ShouldEqual, "c2B")
 		So(results[0], ShouldEqual, BLOCK)
 	})
 }
@@ -1277,42 +1393,42 @@ func TestMaplEngineJsonConditionsOnArraysAnyReturnValues(t *testing.T) {
 		fmt.Println(str)
 
 		results, extraData, _ := test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_1container.json")
-		So(len(extraData[0]), ShouldEqual, 0)
+		So(extraData[0], ShouldBeNil)
 		So(results[0], ShouldEqual, BLOCK)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_1container.json")
-		val := extraData[0][0]["name"].(string)
+		val := (*extraData[0])["name"][0].(string)
 		So(val, ShouldEqual, "c1")
 		So(results[0], ShouldEqual, BLOCK)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000.json")
 		//So(extraData[0], ShouldEqual, "c1")
-		val = extraData[0][0]["name"].(string)
+		val = (*extraData[0])["name"][0].(string)
 		So(val, ShouldEqual, "c1")
 		So(results[0], ShouldEqual, BLOCK)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000b.json")
-		So(len(extraData[0]), ShouldEqual, 0)
+		So(extraData[0], ShouldBeNil)
 		So(results[0], ShouldEqual, DEFAULT)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000c.json")
 		//So(extraData[0], ShouldEqual, "c1")
-		val = extraData[0][0]["name"].(string)
+		val = (*extraData[0])["name"][0].(string)
 		So(val, ShouldEqual, "c1")
 		So(results[0], ShouldEqual, BLOCK)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY2b.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000c.json")
 		//So(extraData[0], ShouldEqual, "c1")
-		val = extraData[0][0]["name"].(string)
+		val = (*extraData[0])["name"][0].(string)
 		So(val, ShouldEqual, "c1")
-		valBytes, _ := json.Marshal(extraData[0][0]["resources"])
+		valBytes, _ := json.Marshal((*extraData[0])["resources"][0])
 		val = string(valBytes)
 		val2 := `{"limits":{"cpu":"2","memory":"1000Mi"}}`
 		So(val, ShouldEqual, val2)
 		var buf bytes.Buffer
 		e := json.NewEncoder(&buf)
 		e.SetEscapeHTML(false)
-		e.Encode(extraData[0][0]["all"]) // we use encode instead of marshal so that we do not translate to utf-8 for easier comparison of strings
+		e.Encode((*extraData[0])["all"][0]) // we use encode instead of marshal so that we do not translate to utf-8 for easier comparison of strings
 		//valBytes,_=json.Marshal(extraData[0][0]["all"])
 		//val=string(valBytes)
 		val = buf.String()
@@ -1324,36 +1440,36 @@ func TestMaplEngineJsonConditionsOnArraysAnyReturnValues(t *testing.T) {
 		//-----------
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000d.json")
 		//So(extraData[0], ShouldEqual, "c1,c2")
-		val = extraData[0][0]["name"].(string)
+		val = (*extraData[0])["name"][0].(string)
 		So(val, ShouldEqual, "c1")
-		val = extraData[0][1]["name"].(string)
+		val = (*extraData[0])["name"][1].(string)
 		So(val, ShouldEqual, "c2")
 		So(results[0], ShouldEqual, BLOCK)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY2b.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000d.json")
 		// first container that pass the ANY [0][0]
-		val = extraData[0][0]["name"].(string)
+		val = (*extraData[0])["name"][0].(string)
 		So(val, ShouldEqual, "c1")
-		valBytes, _ = json.Marshal(extraData[0][0]["resources"])
+		valBytes, _ = json.Marshal((*extraData[0])["resources"][0])
 		val = string(valBytes)
 		val2 = `{"limits":{"cpu":"2","memory":"1000Mi"}}`
 		So(val, ShouldEqual, val2)
 		buf.Reset()
-		e.Encode(extraData[0][0]["all"]) // we use encode instead of marshal so that we do not translate to utf-8 for easier comparison of strings
+		e.Encode((*extraData[0])["all"][0]) // we use encode instead of marshal so that we do not translate to utf-8 for easier comparison of strings
 		val = buf.String()
 		val = val[0 : len(val)-1] // since Encode adds a line break
 		val2 = `{"command":["sh","-c","echo 'Hello1 AppArmor!' && sleep 1h"],"image":"busybox","name":"c1","resources":{"limits":{"cpu":"2","memory":"1000Mi"}}}`
 		So(val, ShouldEqual, val2)
 
 		// second container that pass the ANY [0][1]
-		val = extraData[0][1]["name"].(string)
+		val = (*extraData[0])["name"][1].(string)
 		So(val, ShouldEqual, "c2")
-		valBytes, _ = json.Marshal(extraData[0][1]["resources"])
+		valBytes, _ = json.Marshal((*extraData[0])["resources"][1])
 		val = string(valBytes)
 		val2 = `{"limits":{"cpu":"1","memory":"1100Mi"}}`
 		So(val, ShouldEqual, val2)
 		buf.Reset()
-		e.Encode(extraData[0][1]["all"]) // we use encode instead of marshal so that we do not translate to utf-8 for easier comparison of strings
+		e.Encode((*extraData[0])["all"][1]) // we use encode instead of marshal so that we do not translate to utf-8 for easier comparison of strings
 		val = buf.String()
 		val = val[0 : len(val)-1] // since Encode adds a line break
 		val2 = `{"command":["sh","-c","echo 'Hello AppArmor!' && sleep 2h"],"image":"busybox","name":"c2","resources":{"limits":{"cpu":"1","memory":"1100Mi"}}}`
@@ -1368,36 +1484,36 @@ func TestMaplEngineJsonConditionsOnArraysAnyReturnValues(t *testing.T) {
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000e.json")
 		//So(extraData[0], ShouldEqual, "c1,c3")
-		val = extraData[0][0]["name"].(string)
+		val = (*extraData[0])["name"][0].(string)
 		So(val, ShouldEqual, "c1")
-		val = extraData[0][1]["name"].(string)
+		val = (*extraData[0])["name"][1].(string)
 		So(val, ShouldEqual, "c3")
 		So(results[0], ShouldEqual, BLOCK)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY2b.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000e.json")
 		//So(extraData[0], ShouldEqual, "c1,c3")
 		// first container that pass the ANY [0][0]
-		val = extraData[0][0]["name"].(string)
+		val = (*extraData[0])["name"][0].(string)
 		So(val, ShouldEqual, "c1")
-		valBytes, _ = json.Marshal(extraData[0][0]["resources"])
+		valBytes, _ = json.Marshal((*extraData[0])["resources"][0])
 		val = string(valBytes)
 		val2 = `{"limits":{"cpu":"2","memory":"1000Mi"}}`
 		So(val, ShouldEqual, val2)
 		buf.Reset()
-		e.Encode(extraData[0][0]["all"]) // we use encode instead of marshal so that we do not translate to utf-8 for easier comparison of strings
+		e.Encode((*extraData[0])["all"][0]) // we use encode instead of marshal so that we do not translate to utf-8 for easier comparison of strings
 		val = buf.String()
 		val = val[0 : len(val)-1] // since Encode adds a line break
 		val2 = `{"command":["sh","-c","echo 'Hello1 AppArmor!' && sleep 1h"],"image":"busybox","name":"c1","resources":{"limits":{"cpu":"2","memory":"1000Mi"}}}`
 		So(val, ShouldEqual, val2)
 		// second container that pass the ANY [0][1]
-		val = extraData[0][1]["name"].(string)
+		val = (*extraData[0])["name"][1].(string)
 		So(val, ShouldEqual, "c3")
-		valBytes, _ = json.Marshal(extraData[0][1]["resources"])
+		valBytes, _ = json.Marshal((*extraData[0])["resources"][1])
 		val = string(valBytes)
 		val2 = `{"limits":{"cpu":"1","memory":"1100Mi"}}`
 		So(val, ShouldEqual, val2)
 		buf.Reset()
-		e.Encode(extraData[0][1]["all"]) // we use encode instead of marshal so that we do not translate to utf-8 for easier comparison of strings
+		e.Encode((*extraData[0])["all"][1]) // we use encode instead of marshal so that we do not translate to utf-8 for easier comparison of strings
 		val = buf.String()
 		val = val[0 : len(val)-1] // since Encode adds a line break
 		val2 = `{"command":["sh","-c","echo 'Hello1 AppArmor!' && sleep 3h"],"image":"busybox","name":"c3","resources":{"limits":{"cpu":"1","memory":"1100Mi"}}}`
@@ -1407,84 +1523,91 @@ func TestMaplEngineJsonConditionsOnArraysAnyReturnValues(t *testing.T) {
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000f.json")
 		//So(extraData[0], ShouldEqual, "c3")
-		val = extraData[0][0]["name"].(string)
+		val = (*extraData[0])["name"][0].(string)
 		So(val, ShouldEqual, "c3")
 		So(results[0], ShouldEqual, BLOCK)
 
 		//---------
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_1container.json")
-		val = extraData[0][0]["name"].(string)
+		val = (*extraData[0])["name"][0].(string)
 		So(val, ShouldEqual, "c1")
 		So(results[0], ShouldEqual, BLOCK)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000.json")
-		val = extraData[0][0]["name"].(string)
+		val = (*extraData[0])["name"][0].(string)
 		So(val, ShouldEqual, "c1")
 		So(results[0], ShouldEqual, BLOCK)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000b.json")
-		So(len(extraData[0]), ShouldEqual, 0)
+		So(extraData[0], ShouldBeNil)
 		So(results[0], ShouldEqual, DEFAULT)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000c.json")
-		val = extraData[0][0]["name"].(string)
+		val = (*extraData[0])["name"][0].(string)
 		So(val, ShouldEqual, "c1")
 		So(results[0], ShouldEqual, BLOCK)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000d.json")
-		val = extraData[0][0]["name"].(string)
+		val = (*extraData[0])["name"][0].(string)
 		So(val, ShouldEqual, "c1")
-		val = extraData[0][1]["name"].(string)
+		val = (*extraData[0])["name"][1].(string)
 		So(val, ShouldEqual, "c2")
 		So(results[0], ShouldEqual, BLOCK)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000e.json")
-		val = extraData[0][0]["name"].(string)
+		val = (*extraData[0])["name"][0].(string)
 		So(val, ShouldEqual, "c1")
-		val = extraData[0][1]["name"].(string)
+		val = (*extraData[0])["name"][1].(string)
 		So(val, ShouldEqual, "c3")
 		So(results[0], ShouldEqual, BLOCK)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY3.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000f.json")
-		val = extraData[0][0]["name"].(string)
+		val = (*extraData[0])["name"][0].(string)
 		So(val, ShouldEqual, "c3")
 		So(results[0], ShouldEqual, BLOCK)
 
 		//---------------
 		// OR with two ANYs
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY4.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000g.json")
-		val = extraData[0][0]["name"].(string)
+		val = (*extraData[0])["name"][0].(string)
 		So(val, ShouldEqual, "c1") // the first (2 ANYs under OR)
+		val = (*extraData[0])["name"][1].(string)
+		So(val, ShouldEqual, "c2") // the second (2 ANYs under OR)
 		So(results[0], ShouldEqual, BLOCK)
 
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY4.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000h.json")
-		val = extraData[0][0]["name"].(string)
+		val = (*extraData[0])["name"][0].(string)
 		So(val, ShouldEqual, "c2") // the first (2 ANYs under OR)
 		So(results[0], ShouldEqual, BLOCK)
 
 		//---------------
 		// AND with two ANYs
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY7.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000g.json")
-		val = extraData[0][0]["name2"].(string)
+		val = (*extraData[0])["name2"][0].(string)
 		So(val, ShouldEqual, "c2") // the last (2 ANYs under AND)
 		So(results[0], ShouldEqual, BLOCK)
 
 		//---------------
 		// NOT with ANY
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY5.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000h.json")
-		So(len(extraData[0]), ShouldEqual, 0) // NOT removes the extraData from the ANY node
+		So(extraData[0], ShouldBeNil) // NOT removes the extraData from the ANY node
 		So(results[0], ShouldEqual, BLOCK)
+
+		// now with the inner condition returned value not empty. The NOT should clear it
+		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY5.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000g.json")
+		So(extraData[0], ShouldBeNil) // NOT removes the extraData from the ANY node
+		So(results[0], ShouldEqual, DEFAULT)
 
 		//---------
 		// with units
 		results, extraData, _ = test_CheckMessagesWithRawDataWithReturnValue("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY6.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/any_all/json_raw_data_2containers_cpu2_mem2000i.json")
-		So(len(extraData[0]), ShouldEqual, 3)
-		val = extraData[0][0]["name"].(string)
+		So(len((*extraData[0])["name"]), ShouldEqual, 3)
+		val = (*extraData[0])["name"][0].(string)
 		So(val, ShouldEqual, "c2")
-		val = extraData[0][1]["name"].(string)
+		val = (*extraData[0])["name"][1].(string)
 		So(val, ShouldEqual, "c4")
-		val = extraData[0][2]["name"].(string)
+		val = (*extraData[0])["name"][2].(string)
 		So(val, ShouldEqual, "c6")
 		So(results[0], ShouldEqual, BLOCK)
 
@@ -1658,6 +1781,11 @@ func TestRuleValidation(t *testing.T) {
 		isvalid_all, _ = test_RuleValidity("../files/rules/invalid_rules/one_valid_one_invalid_rule_RE.yaml")
 		So(isvalid_all, ShouldEqual, false)
 
+		//----------------------
+		// with_variables
+		isvalid_all, _ = test_RuleValidity("../files/rules/invalid_rules/with_variables/rules_with_variables_AND_with_error.yaml")
+		So(isvalid_all, ShouldEqual, false)
+
 	})
 }
 
@@ -1761,6 +1889,61 @@ func TestRulesWithPredefinedStrings(t *testing.T) {
 		So(results[0], ShouldEqual, ALLOW)
 		results, _, _ = test_CheckMessagesWithRawDataAndPredefinedStrings("../files/rules/predefined_strings/rules_with_condition_translation_foo_regex_list2.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/predefined_strings/json_raw_workload_pod_abc.json", "../files/lists/predefined_list_allowed_labels.yaml")
 		So(results[0], ShouldEqual, DEFAULT)
+
+	})
+}
+
+func TestRulesWithVariables(t *testing.T) {
+
+	logging := false
+	if logging {
+		// setup a log outfile file
+		f, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777) //create your file with desired read/write permissions
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Sync()
+		defer f.Close()
+		log.SetOutput(f) //set output of logs to f
+	} else {
+		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
+	}
+
+	reporting.QuietMode()
+	Convey("tests", t, func() {
+
+		results, err := test_CheckMessagesWithRawData("../files/rules/invalid_rules/with_variables/rules_with_variables_AND_with_error.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1.json")
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldEqual, "could not replace variable in value [#variableMissing]")
+
+		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_AND.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1.json")
+		So(err, ShouldBeNil)
+		So(results[0], ShouldEqual, ALLOW)
+
+		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_OR.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/basic_jsonpath/json_raw_data1.json")
+		So(err, ShouldBeNil)
+		So(results[0], ShouldEqual, ALLOW)
+
+		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_AND_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts.json")
+		So(err, ShouldBeNil)
+		So(results[0], ShouldEqual, ALLOW)
+
+		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_AND_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_different_process_id.json")
+		So(err, ShouldBeNil)
+		So(results[0], ShouldEqual, DEFAULT)
+
+		// BUT:
+		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_AND_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_different_process_id2.json")
+		So(err, ShouldBeNil)
+		So(results[0], ShouldEqual, ALLOW)
+
+		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_without_variables_AND_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_with_processes.json")
+		So(err, ShouldBeNil)
+		So(results[0], ShouldEqual, ALLOW)
+
+		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_AND_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_with_processes.json")
+		So(err, ShouldBeNil)
+		So(results[0], ShouldEqual, ALLOW)
 
 	})
 }
@@ -2138,21 +2321,23 @@ func test_CheckMessagesWithRawData(rulesFilename, messagesFilename, rawFilename 
 		So(msg, ShouldEqual, msg2)
 		So(relevantRuleIndex, ShouldEqual, relevantRuleIndex2)
 		So(fmt.Sprintf("%v", appliedRulesIndices), ShouldEqual, fmt.Sprintf("%v", appliedRulesIndices2))
-		So(fmt.Sprintf("%v", extraData), ShouldEqual, fmt.Sprintf("%v", extraData2))
-
+		for i, _ := range extraData {
+			So(fmt.Sprintf("%v", extraData[i]), ShouldEqual, fmt.Sprintf("%v", extraData2[i]))
+		}
 	}
 	return outputResults, nil
 }
 
-func test_CheckMessagesWithRawDataWithReturnValue(rulesFilename, messagesFilename, rawFilename string) ([]int, [][]map[string]interface{}, error) {
+func test_CheckMessagesWithRawDataWithReturnValue(rulesFilename, messagesFilename, rawFilename string) ([]int, []*map[string][]interface{}, error) {
 
 	rules, messages, data, err := readRulesMessageRawData(rulesFilename, messagesFilename, rawFilename, "")
+	So(err, ShouldBeNil)
 	if err != nil {
-		return []int{}, [][]map[string]interface{}{}, err
+		return []int{}, []*map[string][]interface{}{}, err
 	}
 
 	var outputResults []int
-	var outputResultsExtraData [][]map[string]interface{}
+	var outputResultsExtraData []*map[string][]interface{}
 
 	for _, message := range messages.Messages {
 
@@ -2198,8 +2383,9 @@ func test_CheckMessagesWithRawDataWithReturnValue(rulesFilename, messagesFilenam
 		So(msg, ShouldEqual, msg2)
 		So(relevantRuleIndex, ShouldEqual, relevantRuleIndex2)
 		So(fmt.Sprintf("%v", appliedRulesIndices), ShouldEqual, fmt.Sprintf("%v", appliedRulesIndices2))
-		So(fmt.Sprintf("%+v", extraData), ShouldEqual, fmt.Sprintf("%+v", extraData2)) // this checks the returnValueJsonpath
-
+		for i := range extraData {
+			So(fmt.Sprintf("%+v", extraData[i]), ShouldEqual, fmt.Sprintf("%+v", extraData2[i])) // this checks the returnValueJsonpath
+		}
 	}
 	return outputResults, outputResultsExtraData, nil
 }
@@ -2264,22 +2450,22 @@ func test_ConditionsWithJsonRaw(rulesFilename string, messagesFilename string, r
 		return [][]bool{}, err
 	}
 
-	var outputResults [][]bool
-	outputResults = make([][]bool, len(messages.Messages))
-	var outputResultsExtraData [][][]map[string]interface{}
-	outputResultsExtraData = make([][][]map[string]interface{}, len(messages.Messages))
+	outputResults := make([][]bool, len(messages.Messages))
+	outputResultsExtraData := make([][]map[string][]interface{}, len(messages.Messages))
+
 	for i_message, message := range messages.Messages {
 		outputResults[i_message] = make([]bool, len(rules.Rules))
-		outputResultsExtraData[i_message] = make([][]map[string]interface{}, len(rules.Rules))
+		outputResultsExtraData[i_message] = make([]map[string][]interface{}, len(rules.Rules))
 		for i_rule, rule := range rules.Rules {
 
 			message.RequestJsonRaw = &data
 
-			result, extraData := TestConditions(&rule, &message)
+			extraData := make(map[string][]interface{})
+			result := TestConditions(&rule, &message, &extraData)
 			if TestPerformance {
 				t0 := time.Now()
 				for i := 0; i < NumberOfChecks; i++ {
-					TestConditions(&rule, &message)
+					TestConditions(&rule, &message, &extraData)
 				}
 				d := time.Since(t0)
 				elapsedBytes += d
@@ -2304,7 +2490,7 @@ func test_ConditionsWithJsonRaw(rulesFilename string, messagesFilename string, r
 			if TestPerformance {
 				t0 := time.Now()
 				for i := 0; i < NumberOfChecks; i++ {
-					TestConditions(&rule, &message)
+					TestConditions(&rule, &message, &extraData)
 				}
 				d := time.Since(t0)
 				elapsedInterface += d

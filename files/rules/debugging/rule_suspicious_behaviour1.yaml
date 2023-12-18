@@ -1,0 +1,25 @@
+rules:
+
+  - rule_id: "suspicious behavior in last 10 minutes"
+
+    metadata:
+      baseSeverity: 4
+      description: "suspicious behavior in last 10 minutes"
+    conditions:
+      condition:
+        AND:
+          - attribute: jsonpath:$.metadata.numUniqueAlertsInLast10Minutes
+            method: GE
+            value: "4"
+            returnValueJsonpath:
+              numUniqueAlertsInLast10Minutes: "jsonpath:$.metadata.numUniqueAlertsInLast10Minutes"
+          - attribute: jsonpath:$.metadata.numUniqueProcessAlertsInLast10Minutes
+            method: GE
+            value: "1"
+            returnValueJsonpath:
+              numUniqueProcessAlertsInLast10Minutes: "jsonpath:$.metadata.numUniqueProcessAlertsInLast10Minutes"
+          - attribute: jsonpath:$.metadata.numUniqueFileAlertsInLast10Minutes
+            method: GE
+            value: "1"
+            returnValueJsonpath:
+              numUniqueFileAlertsInLast10Minutes: "jsonpath:$.metadata.numUniqueFileAlertsInLast10Minutes"

@@ -1,0 +1,17 @@
+{
+  "workload_id": "dep1",
+  "alerts": [
+    {
+      "alert_id": "1",
+      "process_id": "process_123",
+      "process_parent_id": "process_0",
+      "alert_type": "new process"
+    },
+    {
+      "alert_id": "2",
+      "process_id": "process_321",
+      "process_parent_id": "process_1",
+      "alert_type": "high cpu"
+    }
+  ]
+}
