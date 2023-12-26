@@ -1,0 +1,49 @@
+rules:
+
+  - rule_id: 0
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "workload"
+    protocol: "*"
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: "*"
+    decision: allow
+    conditions:
+      AND:
+
+      - ANY:
+          parentJsonpathAttribute: "jsonpath:$.alerts[:]"
+          condition:
+            attribute: jsonpath:$RELATIVE.alertSubtype
+            method: EQ
+            value: "NewProcess"
+            returnValueJsonpath:
+              newProcessCommand: jsonpath:$RELATIVE.command
+
+      - ANY:
+          parentJsonpathAttribute: "jsonpath:$.alerts[:]"
+          returnValueJsonpath:
+            name: "jsonpath:$RELATIVE.alertString"
+            args: "jsonpath:$RELATIVE.args"
+            cmds: "jsonpath:$RELATIVE.command"
+          condition:
+            AND:
+              - attribute: "jsonpath:$RELATIVE.args"
+                method: CONTAINS
+                value: "#newProcessCommand"
+              - OR:
+                - attribute: "jsonpath:$RELATIVE.command"
+                  method: EQ
+                  value: "apt-get"
+                - attribute: "jsonpath:$RELATIVE.command"
+                  method: EQ
+                  value: "apt"
+                - attribute: "jsonpath:$RELATIVE.command"
+                  method: EQ
+                  value: "yum"
+

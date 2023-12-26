@@ -1,0 +1,101 @@
+{
+  "metadata": {
+    "numUniqueAlertsInLastMinute": 1,
+    "numUniqueAlertsInLast10Minutes": 4,
+    "numUniqueAlertsInLast30Minutes": 4,
+    "numUniqueAlertsInLastHour": 4,
+    "numUniqueAlertsInLast3Hours": 4,
+    "numUniqueProcessAlertsInLastMinute": 1,
+    "numUniqueProcessAlertsInLast10Minutes": 3,
+    "numUniqueProcessAlertsInLast30Minutes": 3,
+    "numUniqueProcessAlertsInLastHour": 3,
+    "numUniqueProcessAlertsInLast3Hours": 3,
+    "numUniqueFileAlertsInLastMinute": 0,
+    "numUniqueFileAlertsInLast10Minutes": 1,
+    "numUniqueFileAlertsInLast30Minutes": 1,
+    "numUniqueFileAlertsInLastHour": 1,
+    "numUniqueFileAlertsInLast3Hours": 1
+  },
+  "alerts": [
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e",
+      "command": "apt",
+      "args": "install nmap",
+      "alertString": "process [NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e] was not seen before [TYPE_FILE]",
+      "eventTime": "2023-12-26T11:54:53.2682799+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcess"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e",
+      "command": "apt",
+      "args": "install nmap",
+      "action": "ACTION_FILE_CREATE",
+      "folder": "/opt/shipping/",
+      "file": "alpha.sh",
+      "alertString": "action [ACTION_FILE_CREATE] was not seen before for process NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e [file=/opt/shipping//alpha.sh] [TYPE_FILE]",
+      "eventTime": "2023-12-26T11:51:52.2682799+02:00",
+      "alertType": "FileAlert",
+      "alertSubtype": "NewFileAction"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|nmap\u003c0\u003e",
+      "command": "nmap",
+      "args": "google.com",
+      "alertString": "process [NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|nmap\u003c0\u003e] was not seen before [TYPE_PROCESS]",
+      "eventTime": "2023-12-26T11:48:51.2682799+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcess"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|cp\u003c0\u003e",
+      "command": "apt",
+      "args": "install nmap",
+      "alertString": "process [NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|cp\u003c0\u003e] was not seen before [TYPE_PROCESS]",
+      "eventTime": "2023-12-26T11:45:50.2682799+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcess"
+    }
+  ],
+  "alertsInLast10Minutes": [
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e",
+      "command": "apt",
+      "args": "install nmap",
+      "alertString": "process [NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e] was not seen before [TYPE_FILE]",
+      "eventTime": "2023-12-26T11:54:53.2682799+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcess"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e",
+      "command": "apt",
+      "args": "install nmap",
+      "action": "ACTION_FILE_CREATE",
+      "folder": "/opt/shipping/",
+      "file": "alpha.sh",
+      "alertString": "action [ACTION_FILE_CREATE] was not seen before for process NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e [file=/opt/shipping//alpha.sh] [TYPE_FILE]",
+      "eventTime": "2023-12-26T11:51:52.2682799+02:00",
+      "alertType": "FileAlert",
+      "alertSubtype": "NewFileAction"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|ls\u003c0\u003e",
+      "command": "apt",
+      "args": "install nmap",
+      "alertString": "process [NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|ls\u003c0\u003e] was not seen before [TYPE_PROCESS]",
+      "eventTime": "2023-12-26T11:48:51.2682799+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcess"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|cp\u003c0\u003e",
+      "command": "apt",
+      "args": "install nmap",
+      "alertString": "process [NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|cp\u003c0\u003e] was not seen before [TYPE_PROCESS]",
+      "eventTime": "2023-12-26T11:45:50.2682799+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcess"
+    }
+  ]
+}

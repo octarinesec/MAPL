@@ -1932,16 +1932,16 @@ func TestRulesWithVariables(t *testing.T) {
 		So(err, ShouldBeNil)
 		So(results[0], ShouldEqual, DEFAULT)
 
-		// BUT:
 		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_AND_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_different_process_id2.json")
 		So(err, ShouldBeNil)
 		So(results[0], ShouldEqual, ALLOW)
 
+		//BUT (organizing the alerts differently so no variables are needed):
 		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_without_variables_AND_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_with_processes.json")
 		So(err, ShouldBeNil)
 		So(results[0], ShouldEqual, ALLOW)
 
-		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_AND_ANY.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_with_processes.json")
+		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_AND_ANY_alerts_cache.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_cache.json")
 		So(err, ShouldBeNil)
 		So(results[0], ShouldEqual, ALLOW)
 

@@ -346,7 +346,15 @@ func ConvertConditionStringToIntFloatRegex(condition *Condition) error { // TO-D
 			condition.Method = "NRE"
 		}
 		condition.Value = tempString
-		condition.Value = tempString
+	}
+
+	if condition.Method == "CONTAINS" {
+		condition.Value = strings.Replace(condition.Value, ",", "|", -1)
+		condition.Method = "RE"
+	}
+	if condition.Method == "NCONTAINS" {
+		condition.Value = strings.Replace(condition.Value, ",", "|", -1)
+		condition.Method = "NRE"
 	}
 
 	tempString, factor := convertStringWithUnits(condition.Value)
