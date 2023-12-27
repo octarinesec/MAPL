@@ -43,7 +43,7 @@ rules:
               AND:
               - attribute: jsonpath:$RELATIVE.action
                 method: RE
-                value: "ACTION_FILE_."
+                value: "ACTION_FILE_.*"
               - attribute: jsonpath:$RELATIVE.action
                 method: NEQ
                 value: "ACTION_FILE_DELETE"

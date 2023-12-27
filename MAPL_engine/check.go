@@ -596,13 +596,13 @@ func testJsonPathCondition(c *Condition, message *MessageAttributes) bool {
 
 	method := strings.ToUpper(c.Method)
 	switch method {
-	case "GE", "GT", "LE", "LT", "EQ", "NEQ", "NE":
+	case "GE", "GT", "LE", "LT", "EQ", "NEQ", "NE", "INSTR":
 		valueStringWithoutUnits, factor := convertStringWithUnits(valueToCompareString) // if the conversion to float doesn't work we still want to use the original string so we use a temporary one
 		valueToCompareFloat, err := strconv.ParseFloat(valueStringWithoutUnits, 64)
 		valueToCompareFloat = valueToCompareFloat * factor
 
 		if err != nil {
-			if method == "EQ" || method == "NEQ" {
+			if method == "EQ" || method == "NEQ" || method == "INSTR" {
 				result = compareStringFunc(valueToCompareString, c.Method, c.Value) // compare strings (strightforward comparison. use of wildcards is only via RE)
 			} else {
 				log.Println("can't parse jsonpath value [float]")
@@ -688,7 +688,7 @@ func testJsonPathConditionOnInterface(c *Condition, message *MessageAttributes) 
 	result := false
 	method := strings.ToUpper(c.Method)
 	switch method {
-	case "GE", "GT", "LE", "LT", "EQ", "NEQ", "NE":
+	case "GE", "GT", "LE", "LT", "EQ", "NEQ", "NE", "INSTR":
 		flagCompareToNumber := false
 		var valueToCompareFloat float64
 		if c.ValueInt != nil || c.ValueFloat != nil {
@@ -706,7 +706,7 @@ func testJsonPathConditionOnInterface(c *Condition, message *MessageAttributes) 
 		}
 
 		if !flagCompareToNumber {
-			if method == "EQ" || method == "NEQ" {
+			if method == "EQ" || method == "NEQ" || method == "INSTR" {
 				//return compareStringWithWildcardsFunc(valueToCompareString, c.Method, c.ValueStringRegex) // compare strings with wildcards
 				return compareStringFunc(valueToCompareString, c.Method, c.Value) // compare strings (strightforward comparison. use of wildcards is only via RE)
 			} else {
@@ -865,6 +865,8 @@ func compareStringFunc(value1 string, method string, value2 string) bool {
 	switch method {
 	case "EQ", "eq":
 		return (value1 == value2)
+	case "INSTR", "instr":
+		return strings.Contains(value2, value1)
 	case "NEQ", "neq", "ne", "NE":
 		return (value1 != value2)
 	}

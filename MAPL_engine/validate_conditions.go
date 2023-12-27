@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var supportedMethodsSlice = []string{"ge", "GE", "gt", "GT", "le", "LE", "lt", "LT", "re", "RE", "nre", "NRE", "in", "IN", "nin", "NIN", "eq", "EQ", "neq", "NEQ", "ne", "NE", "ex", "EX", "nex", "NEX", "IS", "CONTAINS", "contains", "NCONTAINS", "ncontains"}
+var supportedMethodsSlice = []string{"ge", "GE", "gt", "GT", "le", "LE", "lt", "LT", "re", "RE", "nre", "NRE", "in", "IN", "nin", "NIN", "eq", "EQ", "neq", "NEQ", "ne", "NE", "ex", "EX", "nex", "NEX", "IS", "CONTAINS", "contains", "NCONTAINS", "ncontains", "INSTR", "instr"}
 var regexSlice = []string{"re", "nre", "RE", "NRE"}
 var numberMethodSlice = []string{"ge", "GE", "gt", "GT", "le", "LE", "lt", "LT"}
 var supportedAttributesPrefixes = []string{"$sender.", "$receiver.", "senderLabel[", "receiverLabel[", "jsonpath:"}

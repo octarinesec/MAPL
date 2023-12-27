@@ -1,0 +1,174 @@
+{
+  "metadata": {
+    "numUniqueAlertsInLastMinute": 1,
+    "numUniqueAlertsInLast10Minutes": 4,
+    "numUniqueAlertsInLast30Minutes": 10,
+    "numUniqueAlertsInLastHour": 11,
+    "numUniqueAlertsInLast3Hours": 11,
+    "numUniqueProcessAlertsInLastMinute": 1,
+    "numUniqueProcessAlertsInLast10Minutes": 3,
+    "numUniqueProcessAlertsInLast30Minutes": 4,
+    "numUniqueProcessAlertsInLastHour": 5,
+    "numUniqueProcessAlertsInLast3Hours": 5,
+    "numUniqueFileAlertsInLastMinute": 0,
+    "numUniqueFileAlertsInLast10Minutes": 1,
+    "numUniqueFileAlertsInLast30Minutes": 6,
+    "numUniqueFileAlertsInLastHour": 6,
+    "numUniqueFileAlertsInLast3Hours": 6
+  },
+  "alerts": [
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e",
+      "command": "SH",
+      "alertString": "process [NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e] was not seen before [TYPE_FILE]",
+      "eventTime": "2023-12-27T10:59:02.0261617+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcess"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e",
+      "command": "SH",
+      "action": "ACTION_FILE_CREATE",
+      "folder": "/opt/shipping/",
+      "file": "alpha.sh",
+      "alertString": "action [ACTION_FILE_CREATE] was not seen before for process NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e [file=/opt/shipping//alpha.sh] [TYPE_FILE]",
+      "eventTime": "2023-12-27T10:56:01.0261617+02:00",
+      "alertType": "FileAlert",
+      "alertSubtype": "NewFileAction"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|ls\u003c0\u003e",
+      "command": "ls",
+      "args": "\u003cempty args\u003e",
+      "alertString": "process [NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|ls\u003c0\u003e] was not seen before [TYPE_PROCESS]",
+      "eventTime": "2023-12-27T10:53:00.0261617+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcess"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|cp\u003c0\u003e",
+      "command": "cp",
+      "args": "alpha.sh bravo.sh",
+      "alertString": "process [NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|cp\u003c0\u003e] was not seen before [TYPE_PROCESS]",
+      "eventTime": "2023-12-27T10:49:59.0261617+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcess"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|cp\u003c0\u003e",
+      "command": "gcc",
+      "action": "ACTION_FILE_CREATE",
+      "folder": "/opt/shipping/",
+      "file": "new_binary",
+      "alertString": "action [ACTION_FILE_CREATE] was not seen before for process NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|cp\u003c0\u003e [file=/opt/shipping//bravo.sh] [TYPE_FILE]",
+      "eventTime": "2023-12-27T10:46:58.0261617+02:00",
+      "alertType": "FileAlert",
+      "alertSubtype": "NewFileAction"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|mv\u003c0\u003e",
+      "command": "renamed_binary",
+      "args": "arg1 arg2 arg3",
+      "alertString": "process [NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|mv\u003c0\u003e] was not seen before [TYPE_PROCESS]",
+      "eventTime": "2023-12-27T10:43:57.0261617+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcess"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|mv\u003c0\u003e",
+      "command": "mv",
+      "args": "new_binary renamed_binary",
+      "action": "ACTION_FILE_CREATE",
+      "folder": "/opt/shipping/",
+      "file": "renamed_binary",
+      "alertString": "action [ACTION_FILE_DELETE] was not seen before for process NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|mv\u003c0\u003e [file=/opt/shipping//bravo.sh] [TYPE_FILE]",
+      "eventTime": "2023-12-27T10:40:56.0261617+02:00",
+      "alertType": "FileAlert",
+      "alertSubtype": "NewFileAction"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|mv\u003c0\u003e",
+      "command": "mv",
+      "args": "bravo.sh charlie.sh",
+      "action": "ACTION_FILE_CREATE",
+      "folder": "/opt/shipping/",
+      "file": "charlie.sh",
+      "alertString": "action [ACTION_FILE_CREATE] was not seen before for process NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|mv\u003c0\u003e [file=/opt/shipping//charlie.sh] [TYPE_FILE]",
+      "eventTime": "2023-12-27T10:37:55.0261617+02:00",
+      "alertType": "FileAlert",
+      "alertSubtype": "NewFileAction"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|mv\u003c0\u003e",
+      "command": "mv",
+      "args": "bravo.sh charlie.sh",
+      "action": "ACTION_FILE_DELETE",
+      "folder": "/var/snap/microk8s/common/run/containerd.sock/var/lib/docker/overlay2/0f2a4a5f028b08dac7b39f55afcbc2947e1406aaf6ff4d1334cd396c6ba01f55/diff/opt/shipping/",
+      "file": "bravo.sh",
+      "alertString": "folder [/var/snap/microk8s/common/run/containerd.sock/var/lib/docker/overlay2/0f2a4a5f028b08dac7b39f55afcbc2947e1406aaf6ff4d1334cd396c6ba01f55/diff/opt/shipping/] was not used before for process NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|mv\u003c0\u003e [action=ACTION_FILE_DELETE, file=bravo.sh] [TYPE_FILE]",
+      "eventTime": "2023-12-27T10:34:54.0261617+02:00",
+      "alertType": "FileAlert",
+      "alertSubtype": "NewFolder"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|mv\u003c0\u003e",
+      "command": "mv",
+      "args": "bravo.sh charlie.sh",
+      "action": "ACTION_FILE_CREATE",
+      "folder": "/var/snap/microk8s/common/run/containerd.sock/var/lib/docker/overlay2/0f2a4a5f028b08dac7b39f55afcbc2947e1406aaf6ff4d1334cd396c6ba01f55/diff/opt/shipping/",
+      "file": "charlie.sh",
+      "alertString": "folder [/var/snap/microk8s/common/run/containerd.sock/var/lib/docker/overlay2/0f2a4a5f028b08dac7b39f55afcbc2947e1406aaf6ff4d1334cd396c6ba01f55/diff/opt/shipping/] was not used before for process NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|mv\u003c0\u003e [action=ACTION_FILE_CREATE, file=charlie.sh] [TYPE_FILE]",
+      "eventTime": "2023-12-27T10:31:53.0261617+02:00",
+      "alertType": "FileAlert",
+      "alertSubtype": "NewFolder"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|cp\u003c0\u003e",
+      "command": "cp",
+      "args": "alpha.sh delta.sh",
+      "alertString": "args [alpha.sh delta.sh] were not seen before for process NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e [TYPE_PROCESS]",
+      "eventTime": "2023-12-27T10:28:52.0261617+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcessArgs"
+    }
+  ],
+  "alertsInLast10Minutes": [
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e",
+      "command": "SH",
+      "alertString": "process [NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e] was not seen before [TYPE_FILE]",
+      "eventTime": "2023-12-27T10:59:02.0261617+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcess"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e",
+      "command": "SH",
+      "action": "ACTION_FILE_CREATE",
+      "folder": "/opt/shipping/",
+      "file": "alpha.sh",
+      "alertString": "action [ACTION_FILE_CREATE] was not seen before for process NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e [file=/opt/shipping//alpha.sh] [TYPE_FILE]",
+      "eventTime": "2023-12-27T10:56:01.0261617+02:00",
+      "alertType": "FileAlert",
+      "alertSubtype": "NewFileAction"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|ls\u003c0\u003e",
+      "command": "ls",
+      "args": "\u003cempty args\u003e",
+      "alertString": "process [NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|ls\u003c0\u003e] was not seen before [TYPE_PROCESS]",
+      "eventTime": "2023-12-27T10:53:00.0261617+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcess"
+    },
+    {
+      "processKey": "NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|cp\u003c0\u003e",
+      "command": "cp",
+      "args": "alpha.sh bravo.sh",
+      "alertString": "process [NODE-\u003cdash\u003e\u003c\u003e|sh\u003c0\u003e|cp\u003c0\u003e] was not seen before [TYPE_PROCESS]",
+      "eventTime": "2023-12-27T10:49:59.0261617+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcess"
+    }
+  ]
+}

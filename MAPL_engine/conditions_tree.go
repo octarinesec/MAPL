@@ -12,9 +12,9 @@ import (
 	"strings"
 )
 
-//-----------------------
+// -----------------------
 // ConditionsTree
-//-----------------------
+// -----------------------
 type ConditionsTree struct {
 	ConditionsTree Node `yaml:"conditionsTree,omitempty" json:"conditionsTree,omitempty" bson:"conditionsTree,omitempty" structs:"conditionsTree,omitempty"`
 }
@@ -94,9 +94,9 @@ func (c ConditionsTree) MarshalBSON() ([]byte, error) {
 	return bson.Marshal(doc)
 }
 
-//--------------------------------------
+// --------------------------------------
 // Node Interface
-//--------------------------------------
+// --------------------------------------
 type Node interface {
 	Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool
 	Append(node Node)
@@ -115,7 +115,7 @@ type AnyAllNode interface {
 	GetPreparedJsonpathQuery() []jsonpath.FilterFunc
 }
 
-//--------------------------------------
+// --------------------------------------
 func mergeReturnValues(returnValues *map[string][]interface{}, returnValues2 *map[string][]interface{}) {
 	for key, array2 := range *returnValues2 {
 		if array, ok := (*returnValues)[key]; !ok {
@@ -128,9 +128,9 @@ func mergeReturnValues(returnValues *map[string][]interface{}, returnValues2 *ma
 
 }
 
-//--------------------------------------
+// --------------------------------------
 // And Node
-//--------------------------------------
+// --------------------------------------
 type And struct {
 	Nodes             []Node `yaml:"AND,omitempty" json:"AND,omitempty" bson:"AND,omitempty" structs:"AND,omitempty"`
 	ReturnValueInNode bool   `yaml:"-" json:"-" bson:"-" structs:"-"`
@@ -142,9 +142,11 @@ func (a *And) Eval(message *MessageAttributes, returnValues *map[string][]interf
 	returnValuesBefore := make(map[string][]interface{})
 	mergeReturnValues(&returnValuesAfter, returnValues)
 	mergeReturnValues(&returnValuesBefore, returnValues)
+
 	for _, node := range a.Nodes {
 
 		flag := node.Eval(message, &returnValuesAfter)
+
 		if flag == false {
 			// clean previous map and enter new values. to-do: find a better way.
 			for k := range *returnValues {
@@ -210,9 +212,9 @@ func AndOrString(a_nodes []Node, andOrStr string) string {
 	return str
 }
 
-//--------------------------------------
+// --------------------------------------
 // Or Node
-//--------------------------------------
+// --------------------------------------
 type Or struct {
 	Nodes             []Node `yaml:"OR,omitempty" json:"OR,omitempty" bson:"OR,omitempty" structs:"OR,omitempty"`
 	ReturnValueInNode bool   `yaml:"-" json:"-" bson:"-" structs:"-"`
@@ -254,9 +256,9 @@ func (o *Or) String() string {
 	return AndOrString(o.Nodes, " || ")
 }
 
-//--------------------------------------
+// --------------------------------------
 // Not Node
-//--------------------------------------
+// --------------------------------------
 type Not struct {
 	Node              Node `yaml:"NOT,omitempty" json:"NOT,omitempty" bson:"NOT,omitempty" structs:"NOT,omitempty"`
 	ReturnValueInNode bool `yaml:"-" json:"-" bson:"-" structs:"-"`
@@ -282,9 +284,9 @@ func (n *Not) String() string {
 	return str
 }
 
-//--------------------------------------
+// --------------------------------------
 // Any Node
-//--------------------------------------
+// --------------------------------------
 type Any struct {
 	ParentJsonpathAttribute                      string
 	ParentJsonpathAttributeArray                 []string
@@ -382,9 +384,12 @@ func evalAnyRawBytes(a *Any, message *MessageAttributes, returnValues *map[strin
 		checkAllValuesInTheArray = true
 	}
 	originalRequestJsonRawRelative := message.RequestJsonRawRelative
+	//	fmt.Printf("ANY: ---------\n")
+
 	for _, val := range rawArrayData {
 		message.RequestJsonRawRelative = &val
 		flag := a.Node.Eval(message, returnValues)
+		//		fmt.Printf("ANY: flag=%v,node=%v\n", flag, a.String())
 		if flag {
 			result = true
 			if a.ReturnValueJsonpath != nil { // this is for the ANY node returnValue
@@ -503,9 +508,9 @@ func (a *Any) GetPreparedJsonpathQuery() []jsonpath.FilterFunc {
 	return a.PreparedJsonpathQuery
 }
 
-//--------------------------------------
+// --------------------------------------
 // All Node
-//--------------------------------------
+// --------------------------------------
 type All struct {
 	ParentJsonpathAttribute                      string
 	ParentJsonpathAttributeArray                 []string
@@ -684,9 +689,9 @@ func (a *All) GetPreparedJsonpathQuery() []jsonpath.FilterFunc {
 	return a.PreparedJsonpathQuery
 }
 
-//--------------------------------------
+// --------------------------------------
 // True Node (used in unit tests)
-//--------------------------------------
+// --------------------------------------
 type True struct{}
 
 func (t True) Eval(message *MessageAttributes, _ *map[string][]interface{}) bool {
@@ -704,9 +709,9 @@ func (t True) ToMongoQuery(base, str string, inArrayCounter int) (bson.M, []bson
 	return bson.M{}, []bson.M{}, fmt.Errorf("not supported")
 }
 
-//--------------------------------------
+// --------------------------------------
 // False Node (used in unit tests)
-//--------------------------------------
+// --------------------------------------
 type False struct{}
 
 func (f False) Eval(message *MessageAttributes, _ *map[string][]interface{}) bool {
@@ -724,9 +729,9 @@ func (f False) ToMongoQuery(base, str string, inArrayCounter int) (bson.M, []bso
 	return bson.M{}, []bson.M{}, fmt.Errorf("not supported")
 }
 
-//--------------------------------------
+// --------------------------------------
 // Basic Condition Node
-//--------------------------------------
+// --------------------------------------
 func (c *Condition) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
 
 	if c.ValueContainsVariable && returnValues != nil {
@@ -817,9 +822,9 @@ func (c *Condition) PrepareAndValidate(listOfVariables *[]string, stringsAndlist
 
 }
 
-//--------------------------------------
+// --------------------------------------
 // parsing utilities
-//--------------------------------------
+// --------------------------------------
 func ParseConditionsTree(c interface{}) (Node, error) {
 
 	conditionsTree, err := InterpretNode(c, "", false)
