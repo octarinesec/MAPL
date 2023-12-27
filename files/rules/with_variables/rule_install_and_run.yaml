@@ -1,0 +1,96 @@
+rules:
+
+  - rule_id: "install_and_run"
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "workload"
+    protocol: "*"
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: "*"
+    decision: allow
+
+    metadata:
+      baseSeverity: 10
+      description: "new command was installed and then used"
+    conditions:
+      AND:
+      - ANY:
+          parentJsonpathAttribute: "jsonpath:$.alerts[:]"
+          returnValueJsonpath:
+            newProcessCommand: jsonpath:$RELATIVE.command
+          condition:
+            AND:
+            - attribute: jsonpath:$RELATIVE.alertSubtype
+              method: EQ
+              value: "NewProcess"
+            - attribute: "jsonpath:$RELATIVE.command"
+              method: NRE
+              value: "(^apt$|^apt-get$|^yum$|^brew$|^rpm$|^dpkg$|^git$)"
+
+      - ANY:
+          parentJsonpathAttribute: "jsonpath:$.alerts[:]"
+          returnValueJsonpath:
+            name: "jsonpath:$RELATIVE.alertString"
+            args: "jsonpath:$RELATIVE.args"
+            cmds: "jsonpath:$RELATIVE.command"
+          condition:
+            AND:
+            - attribute: "jsonpath:$RELATIVE.args"
+              method: CONTAINS
+              value: "#newProcessCommand"
+            - OR:
+              - AND:
+                  - attribute: "jsonpath:$RELATIVE.command"
+                    method: RE
+                    value: "(^apt$|^apt-get$)"
+                  - OR:
+                    - attribute: "jsonpath:$RELATIVE.args"
+                      method: RE
+                      value: "install[ ]"
+                    - attribute: "jsonpath:$RELATIVE.args"
+                      method: RE
+                      value: "upgrade[ ]"
+              - AND:
+                  - attribute: "jsonpath:$RELATIVE.command"
+                    method: RE
+                    value: "(^yum$|^brew$)"
+                  - attribute: "jsonpath:$RELATIVE.args"
+                    method: RE
+                    value: "install[ ]"
+                  - attribute: "jsonpath:$RELATIVE.args"
+                    method: NRE
+                    value: "uninstall[ ]"
+              - AND:
+                  - attribute: "jsonpath:$RELATIVE.command"
+                    method: EQ
+                    value: "rpm"
+                  - OR:
+                    - attribute: "jsonpath:$RELATIVE.args"
+                      method: RE
+                      value: "-i[ ]"
+                    - attribute: "jsonpath:$RELATIVE.args"
+                      method: RE
+                      value: "-U[ ]"
+              - AND:
+                  - attribute: "jsonpath:$RELATIVE.command"
+                    method: EQ
+                    value: "dpkg"
+                  - OR:
+                      - attribute: "jsonpath:$RELATIVE.args"
+                        method: RE
+                        value: "-i[ ]"
+                      - attribute: "jsonpath:$RELATIVE.args"
+                        method: RE
+                        value: "--install[ ]"
+              - AND:
+                - attribute: "jsonpath:$RELATIVE.command"
+                  method: EQ
+                  value: "git"
+                - attribute: "jsonpath:$RELATIVE.args"
+                  method: RE
+                  value: "clone"

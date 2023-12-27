@@ -432,7 +432,7 @@ func getExtraDataFromByteArray(returnValueJsonpathMap map[string]string, returnV
 
 		var returnValueEntry interface{}
 		err := json.Unmarshal(returnValueEntryBytes, &returnValueEntry)
-		if err == nil {
+		if err == nil || returnValueEntry == nil {
 			appendReturnValue(queryName, returnValue, returnValueEntry)
 			//extraDataTemp[queryName] = tempInterface
 		}

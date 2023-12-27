@@ -1941,9 +1941,30 @@ func TestRulesWithVariables(t *testing.T) {
 		So(err, ShouldBeNil)
 		So(results[0], ShouldEqual, ALLOW)
 
+		// more comlex rules with variables:
 		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rules_with_variables_AND_ANY_alerts_cache.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_cache.json")
 		So(err, ShouldBeNil)
 		So(results[0], ShouldEqual, ALLOW)
+
+		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rule_install_and_run.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_cache_install_and_run.json")
+		So(err, ShouldBeNil)
+		So(results[0], ShouldEqual, ALLOW)
+
+		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rule_install_and_run.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_cache_install_and_run_false.json")
+		So(err, ShouldBeNil)
+		So(results[0], ShouldEqual, DEFAULT)
+
+		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rule_T1027_004_B.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_cache_T1207_004_B.json")
+		So(err, ShouldBeNil)
+		So(results[0], ShouldEqual, ALLOW)
+
+		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rule_T1027_004_B.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_cache_T1207_004_B_false1.json")
+		So(err, ShouldBeNil)
+		So(results[0], ShouldEqual, DEFAULT)
+
+		results, err = test_CheckMessagesWithRawData("../files/rules/with_variables/rule_T1027_004_B.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_cache_T1207_004_B_false2.json")
+		So(err, ShouldBeNil)
+		So(results[0], ShouldEqual, DEFAULT)
 
 	})
 }

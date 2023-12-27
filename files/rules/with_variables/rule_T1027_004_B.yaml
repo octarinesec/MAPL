@@ -1,0 +1,72 @@
+rules:
+
+  - rule_id: "T1027.004 addition"
+
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "workload"
+    protocol: "*"
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: "*"
+    decision: allow
+
+
+    metadata:
+      baseSeverity: 10
+      description: "Compile After Delivery And Then Run"
+      mitre: "addition to T1027.004"
+    conditions:
+
+      AND:
+        - ANY:
+            parentJsonpathAttribute: "jsonpath:$.alerts[:]"
+            returnValueJsonpath:
+              newProcessCommand: jsonpath:$RELATIVE.command
+            condition:
+              attribute: jsonpath:$RELATIVE.alertSubtype
+              method: EQ
+              value: "NewProcess"
+
+
+        - ANY:
+            parentJsonpathAttribute: "jsonpath:$.alerts[:]"
+            returnValueJsonpath:
+              name: "jsonpath:$RELATIVE.alertString"
+              args: "jsonpath:$RELATIVE.args"
+              cmds: "jsonpath:$RELATIVE.command"
+            condition:
+              AND:
+              - attribute: jsonpath:$RELATIVE.action
+                method: RE
+                value: "ACTION_FILE_."
+              - attribute: jsonpath:$RELATIVE.action
+                method: NEQ
+                value: "ACTION_FILE_DELETE"
+              - attribute: jsonpath:$RELATIVE.file
+                method: IN
+                value: "#newProcessCommand"
+              - OR:
+                - attribute: "jsonpath:$RELATIVE.command"
+                  method: EQ
+                  value: "gcc"
+                - attribute: "jsonpath:$RELATIVE.command"
+                  method: EQ
+                  value: "g++"
+                - attribute: "jsonpath:$RELATIVE.command"
+                  method: EQ
+                  value: "cpp"
+                - attribute: "jsonpath:$RELATIVE.command"
+                  method: EQ
+                  value: "c++"
+                - AND:
+                  - attribute: "jsonpath:$RELATIVE.command"
+                    method: EQ
+                    value: "go"
+                  - attribute: "jsonpath:$RELATIVE.args"
+                    method: RE
+                    value: "^build"
