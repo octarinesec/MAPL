@@ -272,7 +272,26 @@ func TestConditions(rule *Rule, message *MessageAttributes, returnValues *map[st
 	}
 
 	if rule.preparedRule.Conditions.ConditionsTree != nil {
-		return rule.preparedRule.Conditions.ConditionsTree.Eval(message, returnValues)
+		result := rule.preparedRule.Conditions.ConditionsTree.Eval(message, returnValues)
+		if result {
+			if ruleOutput, ok := rule.Metadata["ruleOutput"]; ok {
+				for key, val := range *returnValues {
+					keyStr := fmt.Sprintf("#%v", key)
+					if !strings.Contains(ruleOutput, keyStr) {
+						continue
+					}
+					valueBytes, err := json.Marshal(val)
+					if err != nil {
+						continue
+					}
+					valueString := removeQuotesAndBrackets(string(valueBytes))
+					valueString = fmt.Sprintf("(%v)", valueString)
+					ruleOutput = strings.Replace(ruleOutput, keyStr, valueString, -1)
+				}
+				(*returnValues)["ruleOutput"] = []interface{}{ruleOutput}
+			}
+		}
+		return result
 	}
 	return false
 

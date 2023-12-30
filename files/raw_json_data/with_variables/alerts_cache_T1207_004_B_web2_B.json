@@ -1,0 +1,146 @@
+{
+  "metadata": {
+    "numUniqueAlertsInLastMinute": 1,
+    "numUniqueAlertsInLast10Minutes": 4,
+    "numUniqueAlertsInLast30Minutes": 9,
+    "numUniqueAlertsInLastHour": 9,
+    "numUniqueAlertsInLast3Hours": 9,
+    "numUniqueProcessAlertsInLastMinute": 1,
+    "numUniqueProcessAlertsInLast10Minutes": 4,
+    "numUniqueProcessAlertsInLast30Minutes": 7,
+    "numUniqueProcessAlertsInLastHour": 7,
+    "numUniqueProcessAlertsInLast3Hours": 7,
+    "numUniqueFileAlertsInLastMinute": 0,
+    "numUniqueFileAlertsInLast10Minutes": 0,
+    "numUniqueFileAlertsInLast30Minutes": 2,
+    "numUniqueFileAlertsInLastHour": 2,
+    "numUniqueFileAlertsInLast3Hours": 2
+  },
+  "alerts": [
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|mv<0>",
+      "command": "mv",
+      "args": "my_file.c alpha.c",
+      "alertString": "args [my_file.c alpha.c] were not seen before with command [mv] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0> [TYPE_PROCESS]",
+      "eventTime": "2023-12-28T15:12:55.3914791+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcessArgs"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|gcc<0>",
+      "command": "gcc",
+      "args": "alpha.c -o zzz",
+      "alertString": "args [alpha.c -o zzz] were not seen before with command [gcc] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0> [TYPE_PROCESS]",
+      "eventTime": "2023-12-28T15:09:54.3914791+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcessArgs"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|gcc<0>|cc1<0>",
+      "command": "cc1",
+      "args": "-quiet -imultiarch x86_64-linux-gnu alpha.c -quiet -dumpbase alpha.c -mtune=generic -march=x86-64 -auxbase alpha -o /tmp/cc9QadPk.s",
+      "alertString": "args [-quiet -imultiarch x86_64-linux-gnu alpha.c -quiet -dumpbase alpha.c -mtune=generic -march=x86-64 -auxbase alpha -o /tmp/cc9QadPk.s] were not seen before with command [cc1] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|gcc<0> [TYPE_PROCESS]",
+      "eventTime": "2023-12-28T15:06:53.3914791+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcessArgs"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|gcc<0>|as<0>",
+      "command": "as",
+      "args": "--64 -o /tmp/ccoUgKzr.o /tmp/cc9QadPk.s",
+      "alertString": "args [--64 -o /tmp/ccoUgKzr.o /tmp/cc9QadPk.s] were not seen before with command [as] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|gcc<0> [TYPE_PROCESS]",
+      "eventTime": "2023-12-28T15:03:52.3914791+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcessArgs"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|gcc<0>|as<0>",
+      "command": "as",
+      "args": "--64 -o /tmp/ccoUgKzr.o /tmp/cc9QadPk.s",
+      "action": "ACTION_FILE_LAST_WRITE",
+      "folder": "/tmp/",
+      "file": "ccoUgKzr.o",
+      "alertString": "action [ACTION_FILE_LAST_WRITE] was not seen before with cmd [as] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|gcc<0>|as<0> [file=/tmp//ccoUgKzr.o] [TYPE_FILE]",
+      "eventTime": "2023-12-28T15:00:51.3914791+02:00",
+      "alertType": "FileAlert",
+      "alertSubtype": "NewFileAction"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|gcc<0>|collect2<0>",
+      "command": "collect2",
+      "args": "-plugin /usr/lib/gcc/x86_64-linux-gnu/8/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/8/lto-wrapper -plugin-opt=-fresolution=/tmp/ccvrLzly.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -o zzz /usr/lib/gcc/x86_64-linux-gnu/8/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/8/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/8/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/8 -L/usr/lib/gcc/x86_64-linux-gnu/8/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/8/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib ...",
+      "alertString": "args [-plugin /usr/lib/gcc/x86_64-linux-gnu/8/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/8/lto-wrapper -plugin-opt=-fresolution=/tmp/ccvrLzly.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -o zzz /usr/lib/gcc/x86_64-linux-gnu/8/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/8/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/8/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/8 -L/usr/lib/gcc/x86_64-linux-gnu/8/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/8/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib ...] were not seen before with command [collect2] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|gcc<0> [TYPE_PROCESS]",
+      "eventTime": "2023-12-28T14:57:50.3914791+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcessArgs"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|gcc<0>|collect2<0>|ld<0>",
+      "command": "ld",
+      "args": "-plugin /usr/lib/gcc/x86_64-linux-gnu/8/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/8/lto-wrapper -plugin-opt=-fresolution=/tmp/ccvrLzly.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -o zzz /usr/lib/gcc/x86_64-linux-gnu/8/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/8/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/8/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/8 -L/usr/lib/gcc/x86_64-linux-gnu/8/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/8/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib ...",
+      "alertString": "args [-plugin /usr/lib/gcc/x86_64-linux-gnu/8/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/8/lto-wrapper -plugin-opt=-fresolution=/tmp/ccvrLzly.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -o zzz /usr/lib/gcc/x86_64-linux-gnu/8/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/8/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/8/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/8 -L/usr/lib/gcc/x86_64-linux-gnu/8/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/8/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib ...] were not seen before with command [ld] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|gcc<0>|collect2<0> [TYPE_PROCESS]",
+      "eventTime": "2023-12-28T14:54:49.3914791+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcessArgs"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|gcc<0>|collect2<0>|ld<0>",
+      "command": "ld",
+      "args": "-plugin /usr/lib/gcc/x86_64-linux-gnu/8/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/8/lto-wrapper -plugin-opt=-fresolution=/tmp/ccvrLzly.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -o zzz /usr/lib/gcc/x86_64-linux-gnu/8/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/8/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/8/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/8 -L/usr/lib/gcc/x86_64-linux-gnu/8/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/8/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib ...",
+      "action": "ACTION_FILE_LAST_WRITE",
+      "folder": "/",
+      "file": "zzz",
+      "alertString": "action [ACTION_FILE_LAST_WRITE] was not seen before with cmd [ld] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|gcc<0>|collect2<0>|ld<0> [file=//zzz] [TYPE_FILE]",
+      "eventTime": "2023-12-28T14:51:48.3914791+02:00",
+      "alertType": "FileAlert",
+      "alertSubtype": "NewFileAction"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|zzz<0>",
+      "command": "zzz",
+      "args": "<empty args>",
+      "alertString": "process [NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|zzz<0>] was not seen before [cmd=zzz] [TYPE_PROCESS]",
+      "eventTime": "2023-12-28T14:48:47.3914791+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcess"
+    }
+  ],
+  "alertsInLast10Minutes": [
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|mv<0>",
+      "command": "mv",
+      "args": "my_file.c alpha.c",
+      "alertString": "args [my_file.c alpha.c] were not seen before with command [mv] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0> [TYPE_PROCESS]",
+      "eventTime": "2023-12-28T15:12:55.3914791+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcessArgs"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|gcc<0>",
+      "command": "gcc",
+      "args": "alpha.c -o zzz",
+      "alertString": "args [alpha.c -o zzz] were not seen before with command [gcc] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0> [TYPE_PROCESS]",
+      "eventTime": "2023-12-28T15:09:54.3914791+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcessArgs"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|gcc<0>|cc1<0>",
+      "command": "cc1",
+      "args": "-quiet -imultiarch x86_64-linux-gnu alpha.c -quiet -dumpbase alpha.c -mtune=generic -march=x86-64 -auxbase alpha -o /tmp/cc9QadPk.s",
+      "alertString": "args [-quiet -imultiarch x86_64-linux-gnu alpha.c -quiet -dumpbase alpha.c -mtune=generic -march=x86-64 -auxbase alpha -o /tmp/cc9QadPk.s] were not seen before with command [cc1] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|gcc<0> [TYPE_PROCESS]",
+      "eventTime": "2023-12-28T15:06:53.3914791+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcessArgs"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|gcc<0>|as<0>",
+      "command": "as",
+      "args": "--64 -o /tmp/ccoUgKzr.o /tmp/cc9QadPk.s",
+      "alertString": "args [--64 -o /tmp/ccoUgKzr.o /tmp/cc9QadPk.s] were not seen before with command [as] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|gcc<0> [TYPE_PROCESS]",
+      "eventTime": "2023-12-28T15:03:52.3914791+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcessArgs"
+    }
+  ]
+}

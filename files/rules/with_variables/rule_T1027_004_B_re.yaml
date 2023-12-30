@@ -1,0 +1,66 @@
+rules:
+
+  - rule_id: "T1027.004 addition"
+
+    sender:
+      senderName: "A.my_namespace"
+      senderType: "workload"
+    receiver:
+      receiverName: "B.my_namespace"
+      receiverType: "workload"
+    protocol: "*"
+    resource:
+      resourceType: path
+      resourceName: "/*"
+    operation: "*"
+    decision: allow
+
+
+    metadata:
+      baseSeverity: 10
+      description: "Compile After Delivery And Then Run"
+      mitre: "addition to T1027.004"
+      ruleOutput: "one of #file was created with process #processKey and then run"
+    conditions:
+
+      AND:
+      - ANY:
+          parentJsonpathAttribute: "jsonpath:$.alerts[:]"
+          returnValueJsonpath:
+            newProcessCommand: jsonpath:$RELATIVE.command
+            alertStringProcess: "jsonpath:$RELATIVE.alertString"
+          condition:
+            attribute: jsonpath:$RELATIVE.alertSubtype
+            method: EQ
+            value: "NewProcess"
+
+      - ANY:
+          parentJsonpathAttribute: "jsonpath:$.alerts[:]"
+          returnValueJsonpath:
+            alertString: "jsonpath:$RELATIVE.alertString"
+            args: "jsonpath:$RELATIVE.args"
+            cmds: "jsonpath:$RELATIVE.command"
+            file: "jsonpath:$RELATIVE.file"
+            processKey: "jsonpath:$RELATIVE.processKey"
+          condition:
+            AND:
+            - attribute: jsonpath:$RELATIVE.action
+              method: RE
+              value: "ACTION_FILE_."
+            - attribute: jsonpath:$RELATIVE.action
+              method: NEQ
+              value: "ACTION_FILE_DELETE"
+            - attribute: jsonpath:$RELATIVE.file
+              method: IN
+              value: "#newProcessCommand"
+            - OR:
+              - attribute: "jsonpath:$RELATIVE.processKey"
+                method: RE
+                value: "([|]gcc[<]|[|]cpp[<]|[|]g[+][+][<]|[|]c[+][+][<])"
+              - AND:
+                - attribute: "jsonpath:$RELATIVE.command"
+                  method: EQ
+                  value: "go"
+                - attribute: "jsonpath:$RELATIVE.args"
+                  method: RE
+                  value: "^build"

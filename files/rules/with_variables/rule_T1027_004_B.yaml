@@ -36,9 +36,10 @@ rules:
         - ANY:
             parentJsonpathAttribute: "jsonpath:$.alerts[:]"
             returnValueJsonpath:
-              name: "jsonpath:$RELATIVE.alertString"
+              alertString: "jsonpath:$RELATIVE.alertString"
               args: "jsonpath:$RELATIVE.args"
               cmds: "jsonpath:$RELATIVE.command"
+              file: "jsonpath:$RELATIVE.file"
             condition:
               AND:
               - attribute: jsonpath:$RELATIVE.action
