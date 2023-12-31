@@ -2,6 +2,7 @@
 package MAPL_engine
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -280,10 +281,15 @@ func TestConditions(rule *Rule, message *MessageAttributes, returnValues *map[st
 					if !strings.Contains(ruleOutput, keyStr) {
 						continue
 					}
-					valueBytes, err := json.Marshal(val)
+
+					var buf bytes.Buffer
+					e := json.NewEncoder(&buf)
+					e.SetEscapeHTML(false)
+					err := e.Encode(val)
 					if err != nil {
 						continue
 					}
+					valueBytes := buf.Bytes()
 					valueString := removeQuotesAndBrackets(string(valueBytes))
 					valueString = fmt.Sprintf("(%v)", valueString)
 					ruleOutput = strings.Replace(ruleOutput, keyStr, valueString, -1)
