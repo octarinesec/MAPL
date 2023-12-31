@@ -290,6 +290,7 @@ func TestConditions(rule *Rule, message *MessageAttributes, returnValues *map[st
 						continue
 					}
 					valueBytes := buf.Bytes()
+					valueBytes = valueBytes[:len(valueBytes)-2] // remove the annoying "\n" at the end of the buffer
 					valueString := removeQuotesAndBrackets(string(valueBytes))
 					valueString = fmt.Sprintf("(%v)", valueString)
 					ruleOutput = strings.Replace(ruleOutput, keyStr, valueString, -1)
