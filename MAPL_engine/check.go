@@ -10,6 +10,7 @@ import (
 	"github.com/yalp/jsonpath"
 	"log"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -286,7 +287,6 @@ func TestConditions(rule *Rule, message *MessageAttributes, returnValues *map[st
 					for _, v := range val {
 						valueString := removeQuotesAndBrackets(fmt.Sprintf("%v", v))
 						strMap[valueString] = true
-
 					}
 
 					for k, _ := range strMap { // to make it unique
@@ -306,6 +306,10 @@ func TestConditions(rule *Rule, message *MessageAttributes, returnValues *map[st
 						valueString := removeQuotesAndBrackets(string(valueBytes))
 						valueString = fmt.Sprintf("(%v)", valueString)
 					*/
+
+					sort.Slice(strArray, func(i, j int) bool {
+						return strArray[i] < strArray[j]
+					})
 
 					valueStringAll := "(" + strings.Join(strArray, ",") + ")"
 					ruleOutput = strings.Replace(ruleOutput, keyStr, valueStringAll, -1)
