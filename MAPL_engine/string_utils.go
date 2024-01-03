@@ -179,7 +179,7 @@ func removeQuotesFromResult(str string) (string, bool) {
 	L := len(str) - 1
 	if L > 0 {
 		if (str[0] == '"' && str[L] != '"') || (str[L] == '"' && str[0] != '"') {
-			log.Println("quotation marks not aligned")
+			log.Printf("quotation marks not aligned (1): str=%v", str)
 			return "", false
 		}
 

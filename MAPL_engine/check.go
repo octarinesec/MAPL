@@ -623,11 +623,11 @@ func testJsonPathCondition(c *Condition, message *MessageAttributes) bool {
 	L := len(valueToCompareString) - 1
 	if L > 0 {
 		if valueToCompareString[0] == '"' && valueToCompareString[L] != '"' {
-			log.Println("quotation marks not aligned")
+			log.Printf("quotation marks not aligned (2): valueToCompareString=%v", valueToCompareString)
 			return false
 		}
 		if valueToCompareString[L] == '"' && valueToCompareString[0] != '"' {
-			log.Println("quotation marks not aligned")
+			log.Printf("quotation marks not aligned (3): valueToCompareString=%v", valueToCompareString)
 			return false
 		}
 		if valueToCompareString[L] == '"' && valueToCompareString[0] == '"' {

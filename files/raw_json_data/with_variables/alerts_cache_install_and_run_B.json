@@ -1,0 +1,141 @@
+{
+  "metadata": {
+    "numUniqueAnomalyEventsInLastMinute": 1,
+    "numUniqueAnomalyEventsInLast10Minutes": 4,
+    "numUniqueAnomalyEventsInLast30Minutes": 8,
+    "numUniqueAnomalyEventsInLastHour": 8,
+    "numUniqueAnomalyEventsInLast3Hours": 8,
+    "numUniqueProcessAnomalyEventsInLastMinute": 1,
+    "numUniqueProcessAnomalyEventsInLast10Minutes": 3,
+    "numUniqueProcessAnomalyEventsInLast30Minutes": 5,
+    "numUniqueProcessAnomalyEventsInLastHour": 5,
+    "numUniqueProcessAnomalyEventsInLast3Hours": 5,
+    "numUniqueFileAnomalyEventsInLastMinute": 0,
+    "numUniqueFileAnomalyEventsInLast10Minutes": 1,
+    "numUniqueFileAnomalyEventsInLast30Minutes": 3,
+    "numUniqueFileAnomalyEventsInLastHour": 3,
+    "numUniqueFileAnomalyEventsInLast3Hours": 3
+  },
+  "anomalyEvents": [
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|apt<0>",
+      "command": "apt",
+      "args": "install htop",
+      "alertString": "args [install htop] were not seen before with command [apt] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0> [TYPE_PROCESS]",
+      "eventTime": "2024-01-03T11:52:16.8551776+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcessArgs"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|apt<0>|dpkg<0>",
+      "command": "dpkg",
+      "args": "--status-fd 15 --no-triggers --unpack --auto-deconfigure /var/cache/apt/archives/htop_2.2.0-1+b1_amd64.deb",
+      "alertString": "args [--status-fd 15 --no-triggers --unpack --auto-deconfigure /var/cache/apt/archives/htop_2.2.0-1+b1_amd64.deb] were not seen before with command [dpkg] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|apt<0> [TYPE_PROCESS]",
+      "eventTime": "2024-01-03T11:49:15.8551776+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcessArgs"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|apt<0>|dpkg<0>|rm<0>",
+      "command": "rm",
+      "args": "-rf /var/lib/dpkg/tmp.ci",
+      "alertString": "args [-rf /var/lib/dpkg/tmp.ci] were not seen before with command [rm] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|apt<0>|dpkg<0> [TYPE_PROCESS]",
+      "eventTime": "2024-01-03T11:46:14.8551776+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcessArgs"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|apt<0>|dpkg<0>",
+      "command": "dpkg",
+      "args": "--status-fd 15 --no-triggers --unpack --auto-deconfigure /var/cache/apt/archives/htop_2.2.0-1+b1_amd64.deb",
+      "action": "ACTION_FILE_DELETE",
+      "folder": "/usr/bin/",
+      "file": "htop.dpkg-new",
+      "alertString": "file [htop.dpkg-new] was not seen before with cmd [dpkg] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|apt<0>|dpkg<0> [action=ACTION_FILE_DELETE, folder=/usr/bin/] [TYPE_FILE]",
+      "eventTime": "2024-01-03T11:43:13.8551776+02:00",
+      "alertType": "FileAlert",
+      "alertSubtype": "NewFile"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|apt<0>|rm<0>|rm<0>",
+      "command": "rm",
+      "args": "-f /var/cache/apt/archives/htop_2.2.0-1+b1_amd64.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin",
+      "alertString": "args [-f /var/cache/apt/archives/htop_2.2.0-1+b1_amd64.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin] were not seen before with command [rm] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|apt<0>|rm<0> [TYPE_PROCESS]",
+      "eventTime": "2024-01-03T11:40:12.8551776+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcessArgs"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|htop<0>",
+      "command": "htop",
+      "args": "<empty args>",
+      "alertString": "process [NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|htop<0>] was not seen before [cmd=htop] [TYPE_PROCESS]",
+      "eventTime": "2024-01-03T11:37:11.8551776+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcess"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|htop<0>",
+      "command": "htop",
+      "action": "ACTION_FILE_CREATE",
+      "folder": "/root/.config/htop/",
+      "file": "htoprc",
+      "alertString": "action [ACTION_FILE_CREATE] was not seen before with cmd [htop] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|htop<0> [file=/root/.config/htop//htoprc] [TYPE_FILE]",
+      "eventTime": "2024-01-03T11:34:10.8551776+02:00",
+      "alertType": "FileAlert",
+      "alertSubtype": "NewFileAction"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|htop<0>",
+      "command": "htop",
+      "action": "ACTION_FILE_LAST_WRITE",
+      "folder": "/root/.config/htop/",
+      "file": "htoprc",
+      "alertString": "action [ACTION_FILE_LAST_WRITE] was not seen before with cmd [htop] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|htop<0> [file=/root/.config/htop//htoprc] [TYPE_FILE]",
+      "eventTime": "2024-01-03T11:31:09.8551776+02:00",
+      "alertType": "FileAlert",
+      "alertSubtype": "NewFileAction"
+    }
+  ],
+  "anomalyEventsInLast10Minutes": [
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|apt<0>",
+      "command": "apt",
+      "args": "install htop",
+      "alertString": "args [install htop] were not seen before with command [apt] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0> [TYPE_PROCESS]",
+      "eventTime": "2024-01-03T11:52:16.8551776+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcessArgs"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|apt<0>|dpkg<0>",
+      "command": "dpkg",
+      "args": "--status-fd 15 --no-triggers --unpack --auto-deconfigure /var/cache/apt/archives/htop_2.2.0-1+b1_amd64.deb",
+      "alertString": "args [--status-fd 15 --no-triggers --unpack --auto-deconfigure /var/cache/apt/archives/htop_2.2.0-1+b1_amd64.deb] were not seen before with command [dpkg] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|apt<0> [TYPE_PROCESS]",
+      "eventTime": "2024-01-03T11:49:15.8551776+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcessArgs"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|apt<0>|dpkg<0>|rm<0>",
+      "command": "rm",
+      "args": "-rf /var/lib/dpkg/tmp.ci",
+      "alertString": "args [-rf /var/lib/dpkg/tmp.ci] were not seen before with command [rm] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|apt<0>|dpkg<0> [TYPE_PROCESS]",
+      "eventTime": "2024-01-03T11:46:14.8551776+02:00",
+      "alertType": "ProcessAlert",
+      "alertSubtype": "NewProcessArgs"
+    },
+    {
+      "processKey": "NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|apt<0>|dpkg<0>",
+      "command": "dpkg",
+      "args": "--status-fd 15 --no-triggers --unpack --auto-deconfigure /var/cache/apt/archives/htop_2.2.0-1+b1_amd64.deb",
+      "action": "ACTION_FILE_DELETE",
+      "folder": "/usr/bin/",
+      "file": "htop.dpkg-new",
+      "alertString": "file [htop.dpkg-new] was not seen before with cmd [dpkg] for process NODE-containerd-shim-runc-v2<0>|NODE-runc<0>|SH<0>|apt<0>|dpkg<0> [action=ACTION_FILE_DELETE, folder=/usr/bin/] [TYPE_FILE]",
+      "eventTime": "2024-01-03T11:43:13.8551776+02:00",
+      "alertType": "FileAlert",
+      "alertSubtype": "NewFile"
+    }
+  ]
+}
