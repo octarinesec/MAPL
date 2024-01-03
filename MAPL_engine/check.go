@@ -2,7 +2,6 @@
 package MAPL_engine
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -282,18 +281,27 @@ func TestConditions(rule *Rule, message *MessageAttributes, returnValues *map[st
 						continue
 					}
 
-					var buf bytes.Buffer
-					e := json.NewEncoder(&buf)
-					e.SetEscapeHTML(false)
-					err := e.Encode(val)
-					if err != nil {
-						continue
+					strArray := []string{}
+					for _, v := range val {
+						valueString := removeQuotesAndBrackets(fmt.Sprintf("%v", v))
+						strArray = append(strArray, valueString)
 					}
-					valueBytes := buf.Bytes()
-					valueBytes = valueBytes[:len(valueBytes)-2] // remove the annoying "\n" at the end of the buffer
-					valueString := removeQuotesAndBrackets(string(valueBytes))
-					valueString = fmt.Sprintf("(%v)", valueString)
-					ruleOutput = strings.Replace(ruleOutput, keyStr, valueString, -1)
+					/*
+						var buf bytes.Buffer
+						e := json.NewEncoder(&buf)
+						e.SetEscapeHTML(false)
+						err := e.Encode(val)
+						if err != nil {
+							continue
+						}
+						valueBytes := buf.Bytes()
+						valueBytes = valueBytes[:len(valueBytes)-2] // remove the annoying "\n" at the end of the buffer
+						valueString := removeQuotesAndBrackets(string(valueBytes))
+						valueString = fmt.Sprintf("(%v)", valueString)
+					*/
+
+					valueStringAll := "(" + strings.Join(strArray, ",") + ")"
+					ruleOutput = strings.Replace(ruleOutput, keyStr, valueStringAll, -1)
 				}
 				(*returnValues)["ruleOutput"] = []interface{}{ruleOutput}
 			}
