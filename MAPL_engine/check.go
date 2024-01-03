@@ -282,10 +282,17 @@ func TestConditions(rule *Rule, message *MessageAttributes, returnValues *map[st
 					}
 
 					strArray := []string{}
+					strMap := make(map[string]bool)
 					for _, v := range val {
 						valueString := removeQuotesAndBrackets(fmt.Sprintf("%v", v))
-						strArray = append(strArray, valueString)
+						strMap[valueString] = true
+
 					}
+
+					for k, _ := range strMap { // to make it unique
+						strArray = append(strArray, k)
+					}
+
 					/*
 						var buf bytes.Buffer
 						e := json.NewEncoder(&buf)
