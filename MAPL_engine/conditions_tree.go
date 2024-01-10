@@ -934,6 +934,11 @@ func (c *Condition) Copy() Node {
 	copiedNode.OriginalMethod = c.OriginalMethod
 	copiedNode.OriginalValue = c.OriginalValue
 
+	if copiedNode.Attribute == "jsonpath:$RELATIVE.args" {
+		fmt.Printf("c=%+v", c)
+		fmt.Printf("copiedNode=%+v", copiedNode)
+	}
+
 	return &copiedNode
 }
 
