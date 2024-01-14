@@ -863,10 +863,12 @@ func (c *Condition) PrepareAndValidate(listOfVariables *[]string, stringsAndlist
 }
 
 func (c *Condition) ResetVariables() {
-	c.Attribute = c.OriginalAttributeWithVariables
-	c.Method = c.OriginalMethodWithVariables
-	c.Value = c.OriginalValueWithVariables
-	c.ValueContainsVariable = c.OriginalValueContainsVariable
+	if c.OriginalValueContainsVariable {
+		c.Attribute = c.OriginalAttributeWithVariables
+		c.Method = c.OriginalMethodWithVariables
+		c.Value = c.OriginalValueWithVariables
+		c.ValueContainsVariable = c.OriginalValueContainsVariable
+	}
 }
 
 // --------------------------------------
