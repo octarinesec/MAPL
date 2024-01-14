@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-//-------------------rules-------------------------------------
+// -------------------rules-------------------------------------
 type Sender struct {
 	// if SenderName is a list (example: "srv1,srv2,srv123") then it is assumed that all are of the same type
 	SenderName string                   `yaml:"senderName,omitempty" json:"senderName,omitempty" bson:"senderName" structs:"senderName,omitempty"`
@@ -26,7 +26,6 @@ type Receiver struct {
 	ReceiverList []ExpandedSenderReceiver `yaml:"-,omitempty" json:"-,omitempty" bson:"receiverList,omitempty" structs:"receiverList,omitempty"`
 }
 
-//
 type ExpandedSenderReceiver struct {
 	Name   string         `yaml:"-" json:"name,omitempty" bson:"name,omitempty"`
 	Type   string         `yaml:"-" json:"type,omitempty" bson:"type,omitempty"`
@@ -90,6 +89,11 @@ type Condition struct {
 	OriginalAttribute string `yaml:"-" json:"-,omitempty" bson:"originalAttribute,omitempty" structs:"originalAttribute,omitempty"` // used in hash
 	OriginalMethod    string `yaml:"-" json:"-,omitempty" bson:"originalMethod,omitempty" structs:"originalMethod,omitempty"`       // used in hash
 	OriginalValue     string `yaml:"-" json:"-,omitempty" bson:"originalValue,omitempty" structs:"originalValue,omitempty"`         // used in hash
+
+	OriginalAttributeWithVariables string `yaml:"-" json:"-,omitempty" bson:"originalAttributeWithVariables,omitempty" structs:"originalAttributeWithVariables,omitempty"` // used in hash
+	OriginalMethodWithVariables    string `yaml:"-" json:"-,omitempty" bson:"originalMethodWithVariables,omitempty" structs:"originalMethodWithVariables,omitempty"`       // used in hash
+	OriginalValueWithVariables     string `yaml:"-" json:"-,omitempty" bson:"originalValueWithVariables,omitempty" structs:"originalValueWithVariables,omitempty"`
+	OriginalValueContainsVariable  bool   `yaml:"-" json:"-,omitempty"`
 }
 
 type Rule struct {

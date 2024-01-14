@@ -103,7 +103,7 @@ type Node interface {
 	PrepareAndValidate(listOfVariables *[]string, stringsAndlists PredefinedStringsAndLists) (bool, error)
 	String() string // to-do: order terms so that hash will be the same
 	ToMongoQuery(base string, parentString string, inArrayCounter int) (bson.M, []bson.M, error)
-	Copy() Node
+	ResetVariables()
 }
 
 type AnyAllNode interface {
@@ -190,13 +190,11 @@ func (a *And) String() string {
 	return AndOrString(a.Nodes, " && ")
 }
 
-func (a *And) Copy() Node {
-	copiedNode := And{}
+func (a *And) ResetVariables() {
+
 	for _, node := range a.Nodes {
-		copiedNode.Nodes = append(copiedNode.Nodes, node.Copy())
+		node.ResetVariables()
 	}
-	copiedNode.ReturnValueInNode = a.ReturnValueInNode
-	return &copiedNode
 }
 
 func AndOrString(a_nodes []Node, andOrStr string) string {
@@ -266,13 +264,10 @@ func (o *Or) String() string {
 	return AndOrString(o.Nodes, " || ")
 }
 
-func (o *Or) Copy() Node {
-	copiedNode := Or{}
+func (o *Or) ResetVariables() {
 	for _, node := range o.Nodes {
-		copiedNode.Nodes = append(copiedNode.Nodes, node.Copy())
+		node.ResetVariables()
 	}
-	copiedNode.ReturnValueInNode = o.ReturnValueInNode
-	return &copiedNode
 }
 
 // --------------------------------------
@@ -302,11 +297,10 @@ func (n *Not) String() string {
 	str := fmt.Sprintf("!(%v)", n.Node.String())
 	return str
 }
-func (n *Not) Copy() Node {
-	copiedNode := Not{}
-	copiedNode.Node = n.Node.Copy()
-	copiedNode.ReturnValueInNode = n.ReturnValueInNode
-	return &copiedNode
+func (n *Not) ResetVariables() {
+
+	n.ResetVariables()
+
 }
 
 // --------------------------------------
@@ -533,21 +527,10 @@ func (a *Any) GetPreparedJsonpathQuery() []jsonpath.FilterFunc {
 	return a.PreparedJsonpathQuery
 }
 
-func (a *Any) Copy() Node {
-	copiedNode := Any{}
+func (a *Any) ResetVariables() {
 
-	copiedNode.ParentJsonpathAttribute = a.ParentJsonpathAttribute
-	copiedNode.ParentJsonpathAttributeOriginal = a.ParentJsonpathAttributeOriginal
-	copiedNode.ReturnValueInNode = a.ReturnValueInNode
+	a.Node.ResetVariables()
 
-	dc.Copy(&copiedNode.ParentJsonpathAttributeArray, a.ParentJsonpathAttributeArray)
-	dc.Copy(&copiedNode.ReturnValueJsonpath, a.ReturnValueJsonpath)
-	dc.Copy(&copiedNode.ReturnValuePreparedJsonpathQueryRelativeFlag, a.ReturnValuePreparedJsonpathQueryRelativeFlag)
-	dc.Copy(&copiedNode.ReturnValueJsonpathOriginal, a.ReturnValueJsonpathOriginal)
-
-	copiedNode.Append(a.Node.Copy())
-
-	return &copiedNode
 }
 
 // --------------------------------------
@@ -731,21 +714,8 @@ func (a *All) GetPreparedJsonpathQuery() []jsonpath.FilterFunc {
 	return a.PreparedJsonpathQuery
 }
 
-func (a *All) Copy() Node {
-	copiedNode := All{}
-
-	copiedNode.ParentJsonpathAttribute = a.ParentJsonpathAttribute
-	copiedNode.ParentJsonpathAttributeOriginal = a.ParentJsonpathAttributeOriginal
-	copiedNode.ReturnValueInNode = a.ReturnValueInNode
-
-	dc.Copy(&copiedNode.ParentJsonpathAttributeArray, a.ParentJsonpathAttributeArray)
-	dc.Copy(&copiedNode.ReturnValueJsonpath, a.ReturnValueJsonpath)
-	dc.Copy(&copiedNode.ReturnValuePreparedJsonpathQueryRelativeFlag, a.ReturnValuePreparedJsonpathQueryRelativeFlag)
-	dc.Copy(&copiedNode.ReturnValueJsonpathOriginal, a.ReturnValueJsonpathOriginal)
-
-	copiedNode.Append(a.Node.Copy())
-
-	return &copiedNode
+func (a *All) ResetVariables() {
+	a.Node.ResetVariables()
 }
 
 // --------------------------------------
@@ -767,8 +737,7 @@ func (t True) String() string {
 func (t True) ToMongoQuery(base, str string, inArrayCounter int) (bson.M, []bson.M, error) {
 	return bson.M{}, []bson.M{}, fmt.Errorf("not supported")
 }
-func (t True) Copy() Node {
-	return True{}
+func (t True) ResetVariables() {
 }
 
 // --------------------------------------
@@ -790,8 +759,7 @@ func (f False) String() string {
 func (f False) ToMongoQuery(base, str string, inArrayCounter int) (bson.M, []bson.M, error) {
 	return bson.M{}, []bson.M{}, fmt.Errorf("not supported")
 }
-func (f False) Copy() Node {
-	return False{}
+func (f False) ResetVariables() {
 }
 
 // --------------------------------------
@@ -800,6 +768,12 @@ func (f False) Copy() Node {
 func (c *Condition) Eval(message *MessageAttributes, returnValues *map[string][]interface{}) bool {
 
 	if c.ValueContainsVariable && returnValues != nil {
+
+		c.OriginalAttributeWithVariables = c.Attribute
+		c.OriginalMethodWithVariables = c.Method
+		c.OriginalValueWithVariables = c.Value
+		c.OriginalValueContainsVariable = c.ValueContainsVariable
+
 		replaceVariableWithReturnValues(c, returnValues)
 	}
 
@@ -808,6 +782,7 @@ func (c *Condition) Eval(message *MessageAttributes, returnValues *map[string][]
 	}
 
 	return testOneCondition(c, message, returnValues) // we do not automatically update the returnValuesForVariables. only in the parent node
+
 }
 
 func replaceVariableWithReturnValues(c *Condition, returnValues *map[string][]interface{}) {
@@ -887,59 +862,11 @@ func (c *Condition) PrepareAndValidate(listOfVariables *[]string, stringsAndlist
 
 }
 
-func (c *Condition) Copy() Node {
-	copiedNode := Condition{}
-
-	copiedNode.Attribute = c.Attribute
-	copiedNode.Method = c.Method
-	copiedNode.Value = c.Value
-	copiedNode.ValueInt = c.ValueInt     // is it ok?
-	copiedNode.ValueFloat = c.ValueFloat // is it ok?
-
-	if c.ValueRegex != nil {
-		copiedNode.ValueRegex = c.ValueRegex.Copy() // to do: copy is depracted
-	}
-	if c.ValueStringRegex != nil {
-		copiedNode.ValueStringRegex = c.ValueStringRegex.Copy() // to do: copy is depracted
-	}
-
-	copiedNode.AttributeIsSenderLabel = c.AttributeIsSenderLabel
-	copiedNode.AttributeSenderLabelKey = c.AttributeSenderLabelKey
-	copiedNode.AttributeIsReceiverLabel = c.AttributeIsReceiverLabel
-	copiedNode.AttributeReceiverLabelKey = c.AttributeReceiverLabelKey
-	copiedNode.ValueIsReceiverLabel = c.ValueIsReceiverLabel
-	copiedNode.ValueReceiverLabelKey = c.ValueReceiverLabelKey
-
-	copiedNode.AttributeIsSenderObject = c.AttributeIsSenderObject
-	copiedNode.AttributeIsReceiverObject = c.AttributeIsReceiverObject
-	copiedNode.ValueIsReceiverObject = c.ValueIsReceiverObject
-	copiedNode.AttributeSenderObjectAttribute = c.AttributeSenderObjectAttribute
-	copiedNode.AttributeReceiverObjectAttribute = c.AttributeReceiverObjectAttribute
-	copiedNode.ValueReceiverObject = c.ValueReceiverObject
-
-	copiedNode.AttributeIsJsonpath = c.AttributeIsJsonpath
-	copiedNode.AttributeIsJsonpathRelative = c.AttributeIsJsonpathRelative
-	copiedNode.AttributeJsonpathQuery = c.AttributeJsonpathQuery
-	copiedNode.PreparedJsonpathQuery = c.PreparedJsonpathQuery // is it ok?
-
-	dc.Copy(&copiedNode.ReturnValueJsonpath, c.ReturnValueJsonpath)
-	dc.Copy(&copiedNode.ReturnValueJsonpathOriginal, c.ReturnValueJsonpathOriginal)
-	dc.Copy(&copiedNode.PreparedReturnValueJsonpathQueryRelativeFlag, c.PreparedReturnValueJsonpathQueryRelativeFlag)
-
-	dc.Copy(&copiedNode.PreparedReturnValueJsonpathQuery, c.PreparedReturnValueJsonpathQuery) // ???
-
-	copiedNode.ValueContainsVariable = c.ValueContainsVariable
-
-	copiedNode.OriginalAttribute = c.OriginalAttribute
-	copiedNode.OriginalMethod = c.OriginalMethod
-	copiedNode.OriginalValue = c.OriginalValue
-
-	if copiedNode.Attribute == "jsonpath:$RELATIVE.args" {
-		fmt.Printf("c=%+v", c)
-		fmt.Printf("copiedNode=%+v", copiedNode)
-	}
-
-	return &copiedNode
+func (c *Condition) ResetVariables() {
+	c.Attribute = c.OriginalAttributeWithVariables
+	c.Method = c.OriginalMethodWithVariables
+	c.Value = c.OriginalValueWithVariables
+	c.ValueContainsVariable = c.OriginalValueContainsVariable
 }
 
 // --------------------------------------

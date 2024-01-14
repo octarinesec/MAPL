@@ -2320,6 +2320,11 @@ func test_CheckMessagesWithRawData(rulesFilename, messagesFilename, rawFilename 
 			t0 := time.Now()
 			for i := 0; i < NumberOfChecks; i++ {
 				Check(&message, &rules)
+				for _, r := range rules.Rules {
+					if r.Conditions.ConditionsTree != nil {
+						r.Conditions.ConditionsTree.ResetVariables()
+					}
+				}
 			}
 			d := time.Since(t0)
 			elapsedBytes += d
@@ -2346,6 +2351,11 @@ func test_CheckMessagesWithRawData(rulesFilename, messagesFilename, rawFilename 
 			t0 := time.Now()
 			for i := 0; i < NumberOfChecks; i++ {
 				Check(&message, &rules)
+				for _, r := range rules.Rules {
+					if r.Conditions.ConditionsTree != nil {
+						r.Conditions.ConditionsTree.ResetVariables()
+					}
+				}
 			}
 			d := time.Since(t0)
 			elapsedInterface += d
