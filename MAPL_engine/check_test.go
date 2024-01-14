@@ -1981,6 +1981,95 @@ func TestRulesWithVariables(t *testing.T) {
 	})
 }
 
+func TestRulesWithVariablesReset(t *testing.T) {
+
+	logging := false
+	if logging {
+		// setup a log outfile file
+		f, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777) //create your file with desired read/write permissions
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Sync()
+		defer f.Close()
+		log.SetOutput(f) //set output of logs to f
+	} else {
+		log.SetOutput(ioutil.Discard) // when we complete the debugging we discard the logs [output discarded]
+	}
+
+	reporting.QuietMode()
+	Convey("tests", t, func() {
+
+		// fresh rules:
+		rules, messages, data, err := readRulesMessageRawData("../files/rules/with_variables/rule_T1027_004_B.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_cache_T1207_004_B.json", "")
+		So(err, ShouldBeNil)
+
+		message := messages.Messages[0]
+		message.RequestJsonRaw = &data
+		result, _, _, _, _, _, _ := Check(&message, &rules)
+		So(result, ShouldEqual, ALLOW)
+
+		// fresh rules:
+		rules2, messages2, data2, err2 := readRulesMessageRawData("../files/rules/with_variables/rule_T1027_004_B.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_cache_T1207_004_B_false2.json", "")
+		So(err2, ShouldBeNil)
+
+		message2 := messages2.Messages[0]
+		message2.RequestJsonRaw = &data2
+		result2, _, _, _, _, _, _ := Check(&message2, &rules2)
+		So(result2, ShouldEqual, DEFAULT)
+
+		// BUT: if we use the first "rules" that already passed, the variables within are set with data from the first message. we get a result of "allow" instead of "default" when testing the second message
+
+		result3, _, _, _, _, _, _ := Check(&message2, &rules) // pay attention to rules and not rules2
+		So(result3, ShouldEqual, ALLOW)
+
+		// if we reset the variables then we get the correct result:
+
+		for _, r := range rules.Rules {
+			if r.GetPreparedRule().Conditions.ConditionsTree != nil {
+				r.GetPreparedRule().Conditions.ConditionsTree.ResetVariables()
+			}
+		}
+
+		result4, _, _, _, _, _, _ := Check(&message2, &rules)
+		So(result4, ShouldEqual, DEFAULT)
+
+		// attention: we need to reset the prepared rules and not the "main" rules:
+		// first we read again the rules and check them against the first message
+		rules, messages, data, err = readRulesMessageRawData("../files/rules/with_variables/rule_T1027_004_B.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_cache_T1207_004_B.json", "")
+		So(err, ShouldBeNil)
+
+		message = messages.Messages[0]
+		message.RequestJsonRaw = &data
+		result, _, _, _, _, _, _ = Check(&message, &rules)
+		So(result, ShouldEqual, ALLOW)
+
+		// second, we reset the "wrong" variables (not the prepared rule):
+
+		for _, r := range rules.Rules {
+			if r.Conditions.ConditionsTree != nil {
+				r.Conditions.ConditionsTree.ResetVariables()
+			}
+		}
+
+		result5, _, _, _, _, _, _ := Check(&message2, &rules)
+		So(result5, ShouldEqual, ALLOW)
+
+		// now we check again but with indirect reset:
+		// first we read again the rules and check them against the first message
+		rules, messages, data, err = readRulesMessageRawData("../files/rules/with_variables/rule_T1027_004_B.yaml", "../files/messages/messages_base_jsonpath.yaml", "../files/raw_json_data/with_variables/alerts_cache_T1207_004_B.json", "")
+		So(err, ShouldBeNil)
+		result6, _, _, _, _, _, _ := Check(&message, &rules)
+		So(result6, ShouldEqual, ALLOW)
+		result7, _, _, _, _, _, _ := Check(&message2, &rules)
+		So(result7, ShouldEqual, ALLOW) // not correct
+		ResetVariables(&rules)          // we reset the variables
+		result8, _, _, _, _, _, _ := Check(&message2, &rules)
+		So(result8, ShouldEqual, DEFAULT) // now we get the correct result
+	})
+
+}
+
 func TestMaplEngineJsonConditionsKeyValue(t *testing.T) {
 
 	logging := false

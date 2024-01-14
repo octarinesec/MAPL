@@ -1203,3 +1203,11 @@ func getArrayFromArrayOfArrays(arrayData []byte) ([]byte, error) {
 	}
 	return []byte(arrayDataString), nil
 }
+
+func ResetVariables(rules *Rules) {
+	for _, r := range rules.Rules {
+		if r.GetPreparedRule().Conditions.ConditionsTree != nil {
+			r.GetPreparedRule().Conditions.ConditionsTree.ResetVariables()
+		}
+	}
+}
