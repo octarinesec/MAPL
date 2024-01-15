@@ -348,13 +348,23 @@ func ConvertConditionStringToIntFloatRegex(condition *Condition) error { // TO-D
 		condition.Value = tempString
 	}
 
-	if condition.Method == "CONTAINS" {
-		condition.Value = strings.Replace(condition.Value, ",", "|", -1)
-		condition.Method = "RE"
-	}
-	if condition.Method == "NCONTAINS" {
-		condition.Value = strings.Replace(condition.Value, ",", "|", -1)
-		condition.Method = "NRE"
+	if condition.Method == "CONTAINS" || condition.Method == "NCONTAINS" {
+
+		words := strings.Split(condition.Value, ",")
+		regex_words := []string{}
+
+		for _, w := range words {
+			full_word_regex := fmt.Sprintf("\\b(%v)\\b", w)
+			regex_words = append(regex_words, full_word_regex)
+		}
+		regex_all_words := strings.Join(regex_words, "|")
+		regex_string := fmt.Sprintf("(%v)", regex_all_words)
+		condition.Value = regex_string
+		if condition.Method == "CONTAINS" {
+			condition.Method = "RE"
+		} else {
+			condition.Method = "NRE"
+		}
 	}
 
 	tempString, factor := convertStringWithUnits(condition.Value)

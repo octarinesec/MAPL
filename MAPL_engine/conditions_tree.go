@@ -299,7 +299,7 @@ func (n *Not) String() string {
 }
 func (n *Not) ResetVariables() {
 
-	n.ResetVariables()
+	n.Node.ResetVariables()
 
 }
 
