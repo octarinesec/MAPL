@@ -11,7 +11,7 @@ MAPL Language may be used in two contexts:
 ## Conditions
 
 This is currently the main use-case.
-Conditions syntax is described thoroughly in [MAPL Conditions V2](https://github.com/octarinesec/MAPL/tree/main/docs/MAPL_Conditions_v2.md).
+Conditions syntax is described thoroughly in [MAPL Conditions V2](docs/MAPL_Conditions_v2.md).
 
 
 ## Access-Control
@@ -26,16 +26,16 @@ The MAPL rules have the following syntax:
 `<sender, receiver, protocol, resource, operation> : <conditions> : <decision>`
 
 Essentially, a rule gives a decision whether the sender (client) may do the operation on the resource of the receiver (server) when the conditions apply.    
-The language is described thoroughly in [MAPL v2 Syntax](https://github.com/octarinesec/MAPL/tree/main/docs/MAPL_SPEC_v2.md).   
-Conditions syntax is described in [MAPL Conditions V2](https://github.com/octarinesec/MAPL/tree/main/docs/MAPL_Conditions_v2.md).    
-See also previous syntax (MAPL v1) in [MAPL v1 Syntax](https://github.com/octarinesec/MAPL/tree/main/docs/MAPL_SPEC_v1.md).  
+The language is described thoroughly in [MAPL v2 Syntax](docs/MAPL_SPEC_v2.md).   
+Conditions syntax is described in [MAPL Conditions V2](docs/MAPL_Conditions_v2.md).    
+See also previous syntax (MAPL v1) in [MAPL v1 Syntax](docs/MAPL_SPEC_v1.md).  
 
 # MAPL Engine
 
 Given a list of rules and message attributes, the MAPL engine gives a decision whether to allow, allow and alert or block the communication.  
-The engine is documented in [MAPL Engine](https://github.com/octarinesec/MAPL/tree/main/docs/MAPL_ENGINE.md).  
+The engine is documented in [MAPL Engine](docs/MAPL_ENGINE.md).  
 The MAPL engine can be used in service meshes, API gateways and IAM solutions.  
 
 # Mongo Plugin
 We created a plugin to translate MAPL conditions into Mongo queries, as querying in the db speeds up the query by a factor of 5-10.  
-See [Mongo Plugin](https://github.com/octarinesec/MAPL/tree/main/docs/Mongo_Plugin.md). 
+See [Mongo Plugin](docs/Mongo_Plugin.md). 
