@@ -88,7 +88,7 @@ Mongo **Aggregate** query =
 
 1) Return values are not supported. The complete document is returned.
 
-2) Comparison with strings that represent numbers with units. 
+2) Comparison with strings that represent numbers with units is not supported. 
 
 For example:
 

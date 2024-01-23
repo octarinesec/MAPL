@@ -1,4 +1,4 @@
-# MAPL v2 Syntax
+# MAPL v2 Specification
 
 MAPL (Manageable Access-control Policy Language) is a language for access control rules, designed for a microservices environment.
 It is designed to be intuitive, rich and expressive, as well as simple and straightforward.  
@@ -17,9 +17,9 @@ Policy rules have the following syntax:
 Essentially, a rule gives a decision whether the sender (client) may do the operation on the resource of the receiver (server) using the protocol when the conditions apply.
 
 ### Sender and Receiver
-Sender services (clients) and Receiver services (servers) name structures.  
-Sender is comprised of sender name and sender type.  
-Receiver is comprised of receiver name and receiver type.
+Sender services (clients) and Receiver services (servers) name structures defined as <senderName, senderType> or <receiverName, receiverType>.
+Sender structure is comprised of sender name and sender type.  
+Receiver structure is comprised of receiver name and receiver type.
 
 - The language allows IPs and CIDRs. 
 - The names are case sensitive strings, comprised of alphanumeric characters, '-', '/' and '.' and must not contain spaces or tabs.
@@ -92,7 +92,8 @@ see conditions syntax in [MAPL Conditions V2](https://github.com/octarinesec/MAP
 
 ### Decision
 
-The decision is ones of
+The decision is one of
+- Default (rule not applicable - rule result is false)
 - Allow
 - Alert (allow and alert)
 - Block

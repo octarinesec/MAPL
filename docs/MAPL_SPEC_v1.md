@@ -14,9 +14,9 @@ Policy rules have the following syntax:
 Essentially, a rule gives a decision whether the sender (client) may do the operation on the resource of the receiver (server) using the protocol when the conditions apply.
 
 ### Sender and Receiver
-Sender services (clients) and Receiver services (servers) name structures.  
-Sender is comprised of sender name and sender type.  
-Receiver is comprised of receiver name and receiver type.
+Sender services (clients) and Receiver services (servers) name structures defined as <senderName, senderType> or <receiverName, receiverType>.
+Sender structure is comprised of sender name and sender type.  
+Receiver structure is comprised of receiver name and receiver type.
 
 - The language allows IPs and CIDRs. 
 - The names are case sensitive strings, comprised of alphanumeric characters, '-', '/' and '.' and must not contain spaces or tabs.
@@ -80,7 +80,7 @@ The language allows for the following two words:
 The verb "read" corresponds to any of GET ,HEAD, OPTIONS, TRACE, CONSUME  
 The verb "write" corresponds to any of POST, PUT, DELETE, PRODUCE  
 
-### Conditions (MAPL v1)
+### Conditions (MAPL v1) -  DEPRECATED
 
 MAPL conditions part is a DNF (OR of ANDs) of one-attribute-conditions.  
 This allows for rich and expressive enough testing of message attributes while keeping the rule simple and tractable.  
@@ -155,7 +155,8 @@ message daytime after 14:00:
 
 ### Decision
 
-The decision is ones of
+The decision is one of
+- Default (rule not applicable - rule result is false)
 - Allow
 - Alert (allow and alert)
 - Block
@@ -282,7 +283,7 @@ Block service A.my_namespace from communicating with service B.my_namespace over
     decision: block
 ```
 
-### Conditions (MAPL v1)
+### Conditions (MAPL v1) - DEPRECATED
 
 Block service A.my_namespace from communicating with B.my_namespace over HTTP to any path /books using GET method if
 -  the payloadSize is between 1024 and 4096 bytes  

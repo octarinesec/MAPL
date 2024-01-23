@@ -14,12 +14,12 @@ go get -u -v github.com/octarinesec/MAPL
 
 * The main functionality of the Engine is the check function:
 ```go
-result, msg, _, _, _ := MAPL_engine.Check(&message, &rules)
+result, msg, _, _, _, _, _ := MAPL_engine.Check(&message, &rules)
 ```
 
 * The Engine provides ability to read MAPL rules from yaml files:
 ```go
-rules := MAPL_engine.YamlReadRulesFromFile(rulesFilename)
+rules, err := MAPL_engine.YamlReadRulesFromFile(rulesFilename)
 ```
 
 * The Check function uses regular expressions in order to support wildcards and lists as described in the [MAPL Specification](https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md). 
@@ -28,7 +28,7 @@ Therefore, after reading the rules from the input file, the relevant fields are 
 
 * The Engine provides ability to read message attributes from yaml files (for testing purposes):
 ```go
-messages := MAPL_engine.YamlReadMessagesFromFile(messagesFilename)
+messages, err := MAPL_engine.YamlReadMessagesFromFile(messagesFilename)
 ```
 * After reading the messages from the input file, some fields are parsed and added as message attributes (for example, 
 `requestTimeHoursFromMidnightUTC` is extracted from `message.RequestTime`).
