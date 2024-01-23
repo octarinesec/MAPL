@@ -5,16 +5,19 @@ The following keywords are used in MAPL conditions with the value to-compare-wit
 <br>
 
 | MAPL condition keyword | message attribute |
-|:-------:|:-----:|
-| payloadSize| message.RequestSize |
-| requestUseragent | message.RequestUseragent |
-| utcHoursFromMidnight | message.RequestTimeHoursFromMidnightUTC<br>(extracted from message.RequestTime)||
-| senderLabel[key]* | message.SourceLabels[key] |
-| receiverLabel[key]* | message.DestinationLabels[key] | 
-| jsonpath: $[path] | message.RequestJsonRaw |
-| jsonpath: $[path] | message.RequestRawInterface |
+|:---------------------:|:-----:|
+|||
+|   jsonpath: $[path]   | message.RequestJsonRaw |
+|   jsonpath: $[path]   | message.RequestRawInterface |
+|||
+|      payloadSize      | message.RequestSize |
+|    requestUseragent   | message.RequestUseragent |
+|  utcHoursFromMidnight | message.RequestTimeHoursFromMidnightUTC<br>(extracted from message.RequestTime)||
+|   senderLabel[key]*   | message.SourceLabels[key] |
+|  receiverLabel[key]*  | message.DestinationLabels[key] | 
 
-\* see [Sender/Receiver Labels](#Sender/Receiver Labels)
+
+* see [Sender/Receiver Labels](#Sender/Receiver Labels)
 
 ## Sender/Receiver Labels
 
@@ -41,12 +44,12 @@ see also: https://kubernetes.io/docs/concepts/overview/working-with-objects/labe
     - <"senderLabel[key]", "EQ"/"NEQ", "senderLabel[key2]">, <"receiverLabel[key]", "EQ"/"NEQ", "receiverLabel[key2]"> and <"receiverLabel[key]", "EQ"/"NEQ", "sebderLabel[key2]"> are not supported.
 
 * Examples:  
-see also  [rules_with_label_conditions.yaml](https://github.com/octarinesec/MAPL/tree/master/examples/rules_with_label_conditions.yaml)
+see also  [rules_with_label_conditions.yaml](https://github.com/octarinesec/MAPL/tree/main/examples/rules_with_label_conditions.yaml)
           
 
 ```yaml
-DNFconditions:
-  - ANDconditions:
+- OR:
+  - AND:
     - attribute: "senderLabel[key1]"
       method: EQ
       value: "abc"
@@ -59,11 +62,11 @@ DNFconditions:
     - attribute: "receiverLabel[key2]"
       method: RE
       value: "X.Z" [this is a regular expression]
-  - ANDconditions:
+  - AND:
     - attribute: "senderLabel[key2]"
       method: EQ
       value: "receiverLabel[key2]"
-  - ANDconditions:
+  - AND:
     - attribute: "senderLabel[key3]"
       method: EX
       value: "don't care"
@@ -93,5 +96,5 @@ DNFconditions:
     - message.SourceLabels["key1"]="ABbC"
     - message.SourceLabels["key2"]="DEF"
     - message.SourceLabels["key3"]="XYZ"
-  - see for example:  [messages_test_with_labels_conditions.yaml](https://github.com/octarinesec/MAPL/tree/master/examples/messages_test_with_labels_conditions.yaml)
+  - see for example:  [messages_test_with_labels_conditions.yaml](https://github.com/octarinesec/MAPL/tree/main/examples/messages_test_with_labels_conditions.yaml)
  

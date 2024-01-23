@@ -3,7 +3,7 @@
 ## Overview
 The MAPL Engine is a go library that provides functionality to parse and verify rules written in MAPL
 as described in the
-[MAPL Specification](https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md).
+[MAPL Specification](docs/MAPL_SPEC.md).
 
 ## Installation
 ```shell
@@ -14,21 +14,21 @@ go get -u -v github.com/octarinesec/MAPL
 
 * The main functionality of the Engine is the check function:
 ```go
-result, msg, _, _, _ := MAPL_engine.Check(&message, &rules)
+result, msg, _, _, _, _, _ := MAPL_engine.Check(&message, &rules)
 ```
 
 * The Engine provides ability to read MAPL rules from yaml files:
 ```go
-rules := MAPL_engine.YamlReadRulesFromFile(rulesFilename)
+rules, err := MAPL_engine.YamlReadRulesFromFile(rulesFilename)
 ```
 
-* The Check function uses regular expressions in order to support wildcards and lists as described in the [MAPL Specification](https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md). 
+* The Check function uses regular expressions in order to support wildcards and lists as described in the [MAPL Specification](docs/MAPL_SPEC.md). 
 Therefore, after reading the rules from the input file, the relevant fields are converted to regular expressions using `convertStringToRegex` and `convertOperationStringToRegex` functions. 
 
 
 * The Engine provides ability to read message attributes from yaml files (for testing purposes):
 ```go
-messages := MAPL_engine.YamlReadMessagesFromFile(messagesFilename)
+messages, err := MAPL_engine.YamlReadMessagesFromFile(messagesFilename)
 ```
 * After reading the messages from the input file, some fields are parsed and added as message attributes (for example, 
 `requestTimeHoursFromMidnightUTC` is extracted from `message.RequestTime`).
@@ -40,13 +40,13 @@ For example in the case of "payloadSize"
 valueToCompareInt = message.RequestSize
 ```
 The list of supported message attributes to be used in the conditions is given in
-[Supported Attributes](https://github.com/octarinesec/MAPL/tree/master/docs/SUPPORTED_ATTRIBUTES.md) document.
+[Supported Attributes](docs/SUPPORTED_ATTRIBUTES.md) document.
 
 
 ## Data Structures
 
-The rules and message attributes data structures are defined in [definitions.go](https://github.com/octarinesec/MAPL/tree/master/MAPL_engine/definitions.go)
+The rules and message attributes data structures are defined in [definitions.go](https://github.com/octarinesec/MAPL/tree/main/MAPL_engine/definitions.go)
 
 ## Examples
-* See demonstration of use in [test_check.go](https://github.com/octarinesec/MAPL/tree/master/tests/test_check.go)  
-* Examples of rules and messages yaml files are in the [examples folder](https://github.com/octarinesec/MAPL/tree/master/examples)
+* See demonstration of use in [test_check.go](https://github.com/octarinesec/MAPL/tree/main/tests/test_check.go)  
+* Examples of rules and messages yaml files are in the [examples folder](https://github.com/octarinesec/MAPL/tree/main/examples)

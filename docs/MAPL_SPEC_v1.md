@@ -14,9 +14,9 @@ Policy rules have the following syntax:
 Essentially, a rule gives a decision whether the sender (client) may do the operation on the resource of the receiver (server) using the protocol when the conditions apply.
 
 ### Sender and Receiver
-Sender services (clients) and Receiver services (servers) name structures.  
-Sender is comprised of sender name and sender type.  
-Receiver is comprised of receiver name and receiver type.
+Sender services (clients) and Receiver services (servers) name structures defined as <senderName, senderType> or <receiverName, receiverType>.
+Sender structure is comprised of sender name and sender type.  
+Receiver structure is comprised of receiver name and receiver type.
 
 - The language allows IPs and CIDRs. 
 - The names are case sensitive strings, comprised of alphanumeric characters, '-', '/' and '.' and must not contain spaces or tabs.
@@ -80,7 +80,7 @@ The language allows for the following two words:
 The verb "read" corresponds to any of GET ,HEAD, OPTIONS, TRACE, CONSUME  
 The verb "write" corresponds to any of POST, PUT, DELETE, PRODUCE  
 
-### Conditions (MAPL v1)
+### Conditions (MAPL v1) -  DEPRECATED
 
 MAPL conditions part is a DNF (OR of ANDs) of one-attribute-conditions.  
 This allows for rich and expressive enough testing of message attributes while keeping the rule simple and tractable.  
@@ -129,12 +129,12 @@ which may be translated to:
 ```
 sender service has a label "abc" (for "key1") and the labels of the sender and receiver services for "key2" are equal.
 ```
-for an extended spec for conditions on sender/receiver labels please see [Supported Attributes](https://github.com/octarinesec/MAPL/tree/master/docs/SUPPORTED_ATTRIBUTES.md) doc.
+for an extended spec for conditions on sender/receiver labels please see [Supported Attributes](docs/SUPPORTED_ATTRIBUTES.md) doc.
 
 #### one-attribute-condition
 A condition is defined as `<attribute, method, value>`  
 
-* Attribute : a string from the [Supported Attributes](https://github.com/octarinesec/MAPL/tree/master/docs/SUPPORTED_ATTRIBUTES.md).
+* Attribute : a string from the [Supported Attributes](docs/SUPPORTED_ATTRIBUTES.md).
   
 * Method:  
     - for string attributes: one of "EQ" (equal), "NE" (not equal), "RE" (regular expression match), "NRE" (regular expression mismatch).  
@@ -155,7 +155,8 @@ message daytime after 14:00:
 
 ### Decision
 
-The decision is ones of
+The decision is one of
+- Default (rule not applicable - rule result is false)
 - Allow
 - Alert (allow and alert)
 - Block
@@ -282,7 +283,7 @@ Block service A.my_namespace from communicating with service B.my_namespace over
     decision: block
 ```
 
-### Conditions (MAPL v1)
+### Conditions (MAPL v1) - DEPRECATED
 
 Block service A.my_namespace from communicating with B.my_namespace over HTTP to any path /books using GET method if
 -  the payloadSize is between 1024 and 4096 bytes  

@@ -36,7 +36,7 @@ type ExpandedSenderReceiver struct {
 	IP     net.IP         `yaml:"-" json:"IP,omitempty" bson:"IP,omitempty"`
 }
 
-// Resource structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
+// Resource structure - part of the rule as defined in MAPL (docs/MAPL_SPEC.md)
 type Resource struct {
 	/* Examples: // pay attention that the resource type should match the protocol
 	path:<http_path_name>,
@@ -49,7 +49,7 @@ type Resource struct {
 	ResourceNameRegex *regexp.Regexp `yaml:"-" json:"-,omitempty" bson:"resourceNameRegex,omitempty" structs:"resourceNameRegex,omitempty"`
 }
 
-// Condition structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
+// Condition structure - part of the rule as defined in MAPL (docs/MAPL_SPEC.md)
 type Condition struct {
 	// TO-DO: convert to AttributeStruct and ValueStruct?
 	Attribute        string         `yaml:"attribute,omitempty" json:"attribute" bson:"attribute" structs:"attribute,omitempty"`
