@@ -3,7 +3,7 @@
 ## Overview
 The MAPL Engine is a go library that provides functionality to parse and verify rules written in MAPL
 as described in the
-[MAPL Specification](https://github.com/octarinesec/MAPL/tree/main/docs/MAPL_SPEC.md).
+[MAPL Specification](docs/MAPL_SPEC.md).
 
 ## Installation
 ```shell
@@ -22,7 +22,7 @@ result, msg, _, _, _, _, _ := MAPL_engine.Check(&message, &rules)
 rules, err := MAPL_engine.YamlReadRulesFromFile(rulesFilename)
 ```
 
-* The Check function uses regular expressions in order to support wildcards and lists as described in the [MAPL Specification](https://github.com/octarinesec/MAPL/tree/main/docs/MAPL_SPEC.md). 
+* The Check function uses regular expressions in order to support wildcards and lists as described in the [MAPL Specification](docs/MAPL_SPEC.md). 
 Therefore, after reading the rules from the input file, the relevant fields are converted to regular expressions using `convertStringToRegex` and `convertOperationStringToRegex` functions. 
 
 
@@ -40,7 +40,7 @@ For example in the case of "payloadSize"
 valueToCompareInt = message.RequestSize
 ```
 The list of supported message attributes to be used in the conditions is given in
-[Supported Attributes](https://github.com/octarinesec/MAPL/tree/main/docs/SUPPORTED_ATTRIBUTES.md) document.
+[Supported Attributes](docs/SUPPORTED_ATTRIBUTES.md) document.
 
 
 ## Data Structures
