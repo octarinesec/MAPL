@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-//-------------------rules-------------------------------------
+// -------------------rules-------------------------------------
 type Sender struct {
 	// if SenderName is a list (example: "srv1,srv2,srv123") then it is assumed that all are of the same type
 	SenderName string                   `yaml:"senderName,omitempty" json:"senderName,omitempty" bson:"senderName" structs:"senderName,omitempty"`
@@ -26,7 +26,6 @@ type Receiver struct {
 	ReceiverList []ExpandedSenderReceiver `yaml:"-,omitempty" json:"-,omitempty" bson:"receiverList,omitempty" structs:"receiverList,omitempty"`
 }
 
-//
 type ExpandedSenderReceiver struct {
 	Name   string         `yaml:"-" json:"name,omitempty" bson:"name,omitempty"`
 	Type   string         `yaml:"-" json:"type,omitempty" bson:"type,omitempty"`
@@ -37,7 +36,7 @@ type ExpandedSenderReceiver struct {
 	IP     net.IP         `yaml:"-" json:"IP,omitempty" bson:"IP,omitempty"`
 }
 
-// Resource structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
+// Resource structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/main/docs/MAPL_SPEC.md)
 type Resource struct {
 	/* Examples: // pay attention that the resource type should match the protocol
 	path:<http_path_name>,
@@ -50,7 +49,7 @@ type Resource struct {
 	ResourceNameRegex *regexp.Regexp `yaml:"-" json:"-,omitempty" bson:"resourceNameRegex,omitempty" structs:"resourceNameRegex,omitempty"`
 }
 
-// Condition structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_SPEC.md)
+// Condition structure - part of the rule as defined in MAPL (https://github.com/octarinesec/MAPL/tree/main/docs/MAPL_SPEC.md)
 type Condition struct {
 	// TO-DO: convert to AttributeStruct and ValueStruct?
 	Attribute        string         `yaml:"attribute,omitempty" json:"attribute" bson:"attribute" structs:"attribute,omitempty"`

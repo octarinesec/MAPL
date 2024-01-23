@@ -44,7 +44,7 @@ see also: https://kubernetes.io/docs/concepts/overview/working-with-objects/labe
     - <"senderLabel[key]", "EQ"/"NEQ", "senderLabel[key2]">, <"receiverLabel[key]", "EQ"/"NEQ", "receiverLabel[key2]"> and <"receiverLabel[key]", "EQ"/"NEQ", "sebderLabel[key2]"> are not supported.
 
 * Examples:  
-see also  [rules_with_label_conditions.yaml](https://github.com/octarinesec/MAPL/tree/master/examples/rules_with_label_conditions.yaml)
+see also  [rules_with_label_conditions.yaml](https://github.com/octarinesec/MAPL/tree/main/examples/rules_with_label_conditions.yaml)
           
 
 ```yaml
@@ -96,5 +96,5 @@ see also  [rules_with_label_conditions.yaml](https://github.com/octarinesec/MAPL
     - message.SourceLabels["key1"]="ABbC"
     - message.SourceLabels["key2"]="DEF"
     - message.SourceLabels["key3"]="XYZ"
-  - see for example:  [messages_test_with_labels_conditions.yaml](https://github.com/octarinesec/MAPL/tree/master/examples/messages_test_with_labels_conditions.yaml)
+  - see for example:  [messages_test_with_labels_conditions.yaml](https://github.com/octarinesec/MAPL/tree/main/examples/messages_test_with_labels_conditions.yaml)
  

@@ -7,9 +7,9 @@ Upon "true" result, values may be returned from the data which the rule tests ag
 #### one-attribute-condition
 A condition is defined as `<attribute, method, value>`  
 
-* Attribute : a string from the [Supported Attributes](https://github.com/octarinesec/MAPL/tree/master/docs/SUPPORTED_ATTRIBUTES.md).
+* Attribute : a string from the [Supported Attributes](https://github.com/octarinesec/MAPL/tree/main/docs/SUPPORTED_ATTRIBUTES.md).
   
-* Method: a string from the [Supported Methods](https://github.com/octarinesec/MAPL/tree/master/docs/SUPPORTED_METHODS.md).
+* Method: a string from the [Supported Methods](https://github.com/octarinesec/MAPL/tree/main/docs/SUPPORTED_METHODS.md).
 
 * Value: the value to test the extracted data against.  
 

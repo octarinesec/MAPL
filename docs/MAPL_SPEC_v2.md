@@ -87,7 +87,7 @@ The verb "write" corresponds to any of POST, PUT, DELETE, PRODUCE
 
 The conditions part is a boolean tree (conditionsTree with as many levels as needed) where the end nodes are one-attribute-conditions. The one-attribute-conditions are tested against the message (or document) data. See examples below.
 
-see conditions syntax in [MAPL Conditions V2](https://github.com/octarinesec/MAPL/tree/master/docs/MAPL_Conditions_v2.md).
+see conditions syntax in [MAPL Conditions V2](https://github.com/octarinesec/MAPL/tree/main/docs/MAPL_Conditions_v2.md).
 
 
 ### Decision

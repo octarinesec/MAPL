@@ -129,12 +129,12 @@ which may be translated to:
 ```
 sender service has a label "abc" (for "key1") and the labels of the sender and receiver services for "key2" are equal.
 ```
-for an extended spec for conditions on sender/receiver labels please see [Supported Attributes](https://github.com/octarinesec/MAPL/tree/master/docs/SUPPORTED_ATTRIBUTES.md) doc.
+for an extended spec for conditions on sender/receiver labels please see [Supported Attributes](https://github.com/octarinesec/MAPL/tree/main/docs/SUPPORTED_ATTRIBUTES.md) doc.
 
 #### one-attribute-condition
 A condition is defined as `<attribute, method, value>`  
 
-* Attribute : a string from the [Supported Attributes](https://github.com/octarinesec/MAPL/tree/master/docs/SUPPORTED_ATTRIBUTES.md).
+* Attribute : a string from the [Supported Attributes](https://github.com/octarinesec/MAPL/tree/main/docs/SUPPORTED_ATTRIBUTES.md).
   
 * Method:  
     - for string attributes: one of "EQ" (equal), "NE" (not equal), "RE" (regular expression match), "NRE" (regular expression mismatch).  
