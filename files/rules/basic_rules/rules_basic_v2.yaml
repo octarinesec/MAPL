@@ -13,4 +13,8 @@ rules:
       resourceName: "/*"
     operation: GET
     decision: allow
+    conditions:
+      attribute: jsonpath:$.kind
+      method: EQ
+      value: "Deployment"
 

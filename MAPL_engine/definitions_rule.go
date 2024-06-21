@@ -147,11 +147,11 @@ func ConditionFromConditionNode(c ConditionNode) Condition {
 		if strings.HasPrefix(c.ReturnValueJsonpath[k], "jsonpath:$RELATIVE") {
 			relativeFlag = true
 		}
-		v = strings.Replace(v, "jsonpath:$RELATIVE", "$", 1)
-		v = strings.Replace(v, "jsonpath:$", "$", 1)
-		c_out.ReturnValueJsonpath[k] = v
+		c_out.ReturnValueJsonpath[k] = strings.Replace(v, "jsonpath:$RELATIVE", "$", 1)
+		c_out.ReturnValueJsonpath[k] = strings.Replace(v, "jsonpath:$", "$", 1)
 
-		p, err := jsonpath.Prepare(v)
+		tempAtt := c_out.ReturnValueJsonpath[k]
+		p, err := jsonpath.Prepare(tempAtt)
 		if err != nil {
 			c_out.PreparedReturnValueJsonpathQuery[k] = nil
 		} else {
@@ -164,7 +164,7 @@ func ConditionFromConditionNode(c ConditionNode) Condition {
 
 }
 
-func ReadCondition(v map[string]interface{}, isWithinAnyAll bool) (ConditionNode, error) {
+func ReadCondition(v map[string]interface{}) ConditionNode {
 
 	c := ConditionNode{}
 	for k, val := range v {
@@ -184,27 +184,17 @@ func ReadCondition(v map[string]interface{}, isWithinAnyAll bool) (ConditionNode
 			case map[string]interface{}:
 				val2 := val.(map[string]interface{})
 				for kk, vv := range val2 {
-					vString := vv.(string)
-					if !isWithinAnyAll || strings.HasPrefix(vString, "jsonpath:$RELATIVE") {
-						c.ReturnValueJsonpath[kk] = vString
-					} else {
-						return ConditionNode{}, fmt.Errorf("invalid returnValueJsonpath [%v] [should start with jsonpath:$RELATIVE]", vString)
-					}
+					c.ReturnValueJsonpath[kk] = vv.(string)
 				}
 			case map[interface{}]interface{}:
 				val2 := val.(map[interface{}]interface{})
 				for kk, vv := range val2 {
-					vString := vv.(string)
-					if !isWithinAnyAll || strings.HasPrefix(vString, "jsonpath:$RELATIVE") {
-						c.ReturnValueJsonpath[kk.(string)] = vString
-					} else {
-						return ConditionNode{}, fmt.Errorf("invalid returnValueJsonpath [%v] [should start with jsonpath:$RELATIVE]", vString)
-					}
+					c.ReturnValueJsonpath[kk.(string)] = vv.(string)
 				}
 			}
 		}
 	}
-	return c, nil
+	return c
 }
 
 func getKeys(v map[string]interface{}) []string {

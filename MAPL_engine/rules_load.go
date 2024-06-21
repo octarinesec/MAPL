@@ -217,7 +217,7 @@ func PrepareOneRuleWithPredefinedStrings(rule *Rule, stringsAndLists PredefinedS
 	// also do some validation on fields other than the conditions
 
 	if rule.Conditions.ConditionsTree != nil {
-		_, err := rule.Conditions.ConditionsTree.PrepareAndValidate(stringsAndLists)
+		err := rule.Conditions.ConditionsTree.PrepareAndValidate(stringsAndLists)
 		if err != nil {
 			return err
 		}
@@ -561,7 +561,7 @@ func ValidateRule(rule *Rule) error {
 	}
 
 	if rule2.Conditions.ConditionsTree != nil {
-		_, err = rule2.Conditions.ConditionsTree.PrepareAndValidate(PredefinedStringsAndLists{})
+		err = rule2.Conditions.ConditionsTree.PrepareAndValidate(PredefinedStringsAndLists{})
 		if err != nil {
 			return err
 		}

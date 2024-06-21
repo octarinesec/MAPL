@@ -15,13 +15,11 @@ rules:
     conditions:
       ANY:
         parentJsonpathAttribute: jsonpath:$.spec.containers[:]
-        returnValueJsonpath:
-          name1: "jsonpath:$RELATIVE.name"
         condition:
           attribute: jsonpath:$RELATIVE.securityContext.runAsUser
           method: EQ
           value: 0
           returnValueJsonpath:
-            name2: "jsonpath:$RELATIVE.name"
+            kind: "jsonpath:$.kind"
 
     decision: block

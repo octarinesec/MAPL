@@ -41,7 +41,7 @@ func TestJsonUnmarhshal(t *testing.T) {
 
 	reporting.QuietMode()
 	Convey("tests", t, func() {
-		testUnmarshalForOneFile("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY3.yaml")
+
 		testUnmarshalForOneFile("../files/rules/with_return_value/rules_with_condition_keyword_and_return_value.yaml")
 		testUnmarshalForOneFile("../files/rules/with_jsonpath_conditions_ALL_ANY/rules_with_jsonpath_conditions_LT_and_LT_spec_containers_ANY2.yaml")
 		testUnmarshalForOneFile("../files/rules/with_conditions/rules_with_conditions.yaml")
@@ -86,8 +86,7 @@ func TestJsonUnmarhshal(t *testing.T) {
 
 		//-----------------------
 		var rule Rule
-		//maplRuleJson := `{"ruleID":"0","sender":{"senderList":[{"Regexp":{},"CIDR":{"IP":"","Mask":null}}]},"receiver":{"receiverList":[{"Regexp":{},"CIDR":{"IP":"","Mask":null}}]},"resource":{"-":{}},"conditions":{"conditionsTree":{"AND":[{"ANY":{"parentJsonpathAttribute":"jsonpath:$.spec.containers[:]","condition":{"condition":{"attribute":"jsonpath:$RELATIVE.securityContext.runAsUser","method":"EQ","value":"0"}}}},{"condition":{"attribute":"jsonpath:$.kind","method":"RE","value":"^Pod$"}}]}},"metadata":{"name":"runAsUser0"},"hash":"3d171b3db8380b7dc96dec48fc8f82fa","o":{},"-":true}`
-		maplRuleJson := `{"ruleID":"0","conditions":{"conditionsTree":{"AND":[{"ANY":{"parentJsonpathAttribute":"jsonpath:$.spec.containers[:]","condition":{"condition":{"attribute":"jsonpath:$RELATIVE.securityContext.runAsUser","method":"EQ","value":"0"}}}},{"condition":{"attribute":"jsonpath:$.kind","method":"RE","value":"^Pod$"}}]}},"metadata":{"name":"runAsUser0"},"hash":"3d171b3db8380b7dc96dec48fc8f82fa","o":{},"-":true}`
+		maplRuleJson := `{"ruleID":"0","sender":{"senderList":[{"Regexp":{},"CIDR":{"IP":"","Mask":null}}]},"receiver":{"receiverList":[{"Regexp":{},"CIDR":{"IP":"","Mask":null}}]},"resource":{"-":{}},"conditions":{"conditionsTree":{"AND":[{"ANY":{"parentJsonpathAttribute":"jsonpath:$.spec.containers[:]","condition":{"condition":{"attribute":"jsonpath:$RELATIVE.securityContext.runAsUser","method":"EQ","value":"0"}}}},{"condition":{"attribute":"jsonpath:$.kind","method":"RE","value":"^Pod$"}}]}},"metadata":{"name":"runAsUser0"},"hash":"3d171b3db8380b7dc96dec48fc8f82fa","o":{},"-":true}`
 		x := []byte(maplRuleJson)
 		err = json.Unmarshal(x, &rule)
 		So(err, ShouldEqual, nil)
@@ -153,7 +152,6 @@ func TestJsonUnmarhshalWithPredefinedStrings(t *testing.T) {
 			testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_condition_translation_list.yaml", f)
 
 		}
-
 		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_condition_translation_foo.yaml", "../files/lists/predefined_list_allowed_labels.yaml")
 		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_condition_translation_foo2.yaml", "../files/lists/predefined_list_allowed_labels.yaml")
 		testUnmarshalForOneFileWithPredefinedStrings("../files/rules/predefined_strings/rules_with_condition_translation_foo_list.yaml", "../files/lists/predefined_list_allowed_labels.yaml")
